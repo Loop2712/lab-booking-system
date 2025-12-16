@@ -1,12 +1,14 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
+import TeacherRequestsTable from "./table";
 
 export default function TeacherRequestsPage() {
   return (
-    <PlaceholderPage
-      title="Teacher • Approve Requests"
-      description="อนุมัติ/ปฏิเสธคำขอจองห้อง"
-      backHref="/teacher"
-      backLabel="กลับหน้า Teacher Dashboard"
-    />
+    <div className="space-y-4">
+      <h1 className="text-2xl font-semibold">คำขอจองที่รออนุมัติ</h1>
+      <p className="text-sm text-muted-foreground">
+        อนุมัติหรือปฏิเสธคำขอจอง (เฉพาะสถานะ PENDING)
+      </p>
+
+      <TeacherRequestsTable />
+    </div>
   );
 }
