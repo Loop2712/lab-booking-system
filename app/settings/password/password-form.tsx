@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Eye, EyeOff, CheckCircle2, AlertTriangle } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,7 +71,10 @@ export default function PasswordForm() {
     setSuccess("เปลี่ยนรหัสผ่านสำเร็จ");
     setCurrentPassword("");
     setNewPassword("");
-    setConfirmPassword("");
+    setConfirmPassword(""); 
+    setTimeout(() => {
+        signOut({ callbackUrl: "/login" });
+    }, 1500);
   }
 
   return (
