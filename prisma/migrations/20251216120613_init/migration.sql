@@ -41,9 +41,12 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "Room" (
     "id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "roomNumber" TEXT NOT NULL,
     "floor" INTEGER NOT NULL,
     "computerCount" INTEGER NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -110,6 +113,8 @@ CREATE TABLE "Reservation" (
     "approverId" TEXT,
     "roomId" TEXT NOT NULL,
     "sectionId" TEXT,
+    "date" TIMESTAMP(3) NOT NULL,
+    "slot" TEXT NOT NULL,
     "startAt" TIMESTAMP(3) NOT NULL,
     "endAt" TIMESTAMP(3) NOT NULL,
     "note" TEXT,
@@ -190,6 +195,9 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE INDEX "User_role_idx" ON "User"("role");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Room_code_key" ON "Room"("code");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Room_roomNumber_floor_key" ON "Room"("roomNumber", "floor");
 
 -- CreateIndex
@@ -221,6 +229,9 @@ CREATE INDEX "Reservation_roomId_startAt_endAt_idx" ON "Reservation"("roomId", "
 
 -- CreateIndex
 CREATE INDEX "Reservation_requesterId_startAt_idx" ON "Reservation"("requesterId", "startAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Reservation_roomId_date_slot_key" ON "Reservation"("roomId", "date", "slot");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Loan_reservationId_key" ON "Loan"("reservationId");

@@ -1363,9 +1363,12 @@ export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof User
 
 export const RoomScalarFieldEnum = {
   id: 'id',
+  code: 'code',
+  name: 'name',
   roomNumber: 'roomNumber',
   floor: 'floor',
   computerCount: 'computerCount',
+  isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1432,6 +1435,8 @@ export const ReservationScalarFieldEnum = {
   approverId: 'approverId',
   roomId: 'roomId',
   sectionId: 'sectionId',
+  date: 'date',
+  slot: 'slot',
   startAt: 'startAt',
   endAt: 'endAt',
   note: 'note',
@@ -1620,6 +1625,13 @@ export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
  * Reference to a field of type 'KeyStatus'
  */
 export type EnumKeyStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KeyStatus'>
@@ -1644,13 +1656,6 @@ export type EnumDayOfWeekFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
  * Reference to a field of type 'DayOfWeek[]'
  */
 export type ListEnumDayOfWeekFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DayOfWeek[]'>
-    
-
-
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 

@@ -32,6 +32,8 @@ export type ReservationMinAggregateOutputType = {
   approverId: string | null
   roomId: string | null
   sectionId: string | null
+  date: Date | null
+  slot: string | null
   startAt: Date | null
   endAt: Date | null
   note: string | null
@@ -47,6 +49,8 @@ export type ReservationMaxAggregateOutputType = {
   approverId: string | null
   roomId: string | null
   sectionId: string | null
+  date: Date | null
+  slot: string | null
   startAt: Date | null
   endAt: Date | null
   note: string | null
@@ -62,6 +66,8 @@ export type ReservationCountAggregateOutputType = {
   approverId: number
   roomId: number
   sectionId: number
+  date: number
+  slot: number
   startAt: number
   endAt: number
   note: number
@@ -79,6 +85,8 @@ export type ReservationMinAggregateInputType = {
   approverId?: true
   roomId?: true
   sectionId?: true
+  date?: true
+  slot?: true
   startAt?: true
   endAt?: true
   note?: true
@@ -94,6 +102,8 @@ export type ReservationMaxAggregateInputType = {
   approverId?: true
   roomId?: true
   sectionId?: true
+  date?: true
+  slot?: true
   startAt?: true
   endAt?: true
   note?: true
@@ -109,6 +119,8 @@ export type ReservationCountAggregateInputType = {
   approverId?: true
   roomId?: true
   sectionId?: true
+  date?: true
+  slot?: true
   startAt?: true
   endAt?: true
   note?: true
@@ -197,6 +209,8 @@ export type ReservationGroupByOutputType = {
   approverId: string | null
   roomId: string
   sectionId: string | null
+  date: Date
+  slot: string
   startAt: Date
   endAt: Date
   note: string | null
@@ -233,6 +247,8 @@ export type ReservationWhereInput = {
   approverId?: Prisma.StringNullableFilter<"Reservation"> | string | null
   roomId?: Prisma.StringFilter<"Reservation"> | string
   sectionId?: Prisma.StringNullableFilter<"Reservation"> | string | null
+  date?: Prisma.DateTimeFilter<"Reservation"> | Date | string
+  slot?: Prisma.StringFilter<"Reservation"> | string
   startAt?: Prisma.DateTimeFilter<"Reservation"> | Date | string
   endAt?: Prisma.DateTimeFilter<"Reservation"> | Date | string
   note?: Prisma.StringNullableFilter<"Reservation"> | string | null
@@ -253,6 +269,8 @@ export type ReservationOrderByWithRelationInput = {
   approverId?: Prisma.SortOrderInput | Prisma.SortOrder
   roomId?: Prisma.SortOrder
   sectionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  date?: Prisma.SortOrder
+  slot?: Prisma.SortOrder
   startAt?: Prisma.SortOrder
   endAt?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -267,6 +285,7 @@ export type ReservationOrderByWithRelationInput = {
 
 export type ReservationWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  roomId_date_slot?: Prisma.ReservationRoomIdDateSlotCompoundUniqueInput
   AND?: Prisma.ReservationWhereInput | Prisma.ReservationWhereInput[]
   OR?: Prisma.ReservationWhereInput[]
   NOT?: Prisma.ReservationWhereInput | Prisma.ReservationWhereInput[]
@@ -276,6 +295,8 @@ export type ReservationWhereUniqueInput = Prisma.AtLeast<{
   approverId?: Prisma.StringNullableFilter<"Reservation"> | string | null
   roomId?: Prisma.StringFilter<"Reservation"> | string
   sectionId?: Prisma.StringNullableFilter<"Reservation"> | string | null
+  date?: Prisma.DateTimeFilter<"Reservation"> | Date | string
+  slot?: Prisma.StringFilter<"Reservation"> | string
   startAt?: Prisma.DateTimeFilter<"Reservation"> | Date | string
   endAt?: Prisma.DateTimeFilter<"Reservation"> | Date | string
   note?: Prisma.StringNullableFilter<"Reservation"> | string | null
@@ -286,7 +307,7 @@ export type ReservationWhereUniqueInput = Prisma.AtLeast<{
   room?: Prisma.XOR<Prisma.RoomScalarRelationFilter, Prisma.RoomWhereInput>
   section?: Prisma.XOR<Prisma.SectionNullableScalarRelationFilter, Prisma.SectionWhereInput> | null
   loan?: Prisma.XOR<Prisma.LoanNullableScalarRelationFilter, Prisma.LoanWhereInput> | null
-}, "id">
+}, "id" | "roomId_date_slot">
 
 export type ReservationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -296,6 +317,8 @@ export type ReservationOrderByWithAggregationInput = {
   approverId?: Prisma.SortOrderInput | Prisma.SortOrder
   roomId?: Prisma.SortOrder
   sectionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  date?: Prisma.SortOrder
+  slot?: Prisma.SortOrder
   startAt?: Prisma.SortOrder
   endAt?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -317,6 +340,8 @@ export type ReservationScalarWhereWithAggregatesInput = {
   approverId?: Prisma.StringNullableWithAggregatesFilter<"Reservation"> | string | null
   roomId?: Prisma.StringWithAggregatesFilter<"Reservation"> | string
   sectionId?: Prisma.StringNullableWithAggregatesFilter<"Reservation"> | string | null
+  date?: Prisma.DateTimeWithAggregatesFilter<"Reservation"> | Date | string
+  slot?: Prisma.StringWithAggregatesFilter<"Reservation"> | string
   startAt?: Prisma.DateTimeWithAggregatesFilter<"Reservation"> | Date | string
   endAt?: Prisma.DateTimeWithAggregatesFilter<"Reservation"> | Date | string
   note?: Prisma.StringNullableWithAggregatesFilter<"Reservation"> | string | null
@@ -328,6 +353,8 @@ export type ReservationCreateInput = {
   id?: string
   type: $Enums.ReservationType
   status?: $Enums.ReservationStatus
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -348,6 +375,8 @@ export type ReservationUncheckedCreateInput = {
   approverId?: string | null
   roomId: string
   sectionId?: string | null
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -360,6 +389,8 @@ export type ReservationUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumReservationTypeFieldUpdateOperationsInput | $Enums.ReservationType
   status?: Prisma.EnumReservationStatusFieldUpdateOperationsInput | $Enums.ReservationStatus
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -380,6 +411,8 @@ export type ReservationUncheckedUpdateInput = {
   approverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   sectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -396,6 +429,8 @@ export type ReservationCreateManyInput = {
   approverId?: string | null
   roomId: string
   sectionId?: string | null
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -407,6 +442,8 @@ export type ReservationUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumReservationTypeFieldUpdateOperationsInput | $Enums.ReservationType
   status?: Prisma.EnumReservationStatusFieldUpdateOperationsInput | $Enums.ReservationStatus
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -422,6 +459,8 @@ export type ReservationUncheckedUpdateManyInput = {
   approverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   sectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -439,6 +478,12 @@ export type ReservationOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type ReservationRoomIdDateSlotCompoundUniqueInput = {
+  roomId: string
+  date: Date | string
+  slot: string
+}
+
 export type ReservationCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   type?: Prisma.SortOrder
@@ -447,6 +492,8 @@ export type ReservationCountOrderByAggregateInput = {
   approverId?: Prisma.SortOrder
   roomId?: Prisma.SortOrder
   sectionId?: Prisma.SortOrder
+  date?: Prisma.SortOrder
+  slot?: Prisma.SortOrder
   startAt?: Prisma.SortOrder
   endAt?: Prisma.SortOrder
   note?: Prisma.SortOrder
@@ -462,6 +509,8 @@ export type ReservationMaxOrderByAggregateInput = {
   approverId?: Prisma.SortOrder
   roomId?: Prisma.SortOrder
   sectionId?: Prisma.SortOrder
+  date?: Prisma.SortOrder
+  slot?: Prisma.SortOrder
   startAt?: Prisma.SortOrder
   endAt?: Prisma.SortOrder
   note?: Prisma.SortOrder
@@ -477,6 +526,8 @@ export type ReservationMinOrderByAggregateInput = {
   approverId?: Prisma.SortOrder
   roomId?: Prisma.SortOrder
   sectionId?: Prisma.SortOrder
+  date?: Prisma.SortOrder
+  slot?: Prisma.SortOrder
   startAt?: Prisma.SortOrder
   endAt?: Prisma.SortOrder
   note?: Prisma.SortOrder
@@ -683,6 +734,8 @@ export type ReservationCreateWithoutRequesterInput = {
   id?: string
   type: $Enums.ReservationType
   status?: $Enums.ReservationStatus
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -701,6 +754,8 @@ export type ReservationUncheckedCreateWithoutRequesterInput = {
   approverId?: string | null
   roomId: string
   sectionId?: string | null
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -723,6 +778,8 @@ export type ReservationCreateWithoutApproverInput = {
   id?: string
   type: $Enums.ReservationType
   status?: $Enums.ReservationStatus
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -741,6 +798,8 @@ export type ReservationUncheckedCreateWithoutApproverInput = {
   requesterId: string
   roomId: string
   sectionId?: string | null
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -786,6 +845,8 @@ export type ReservationScalarWhereInput = {
   approverId?: Prisma.StringNullableFilter<"Reservation"> | string | null
   roomId?: Prisma.StringFilter<"Reservation"> | string
   sectionId?: Prisma.StringNullableFilter<"Reservation"> | string | null
+  date?: Prisma.DateTimeFilter<"Reservation"> | Date | string
+  slot?: Prisma.StringFilter<"Reservation"> | string
   startAt?: Prisma.DateTimeFilter<"Reservation"> | Date | string
   endAt?: Prisma.DateTimeFilter<"Reservation"> | Date | string
   note?: Prisma.StringNullableFilter<"Reservation"> | string | null
@@ -813,6 +874,8 @@ export type ReservationCreateWithoutRoomInput = {
   id?: string
   type: $Enums.ReservationType
   status?: $Enums.ReservationStatus
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -831,6 +894,8 @@ export type ReservationUncheckedCreateWithoutRoomInput = {
   requesterId: string
   approverId?: string | null
   sectionId?: string | null
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -869,6 +934,8 @@ export type ReservationCreateWithoutSectionInput = {
   id?: string
   type: $Enums.ReservationType
   status?: $Enums.ReservationStatus
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -887,6 +954,8 @@ export type ReservationUncheckedCreateWithoutSectionInput = {
   requesterId: string
   approverId?: string | null
   roomId: string
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -925,6 +994,8 @@ export type ReservationCreateWithoutLoanInput = {
   id?: string
   type: $Enums.ReservationType
   status?: $Enums.ReservationStatus
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -944,6 +1015,8 @@ export type ReservationUncheckedCreateWithoutLoanInput = {
   approverId?: string | null
   roomId: string
   sectionId?: string | null
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -971,6 +1044,8 @@ export type ReservationUpdateWithoutLoanInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumReservationTypeFieldUpdateOperationsInput | $Enums.ReservationType
   status?: Prisma.EnumReservationStatusFieldUpdateOperationsInput | $Enums.ReservationStatus
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -990,6 +1065,8 @@ export type ReservationUncheckedUpdateWithoutLoanInput = {
   approverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   sectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1004,6 +1081,8 @@ export type ReservationCreateManyRequesterInput = {
   approverId?: string | null
   roomId: string
   sectionId?: string | null
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -1018,6 +1097,8 @@ export type ReservationCreateManyApproverInput = {
   requesterId: string
   roomId: string
   sectionId?: string | null
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -1029,6 +1110,8 @@ export type ReservationUpdateWithoutRequesterInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumReservationTypeFieldUpdateOperationsInput | $Enums.ReservationType
   status?: Prisma.EnumReservationStatusFieldUpdateOperationsInput | $Enums.ReservationStatus
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1047,6 +1130,8 @@ export type ReservationUncheckedUpdateWithoutRequesterInput = {
   approverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   sectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1062,6 +1147,8 @@ export type ReservationUncheckedUpdateManyWithoutRequesterInput = {
   approverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   sectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1073,6 +1160,8 @@ export type ReservationUpdateWithoutApproverInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumReservationTypeFieldUpdateOperationsInput | $Enums.ReservationType
   status?: Prisma.EnumReservationStatusFieldUpdateOperationsInput | $Enums.ReservationStatus
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1091,6 +1180,8 @@ export type ReservationUncheckedUpdateWithoutApproverInput = {
   requesterId?: Prisma.StringFieldUpdateOperationsInput | string
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   sectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1106,6 +1197,8 @@ export type ReservationUncheckedUpdateManyWithoutApproverInput = {
   requesterId?: Prisma.StringFieldUpdateOperationsInput | string
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
   sectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1120,6 +1213,8 @@ export type ReservationCreateManyRoomInput = {
   requesterId: string
   approverId?: string | null
   sectionId?: string | null
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -1131,6 +1226,8 @@ export type ReservationUpdateWithoutRoomInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumReservationTypeFieldUpdateOperationsInput | $Enums.ReservationType
   status?: Prisma.EnumReservationStatusFieldUpdateOperationsInput | $Enums.ReservationStatus
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1149,6 +1246,8 @@ export type ReservationUncheckedUpdateWithoutRoomInput = {
   requesterId?: Prisma.StringFieldUpdateOperationsInput | string
   approverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1164,6 +1263,8 @@ export type ReservationUncheckedUpdateManyWithoutRoomInput = {
   requesterId?: Prisma.StringFieldUpdateOperationsInput | string
   approverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1178,6 +1279,8 @@ export type ReservationCreateManySectionInput = {
   requesterId: string
   approverId?: string | null
   roomId: string
+  date: Date | string
+  slot: string
   startAt: Date | string
   endAt: Date | string
   note?: string | null
@@ -1189,6 +1292,8 @@ export type ReservationUpdateWithoutSectionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumReservationTypeFieldUpdateOperationsInput | $Enums.ReservationType
   status?: Prisma.EnumReservationStatusFieldUpdateOperationsInput | $Enums.ReservationStatus
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1207,6 +1312,8 @@ export type ReservationUncheckedUpdateWithoutSectionInput = {
   requesterId?: Prisma.StringFieldUpdateOperationsInput | string
   approverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1222,6 +1329,8 @@ export type ReservationUncheckedUpdateManyWithoutSectionInput = {
   requesterId?: Prisma.StringFieldUpdateOperationsInput | string
   approverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roomId?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slot?: Prisma.StringFieldUpdateOperationsInput | string
   startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1239,6 +1348,8 @@ export type ReservationSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   approverId?: boolean
   roomId?: boolean
   sectionId?: boolean
+  date?: boolean
+  slot?: boolean
   startAt?: boolean
   endAt?: boolean
   note?: boolean
@@ -1259,6 +1370,8 @@ export type ReservationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   approverId?: boolean
   roomId?: boolean
   sectionId?: boolean
+  date?: boolean
+  slot?: boolean
   startAt?: boolean
   endAt?: boolean
   note?: boolean
@@ -1278,6 +1391,8 @@ export type ReservationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   approverId?: boolean
   roomId?: boolean
   sectionId?: boolean
+  date?: boolean
+  slot?: boolean
   startAt?: boolean
   endAt?: boolean
   note?: boolean
@@ -1297,6 +1412,8 @@ export type ReservationSelectScalar = {
   approverId?: boolean
   roomId?: boolean
   sectionId?: boolean
+  date?: boolean
+  slot?: boolean
   startAt?: boolean
   endAt?: boolean
   note?: boolean
@@ -1304,7 +1421,7 @@ export type ReservationSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ReservationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "status" | "requesterId" | "approverId" | "roomId" | "sectionId" | "startAt" | "endAt" | "note" | "createdAt" | "updatedAt", ExtArgs["result"]["reservation"]>
+export type ReservationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "status" | "requesterId" | "approverId" | "roomId" | "sectionId" | "date" | "slot" | "startAt" | "endAt" | "note" | "createdAt" | "updatedAt", ExtArgs["result"]["reservation"]>
 export type ReservationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   requester?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   approver?: boolean | Prisma.Reservation$approverArgs<ExtArgs>
@@ -1342,6 +1459,8 @@ export type $ReservationPayload<ExtArgs extends runtime.Types.Extensions.Interna
     approverId: string | null
     roomId: string
     sectionId: string | null
+    date: Date
+    slot: string
     startAt: Date
     endAt: Date
     note: string | null
@@ -1782,6 +1901,8 @@ export interface ReservationFieldRefs {
   readonly approverId: Prisma.FieldRef<"Reservation", 'String'>
   readonly roomId: Prisma.FieldRef<"Reservation", 'String'>
   readonly sectionId: Prisma.FieldRef<"Reservation", 'String'>
+  readonly date: Prisma.FieldRef<"Reservation", 'DateTime'>
+  readonly slot: Prisma.FieldRef<"Reservation", 'String'>
   readonly startAt: Prisma.FieldRef<"Reservation", 'DateTime'>
   readonly endAt: Prisma.FieldRef<"Reservation", 'DateTime'>
   readonly note: Prisma.FieldRef<"Reservation", 'String'>

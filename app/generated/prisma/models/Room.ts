@@ -38,27 +38,36 @@ export type RoomSumAggregateOutputType = {
 
 export type RoomMinAggregateOutputType = {
   id: string | null
+  code: string | null
+  name: string | null
   roomNumber: string | null
   floor: number | null
   computerCount: number | null
+  isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type RoomMaxAggregateOutputType = {
   id: string | null
+  code: string | null
+  name: string | null
   roomNumber: string | null
   floor: number | null
   computerCount: number | null
+  isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type RoomCountAggregateOutputType = {
   id: number
+  code: number
+  name: number
   roomNumber: number
   floor: number
   computerCount: number
+  isActive: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -77,27 +86,36 @@ export type RoomSumAggregateInputType = {
 
 export type RoomMinAggregateInputType = {
   id?: true
+  code?: true
+  name?: true
   roomNumber?: true
   floor?: true
   computerCount?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
 }
 
 export type RoomMaxAggregateInputType = {
   id?: true
+  code?: true
+  name?: true
   roomNumber?: true
   floor?: true
   computerCount?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
 }
 
 export type RoomCountAggregateInputType = {
   id?: true
+  code?: true
+  name?: true
   roomNumber?: true
   floor?: true
   computerCount?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -191,9 +209,12 @@ export type RoomGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
 
 export type RoomGroupByOutputType = {
   id: string
+  code: string
+  name: string
   roomNumber: string
   floor: number
   computerCount: number
+  isActive: boolean
   createdAt: Date
   updatedAt: Date
   _count: RoomCountAggregateOutputType | null
@@ -223,9 +244,12 @@ export type RoomWhereInput = {
   OR?: Prisma.RoomWhereInput[]
   NOT?: Prisma.RoomWhereInput | Prisma.RoomWhereInput[]
   id?: Prisma.StringFilter<"Room"> | string
+  code?: Prisma.StringFilter<"Room"> | string
+  name?: Prisma.StringFilter<"Room"> | string
   roomNumber?: Prisma.StringFilter<"Room"> | string
   floor?: Prisma.IntFilter<"Room"> | number
   computerCount?: Prisma.IntFilter<"Room"> | number
+  isActive?: Prisma.BoolFilter<"Room"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Room"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Room"> | Date | string
   keys?: Prisma.KeyListRelationFilter
@@ -235,9 +259,12 @@ export type RoomWhereInput = {
 
 export type RoomOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  code?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   roomNumber?: Prisma.SortOrder
   floor?: Prisma.SortOrder
   computerCount?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   keys?: Prisma.KeyOrderByRelationAggregateInput
@@ -247,25 +274,31 @@ export type RoomOrderByWithRelationInput = {
 
 export type RoomWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  code?: string
   roomNumber_floor?: Prisma.RoomRoomNumberFloorCompoundUniqueInput
   AND?: Prisma.RoomWhereInput | Prisma.RoomWhereInput[]
   OR?: Prisma.RoomWhereInput[]
   NOT?: Prisma.RoomWhereInput | Prisma.RoomWhereInput[]
+  name?: Prisma.StringFilter<"Room"> | string
   roomNumber?: Prisma.StringFilter<"Room"> | string
   floor?: Prisma.IntFilter<"Room"> | number
   computerCount?: Prisma.IntFilter<"Room"> | number
+  isActive?: Prisma.BoolFilter<"Room"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Room"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Room"> | Date | string
   keys?: Prisma.KeyListRelationFilter
   sections?: Prisma.SectionListRelationFilter
   reservations?: Prisma.ReservationListRelationFilter
-}, "id" | "roomNumber_floor">
+}, "id" | "code" | "roomNumber_floor">
 
 export type RoomOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  code?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   roomNumber?: Prisma.SortOrder
   floor?: Prisma.SortOrder
   computerCount?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.RoomCountOrderByAggregateInput
@@ -280,18 +313,24 @@ export type RoomScalarWhereWithAggregatesInput = {
   OR?: Prisma.RoomScalarWhereWithAggregatesInput[]
   NOT?: Prisma.RoomScalarWhereWithAggregatesInput | Prisma.RoomScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Room"> | string
+  code?: Prisma.StringWithAggregatesFilter<"Room"> | string
+  name?: Prisma.StringWithAggregatesFilter<"Room"> | string
   roomNumber?: Prisma.StringWithAggregatesFilter<"Room"> | string
   floor?: Prisma.IntWithAggregatesFilter<"Room"> | number
   computerCount?: Prisma.IntWithAggregatesFilter<"Room"> | number
+  isActive?: Prisma.BoolWithAggregatesFilter<"Room"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Room"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Room"> | Date | string
 }
 
 export type RoomCreateInput = {
   id?: string
+  code: string
+  name: string
   roomNumber: string
   floor: number
   computerCount: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   keys?: Prisma.KeyCreateNestedManyWithoutRoomInput
@@ -301,9 +340,12 @@ export type RoomCreateInput = {
 
 export type RoomUncheckedCreateInput = {
   id?: string
+  code: string
+  name: string
   roomNumber: string
   floor: number
   computerCount: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   keys?: Prisma.KeyUncheckedCreateNestedManyWithoutRoomInput
@@ -313,9 +355,12 @@ export type RoomUncheckedCreateInput = {
 
 export type RoomUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   roomNumber?: Prisma.StringFieldUpdateOperationsInput | string
   floor?: Prisma.IntFieldUpdateOperationsInput | number
   computerCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   keys?: Prisma.KeyUpdateManyWithoutRoomNestedInput
@@ -325,9 +370,12 @@ export type RoomUpdateInput = {
 
 export type RoomUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   roomNumber?: Prisma.StringFieldUpdateOperationsInput | string
   floor?: Prisma.IntFieldUpdateOperationsInput | number
   computerCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   keys?: Prisma.KeyUncheckedUpdateManyWithoutRoomNestedInput
@@ -337,27 +385,36 @@ export type RoomUncheckedUpdateInput = {
 
 export type RoomCreateManyInput = {
   id?: string
+  code: string
+  name: string
   roomNumber: string
   floor: number
   computerCount: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type RoomUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   roomNumber?: Prisma.StringFieldUpdateOperationsInput | string
   floor?: Prisma.IntFieldUpdateOperationsInput | number
   computerCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type RoomUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   roomNumber?: Prisma.StringFieldUpdateOperationsInput | string
   floor?: Prisma.IntFieldUpdateOperationsInput | number
   computerCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -369,9 +426,12 @@ export type RoomRoomNumberFloorCompoundUniqueInput = {
 
 export type RoomCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  code?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   roomNumber?: Prisma.SortOrder
   floor?: Prisma.SortOrder
   computerCount?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -383,18 +443,24 @@ export type RoomAvgOrderByAggregateInput = {
 
 export type RoomMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  code?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   roomNumber?: Prisma.SortOrder
   floor?: Prisma.SortOrder
   computerCount?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type RoomMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  code?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   roomNumber?: Prisma.SortOrder
   floor?: Prisma.SortOrder
   computerCount?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -415,6 +481,10 @@ export type IntFieldUpdateOperationsInput = {
   decrement?: number
   multiply?: number
   divide?: number
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type RoomCreateNestedOneWithoutKeysInput = {
@@ -461,9 +531,12 @@ export type RoomUpdateOneRequiredWithoutReservationsNestedInput = {
 
 export type RoomCreateWithoutKeysInput = {
   id?: string
+  code: string
+  name: string
   roomNumber: string
   floor: number
   computerCount: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   sections?: Prisma.SectionCreateNestedManyWithoutRoomInput
@@ -472,9 +545,12 @@ export type RoomCreateWithoutKeysInput = {
 
 export type RoomUncheckedCreateWithoutKeysInput = {
   id?: string
+  code: string
+  name: string
   roomNumber: string
   floor: number
   computerCount: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   sections?: Prisma.SectionUncheckedCreateNestedManyWithoutRoomInput
@@ -499,9 +575,12 @@ export type RoomUpdateToOneWithWhereWithoutKeysInput = {
 
 export type RoomUpdateWithoutKeysInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   roomNumber?: Prisma.StringFieldUpdateOperationsInput | string
   floor?: Prisma.IntFieldUpdateOperationsInput | number
   computerCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sections?: Prisma.SectionUpdateManyWithoutRoomNestedInput
@@ -510,9 +589,12 @@ export type RoomUpdateWithoutKeysInput = {
 
 export type RoomUncheckedUpdateWithoutKeysInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   roomNumber?: Prisma.StringFieldUpdateOperationsInput | string
   floor?: Prisma.IntFieldUpdateOperationsInput | number
   computerCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sections?: Prisma.SectionUncheckedUpdateManyWithoutRoomNestedInput
@@ -521,9 +603,12 @@ export type RoomUncheckedUpdateWithoutKeysInput = {
 
 export type RoomCreateWithoutSectionsInput = {
   id?: string
+  code: string
+  name: string
   roomNumber: string
   floor: number
   computerCount: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   keys?: Prisma.KeyCreateNestedManyWithoutRoomInput
@@ -532,9 +617,12 @@ export type RoomCreateWithoutSectionsInput = {
 
 export type RoomUncheckedCreateWithoutSectionsInput = {
   id?: string
+  code: string
+  name: string
   roomNumber: string
   floor: number
   computerCount: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   keys?: Prisma.KeyUncheckedCreateNestedManyWithoutRoomInput
@@ -559,9 +647,12 @@ export type RoomUpdateToOneWithWhereWithoutSectionsInput = {
 
 export type RoomUpdateWithoutSectionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   roomNumber?: Prisma.StringFieldUpdateOperationsInput | string
   floor?: Prisma.IntFieldUpdateOperationsInput | number
   computerCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   keys?: Prisma.KeyUpdateManyWithoutRoomNestedInput
@@ -570,9 +661,12 @@ export type RoomUpdateWithoutSectionsInput = {
 
 export type RoomUncheckedUpdateWithoutSectionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   roomNumber?: Prisma.StringFieldUpdateOperationsInput | string
   floor?: Prisma.IntFieldUpdateOperationsInput | number
   computerCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   keys?: Prisma.KeyUncheckedUpdateManyWithoutRoomNestedInput
@@ -581,9 +675,12 @@ export type RoomUncheckedUpdateWithoutSectionsInput = {
 
 export type RoomCreateWithoutReservationsInput = {
   id?: string
+  code: string
+  name: string
   roomNumber: string
   floor: number
   computerCount: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   keys?: Prisma.KeyCreateNestedManyWithoutRoomInput
@@ -592,9 +689,12 @@ export type RoomCreateWithoutReservationsInput = {
 
 export type RoomUncheckedCreateWithoutReservationsInput = {
   id?: string
+  code: string
+  name: string
   roomNumber: string
   floor: number
   computerCount: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   keys?: Prisma.KeyUncheckedCreateNestedManyWithoutRoomInput
@@ -619,9 +719,12 @@ export type RoomUpdateToOneWithWhereWithoutReservationsInput = {
 
 export type RoomUpdateWithoutReservationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   roomNumber?: Prisma.StringFieldUpdateOperationsInput | string
   floor?: Prisma.IntFieldUpdateOperationsInput | number
   computerCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   keys?: Prisma.KeyUpdateManyWithoutRoomNestedInput
@@ -630,9 +733,12 @@ export type RoomUpdateWithoutReservationsInput = {
 
 export type RoomUncheckedUpdateWithoutReservationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   roomNumber?: Prisma.StringFieldUpdateOperationsInput | string
   floor?: Prisma.IntFieldUpdateOperationsInput | number
   computerCount?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   keys?: Prisma.KeyUncheckedUpdateManyWithoutRoomNestedInput
@@ -690,9 +796,12 @@ export type RoomCountOutputTypeCountReservationsArgs<ExtArgs extends runtime.Typ
 
 export type RoomSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  code?: boolean
+  name?: boolean
   roomNumber?: boolean
   floor?: boolean
   computerCount?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   keys?: boolean | Prisma.Room$keysArgs<ExtArgs>
@@ -703,32 +812,41 @@ export type RoomSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
 
 export type RoomSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  code?: boolean
+  name?: boolean
   roomNumber?: boolean
   floor?: boolean
   computerCount?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["room"]>
 
 export type RoomSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  code?: boolean
+  name?: boolean
   roomNumber?: boolean
   floor?: boolean
   computerCount?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["room"]>
 
 export type RoomSelectScalar = {
   id?: boolean
+  code?: boolean
+  name?: boolean
   roomNumber?: boolean
   floor?: boolean
   computerCount?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RoomOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "roomNumber" | "floor" | "computerCount" | "createdAt" | "updatedAt", ExtArgs["result"]["room"]>
+export type RoomOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "name" | "roomNumber" | "floor" | "computerCount" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["room"]>
 export type RoomInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   keys?: boolean | Prisma.Room$keysArgs<ExtArgs>
   sections?: boolean | Prisma.Room$sectionsArgs<ExtArgs>
@@ -747,9 +865,12 @@ export type $RoomPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    code: string
+    name: string
     roomNumber: string
     floor: number
     computerCount: number
+    isActive: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["room"]>
@@ -1179,9 +1300,12 @@ export interface Prisma__RoomClient<T, Null = never, ExtArgs extends runtime.Typ
  */
 export interface RoomFieldRefs {
   readonly id: Prisma.FieldRef<"Room", 'String'>
+  readonly code: Prisma.FieldRef<"Room", 'String'>
+  readonly name: Prisma.FieldRef<"Room", 'String'>
   readonly roomNumber: Prisma.FieldRef<"Room", 'String'>
   readonly floor: Prisma.FieldRef<"Room", 'Int'>
   readonly computerCount: Prisma.FieldRef<"Room", 'Int'>
+  readonly isActive: Prisma.FieldRef<"Room", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Room", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Room", 'DateTime'>
 }

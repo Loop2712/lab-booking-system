@@ -102,9 +102,12 @@ export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof User
 
 export const RoomScalarFieldEnum = {
   id: 'id',
+  code: 'code',
+  name: 'name',
   roomNumber: 'roomNumber',
   floor: 'floor',
   computerCount: 'computerCount',
+  isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -171,6 +174,8 @@ export const ReservationScalarFieldEnum = {
   approverId: 'approverId',
   roomId: 'roomId',
   sectionId: 'sectionId',
+  date: 'date',
+  slot: 'slot',
   startAt: 'startAt',
   endAt: 'endAt',
   note: 'note',

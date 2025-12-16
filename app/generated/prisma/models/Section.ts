@@ -681,10 +681,6 @@ export type NullableIntFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type SectionCreateNestedOneWithoutEnrollmentsInput = {
   create?: Prisma.XOR<Prisma.SectionCreateWithoutEnrollmentsInput, Prisma.SectionUncheckedCreateWithoutEnrollmentsInput>
   connectOrCreate?: Prisma.SectionCreateOrConnectWithoutEnrollmentsInput

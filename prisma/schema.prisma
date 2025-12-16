@@ -48,9 +48,10 @@ enum KeyStatus {
 }
 
 enum ReservationType {
-  IN_CLASS
-  AD_HOC
+  IN_CLASS // การจองจากรายวิชา (ต้องมี sectionId)
+  AD_HOC   // การจองทั่วไปของนักศึกษา (ไม่มี sectionId)
 }
+
 
 enum ReservationStatus {
   PENDING
@@ -97,10 +98,14 @@ model User {
 
 model Room {
   id            String   @id @default(cuid())
+  code          String        @unique
+  name          String
   roomNumber    String
   floor         Int
   computerCount Int
+  
 
+  isActive  Boolean       @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -202,8 +207,11 @@ model Reservation {
   sectionId   String?
   section     Section? @relation(fields: [sectionId], references: [id])
 
-  startAt     DateTime
-  endAt       DateTime
+  date        DateTime             // เก็บเป็นวัน (00:00)
+  slot        String               // "08:00-12:00" ใช้แสดง UI / summary
+
+  startAt     DateTime            //ใช้ logic ทั้งหมด (ชนเวลา, late, no-show)
+  endAt       DateTime            //ใช้ logic ทั้งหมด (ชนเวลา, late, no-show)
 
   note        String?
 
@@ -214,6 +222,8 @@ model Reservation {
 
   @@index([roomId, startAt, endAt])
   @@index([requesterId, startAt])
+  @@unique([roomId, date, slot])
+
 }
 
 model Loan {
