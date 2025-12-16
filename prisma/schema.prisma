@@ -1,0 +1,295 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum StudentType {
+  REGULAR
+  SPECIAL
+}
+
+enum DayOfWeek {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+enum KeyStatus {
+  AVAILABLE
+  BORROWED
+  LOST
+  DAMAGED
+}
+
+enum ReservationType {
+  IN_CLASS
+  AD_HOC
+}
+
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  NO_SHOW
+  CHECKED_IN
+  COMPLETED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  role         Role
+
+  firstName    String
+  lastName     String
+  birthDate    DateTime // ค.ศ.
+  gender       Gender?
+  major        String?
+  studentType  StudentType?
+
+  studentId    String?  @unique @db.VarChar(11) // STUDENT เท่านั้น
+  email        String?  @unique                 // TEACHER/ADMIN เท่านั้น
+
+  passwordHash String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+
+  taughtSections Section[]     @relation("TeacherSections")
+  enrollments    Enrollment[]
+  requestedResv  Reservation[] @relation("Requester")
+  approvedResv   Reservation[] @relation("Approver")
+  handledLoans   Loan[]        @relation("HandledBy")
+
+  passwordTokens PasswordResetToken[]
+
+  @@index([role])
+}
+
+model Room {
+  id            String   @id @default(cuid())
+  roomNumber    String
+  floor         Int
+  computerCount Int
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  keys         Key[]
+  sections     Section[]
+  reservations Reservation[]
+
+  @@unique([roomNumber, floor])
+}
+
+model Key {
+  id        String    @id @default(cuid())
+  keyCode   String    @unique
+  status    KeyStatus @default(AVAILABLE)
+
+  roomId    String
+  room      Room      @relation(fields: [roomId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  loans     Loan[]
+
+  @@index([roomId])
+}
+
+model Course {
+  id        String   @id @default(cuid())
+  code      String   @unique // scs409
+  name      String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sections  Section[]
+}
+
+model Section {
+  id         String @id @default(cuid())
+
+  courseId   String
+  course     Course @relation(fields: [courseId], references: [id])
+
+  teacherId  String
+  teacher    User   @relation("TeacherSections", fields: [teacherId], references: [id])
+
+  roomId     String
+  room       Room   @relation(fields: [roomId], references: [id])
+
+  dayOfWeek  DayOfWeek
+  startTime  String // "08:00"
+  endTime    String // "12:00"
+
+  term       String?
+  year       Int?
+  isActive   Boolean @default(true)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  enrollments  Enrollment[]
+  reservations Reservation[]
+
+  @@index([teacherId])
+  @@index([roomId])
+  @@index([courseId])
+}
+
+model Enrollment {
+  id        String @id @default(cuid())
+
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id])
+
+  sectionId String
+  section   Section @relation(fields: [sectionId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, sectionId])
+  @@index([sectionId])
+}
+
+model Reservation {
+  id          String @id @default(cuid())
+
+  type        ReservationType
+  status      ReservationStatus @default(PENDING)
+
+  requesterId String
+  requester   User   @relation("Requester", fields: [requesterId], references: [id])
+
+  approverId  String?
+  approver    User?  @relation("Approver", fields: [approverId], references: [id])
+
+  roomId      String
+  room        Room   @relation(fields: [roomId], references: [id])
+
+  sectionId   String?
+  section     Section? @relation(fields: [sectionId], references: [id])
+
+  startAt     DateTime
+  endAt       DateTime
+
+  note        String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  loan        Loan?
+
+  @@index([roomId, startAt, endAt])
+  @@index([requesterId, startAt])
+}
+
+model Loan {
+  id            String @id @default(cuid())
+
+  reservationId String @unique
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+
+  keyId         String
+  key           Key    @relation(fields: [keyId], references: [id])
+
+  checkedInAt   DateTime?
+  checkedOutAt  DateTime?
+
+  handledById   String?
+  handledBy     User?  @relation("HandledBy", fields: [handledById], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([keyId])
+  @@index([handledById])
+}
+
+//
+// NextAuth (Prisma Adapter) models
+//
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
