@@ -49,14 +49,13 @@ enum KeyStatus {
 
 enum ReservationType {
   IN_CLASS // การจองจากรายวิชา (ต้องมี sectionId)
-  AD_HOC   // การจองทั่วไปของนักศึกษา (ไม่มี sectionId)
+  AD_HOC // การจองทั่วไปของนักศึกษา (ไม่มี sectionId)
 }
 
 enum AccessTokenType {
   PICKUP
   RETURN
 }
-
 
 enum ReservationStatus {
   PENDING
@@ -69,50 +68,52 @@ enum ReservationStatus {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  role         Role
+  id   String @id @default(cuid())
+  role Role
 
-  firstName    String
-  lastName     String
-  birthDate    DateTime // ค.ศ.
-  gender       Gender?
-  major        String?
-  studentType  StudentType?
+  firstName   String
+  lastName    String
+  birthDate   DateTime // ค.ศ.
+  gender      Gender?
+  major       String?
+  studentType StudentType?
 
-  studentId    String?  @unique @db.VarChar(11) // STUDENT เท่านั้น
-  email        String?  @unique                 // TEACHER/ADMIN เท่านั้น
+  studentId String? @unique @db.VarChar(11) // STUDENT เท่านั้น
+  email     String? @unique // TEACHER/ADMIN เท่านั้น
 
   passwordHash String?
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  accounts       Account[]
-  sessions       Session[]
+  accounts Account[]
+  sessions Session[]
 
+  borrowedLoans  Loan[]        @relation("BorrowerLoans")
+  returnedLoans  Loan[]        @relation("ReturnedLoans")
   taughtSections Section[]     @relation("TeacherSections")
   enrollments    Enrollment[]
   requestedResv  Reservation[] @relation("Requester")
   approvedResv   Reservation[] @relation("Approver")
   handledLoans   Loan[]        @relation("HandledBy")
 
-  passwordTokens PasswordResetToken[]
+  passwordTokens          PasswordResetToken[]
+  reservationParticipants ReservationParticipant[]
 
   @@index([role])
 }
 
 model Room {
-  id            String   @id @default(cuid())
-  code          String        @unique
+  id            String @id @default(cuid())
+  code          String @unique
   name          String
   roomNumber    String
   floor         Int
   computerCount Int
-  
 
-  isActive  Boolean       @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   keys         Key[]
   sections     Section[]
@@ -122,54 +123,54 @@ model Room {
 }
 
 model Key {
-  id        String    @id @default(cuid())
-  keyCode   String    @unique
-  status    KeyStatus @default(AVAILABLE)
+  id      String    @id @default(cuid())
+  keyCode String    @unique
+  status  KeyStatus @default(AVAILABLE)
 
-  roomId    String
-  room      Room      @relation(fields: [roomId], references: [id])
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  loans     Loan[]
+  loans Loan[]
 
   @@index([roomId])
 }
 
 model Course {
-  id        String   @id @default(cuid())
-  code      String   @unique // scs409
-  name      String
+  id   String @id @default(cuid())
+  code String @unique // scs409
+  name String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sections  Section[]
+  sections Section[]
 }
 
 model Section {
-  id         String @id @default(cuid())
+  id String @id @default(cuid())
 
-  courseId   String
-  course     Course @relation(fields: [courseId], references: [id])
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
 
-  teacherId  String
-  teacher    User   @relation("TeacherSections", fields: [teacherId], references: [id])
+  teacherId String
+  teacher   User   @relation("TeacherSections", fields: [teacherId], references: [id])
 
-  roomId     String
-  room       Room   @relation(fields: [roomId], references: [id])
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id])
 
-  dayOfWeek  DayOfWeek
-  startTime  String // "08:00"
-  endTime    String // "12:00"
+  dayOfWeek DayOfWeek
+  startTime String // "08:00"
+  endTime   String // "12:00"
 
-  term       String?
-  year       Int?
-  isActive   Boolean @default(true)
+  term     String?
+  year     Int?
+  isActive Boolean @default(true)
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   enrollments  Enrollment[]
   reservations Reservation[]
@@ -180,7 +181,7 @@ model Section {
 }
 
 model Enrollment {
-  id        String @id @default(cuid())
+  id String @id @default(cuid())
 
   studentId String
   student   User   @relation(fields: [studentId], references: [id])
@@ -195,60 +196,70 @@ model Enrollment {
 }
 
 model Reservation {
-  id          String @id @default(cuid())
+  id String @id @default(cuid())
 
-  type        ReservationType
-  status      ReservationStatus @default(PENDING)
+  type   ReservationType
+  status ReservationStatus @default(PENDING)
 
   requesterId String
   requester   User   @relation("Requester", fields: [requesterId], references: [id])
 
-  approverId  String?
-  approver    User?  @relation("Approver", fields: [approverId], references: [id])
+  approverId String?
+  approver   User?   @relation("Approver", fields: [approverId], references: [id])
 
-  roomId      String
-  room        Room   @relation(fields: [roomId], references: [id])
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id])
 
-  sectionId   String?
-  section     Section? @relation(fields: [sectionId], references: [id])
+  sectionId String?
+  section   Section? @relation(fields: [sectionId], references: [id])
 
-  date        DateTime             // เก็บเป็นวัน (00:00)
-  slot        String               // "08:00-12:00" ใช้แสดง UI / summary
+  date DateTime // เก็บเป็นวัน (00:00)
+  slot String // "08:00-12:00" ใช้แสดง UI / summary
 
-  startAt     DateTime            //ใช้ logic ทั้งหมด (ชนเวลา, late, no-show)
-  endAt       DateTime            //ใช้ logic ทั้งหมด (ชนเวลา, late, no-show)
+  startAt DateTime //ใช้ logic ทั้งหมด (ชนเวลา, late, no-show)
+  endAt   DateTime //ใช้ logic ทั้งหมด (ชนเวลา, late, no-show)
 
-  note        String?
+  note String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  loan        Loan?
+  participants ReservationParticipant[]
+  loan         Loan?
 
+  accessTokens AccessToken[]
+
+  @@unique([roomId, date, slot])
   @@index([roomId, startAt, endAt])
   @@index([requesterId, startAt])
-  @@unique([roomId, date, slot])
-
 }
 
 model Loan {
-  id            String @id @default(cuid())
+  id String @id @default(cuid())
 
-  reservationId String @unique
+  reservationId String      @unique
   reservation   Reservation @relation(fields: [reservationId], references: [id])
 
-  keyId         String
-  key           Key    @relation(fields: [keyId], references: [id])
+  keyId String
+  key   Key    @relation(fields: [keyId], references: [id])
 
-  checkedInAt   DateTime?
-  checkedOutAt  DateTime?
+  checkedInAt  DateTime?
+  checkedOutAt DateTime?
 
-  handledById   String?
-  handledBy     User?  @relation("HandledBy", fields: [handledById], references: [id])
+  handledById String?
+  handledBy   User?   @relation("HandledBy", fields: [handledById], references: [id])
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  borrowerId String?
+  borrower   User?   @relation("BorrowerLoans", fields: [borrowerId], references: [id])
+
+  returnedById String?
+  returnedBy   User?   @relation("ReturnedLoans", fields: [returnedById], references: [id])
+
+  @@index([borrowerId])
+  @@index([returnedById])
   @@index([keyId])
   @@index([handledById])
 }
@@ -257,18 +268,18 @@ model Loan {
 // NextAuth (Prisma Adapter) models
 //
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -296,13 +307,13 @@ model VerificationToken {
 }
 
 model PasswordResetToken {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  tokenHash String   @unique
+  tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -318,5 +329,19 @@ model AccessToken {
   reservationId String
   reservation   Reservation     @relation(fields: [reservationId], references: [id])
 
-  createdAt     DateTime        @default(now())
+  createdAt DateTime @default(now())
+}
+
+model ReservationParticipant {
+  id            String @id @default(cuid())
+  reservationId String
+  userId        String
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([reservationId, userId])
+  @@index([userId])
 }

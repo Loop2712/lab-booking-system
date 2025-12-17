@@ -395,7 +395,9 @@ export const ModelName = {
   Account: 'Account',
   Session: 'Session',
   VerificationToken: 'VerificationToken',
-  PasswordResetToken: 'PasswordResetToken'
+  PasswordResetToken: 'PasswordResetToken',
+  AccessToken: 'AccessToken',
+  ReservationParticipant: 'ReservationParticipant'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -411,7 +413,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "room" | "key" | "course" | "section" | "enrollment" | "reservation" | "loan" | "account" | "session" | "verificationToken" | "passwordResetToken"
+    modelProps: "user" | "room" | "key" | "course" | "section" | "enrollment" | "reservation" | "loan" | "account" | "session" | "verificationToken" | "passwordResetToken" | "accessToken" | "reservationParticipant"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1303,6 +1305,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AccessToken: {
+      payload: Prisma.$AccessTokenPayload<ExtArgs>
+      fields: Prisma.AccessTokenFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AccessTokenFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AccessTokenFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>
+        }
+        findFirst: {
+          args: Prisma.AccessTokenFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AccessTokenFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>
+        }
+        findMany: {
+          args: Prisma.AccessTokenFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>[]
+        }
+        create: {
+          args: Prisma.AccessTokenCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>
+        }
+        createMany: {
+          args: Prisma.AccessTokenCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AccessTokenCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>[]
+        }
+        delete: {
+          args: Prisma.AccessTokenDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>
+        }
+        update: {
+          args: Prisma.AccessTokenUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>
+        }
+        deleteMany: {
+          args: Prisma.AccessTokenDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AccessTokenUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AccessTokenUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>[]
+        }
+        upsert: {
+          args: Prisma.AccessTokenUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>
+        }
+        aggregate: {
+          args: Prisma.AccessTokenAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAccessToken>
+        }
+        groupBy: {
+          args: Prisma.AccessTokenGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccessTokenGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AccessTokenCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccessTokenCountAggregateOutputType> | number
+        }
+      }
+    }
+    ReservationParticipant: {
+      payload: Prisma.$ReservationParticipantPayload<ExtArgs>
+      fields: Prisma.ReservationParticipantFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReservationParticipantFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservationParticipantPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReservationParticipantFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservationParticipantPayload>
+        }
+        findFirst: {
+          args: Prisma.ReservationParticipantFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservationParticipantPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReservationParticipantFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservationParticipantPayload>
+        }
+        findMany: {
+          args: Prisma.ReservationParticipantFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservationParticipantPayload>[]
+        }
+        create: {
+          args: Prisma.ReservationParticipantCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservationParticipantPayload>
+        }
+        createMany: {
+          args: Prisma.ReservationParticipantCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReservationParticipantCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservationParticipantPayload>[]
+        }
+        delete: {
+          args: Prisma.ReservationParticipantDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservationParticipantPayload>
+        }
+        update: {
+          args: Prisma.ReservationParticipantUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservationParticipantPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReservationParticipantDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReservationParticipantUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReservationParticipantUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservationParticipantPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReservationParticipantUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservationParticipantPayload>
+        }
+        aggregate: {
+          args: Prisma.ReservationParticipantAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReservationParticipant>
+        }
+        groupBy: {
+          args: Prisma.ReservationParticipantGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReservationParticipantGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReservationParticipantCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReservationParticipantCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1455,7 +1605,9 @@ export const LoanScalarFieldEnum = {
   checkedOutAt: 'checkedOutAt',
   handledById: 'handledById',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  borrowerId: 'borrowerId',
+  returnedById: 'returnedById'
 } as const
 
 export type LoanScalarFieldEnum = (typeof LoanScalarFieldEnum)[keyof typeof LoanScalarFieldEnum]
@@ -1508,6 +1660,29 @@ export const PasswordResetTokenScalarFieldEnum = {
 } as const
 
 export type PasswordResetTokenScalarFieldEnum = (typeof PasswordResetTokenScalarFieldEnum)[keyof typeof PasswordResetTokenScalarFieldEnum]
+
+
+export const AccessTokenScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  reservationId: 'reservationId',
+  createdAt: 'createdAt'
+} as const
+
+export type AccessTokenScalarFieldEnum = (typeof AccessTokenScalarFieldEnum)[keyof typeof AccessTokenScalarFieldEnum]
+
+
+export const ReservationParticipantScalarFieldEnum = {
+  id: 'id',
+  reservationId: 'reservationId',
+  userId: 'userId',
+  createdAt: 'createdAt'
+} as const
+
+export type ReservationParticipantScalarFieldEnum = (typeof ReservationParticipantScalarFieldEnum)[keyof typeof ReservationParticipantScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1688,6 +1863,20 @@ export type ListEnumReservationStatusFieldRefInput<$PrismaModel> = FieldRefInput
 
 
 /**
+ * Reference to a field of type 'AccessTokenType'
+ */
+export type EnumAccessTokenTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccessTokenType'>
+    
+
+
+/**
+ * Reference to a field of type 'AccessTokenType[]'
+ */
+export type ListEnumAccessTokenTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccessTokenType[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1807,6 +1996,8 @@ export type GlobalOmitConfig = {
   session?: Prisma.SessionOmit
   verificationToken?: Prisma.VerificationTokenOmit
   passwordResetToken?: Prisma.PasswordResetTokenOmit
+  accessToken?: Prisma.AccessTokenOmit
+  reservationParticipant?: Prisma.ReservationParticipantOmit
 }
 
 /* Types for Logging */

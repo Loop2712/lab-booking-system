@@ -248,12 +248,15 @@ export type UserWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
+  borrowedLoans?: Prisma.LoanListRelationFilter
+  returnedLoans?: Prisma.LoanListRelationFilter
   taughtSections?: Prisma.SectionListRelationFilter
   enrollments?: Prisma.EnrollmentListRelationFilter
   requestedResv?: Prisma.ReservationListRelationFilter
   approvedResv?: Prisma.ReservationListRelationFilter
   handledLoans?: Prisma.LoanListRelationFilter
   passwordTokens?: Prisma.PasswordResetTokenListRelationFilter
+  reservationParticipants?: Prisma.ReservationParticipantListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -272,12 +275,15 @@ export type UserOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
+  borrowedLoans?: Prisma.LoanOrderByRelationAggregateInput
+  returnedLoans?: Prisma.LoanOrderByRelationAggregateInput
   taughtSections?: Prisma.SectionOrderByRelationAggregateInput
   enrollments?: Prisma.EnrollmentOrderByRelationAggregateInput
   requestedResv?: Prisma.ReservationOrderByRelationAggregateInput
   approvedResv?: Prisma.ReservationOrderByRelationAggregateInput
   handledLoans?: Prisma.LoanOrderByRelationAggregateInput
   passwordTokens?: Prisma.PasswordResetTokenOrderByRelationAggregateInput
+  reservationParticipants?: Prisma.ReservationParticipantOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -299,12 +305,15 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
+  borrowedLoans?: Prisma.LoanListRelationFilter
+  returnedLoans?: Prisma.LoanListRelationFilter
   taughtSections?: Prisma.SectionListRelationFilter
   enrollments?: Prisma.EnrollmentListRelationFilter
   requestedResv?: Prisma.ReservationListRelationFilter
   approvedResv?: Prisma.ReservationListRelationFilter
   handledLoans?: Prisma.LoanListRelationFilter
   passwordTokens?: Prisma.PasswordResetTokenListRelationFilter
+  reservationParticipants?: Prisma.ReservationParticipantListRelationFilter
 }, "id" | "studentId" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -361,12 +370,15 @@ export type UserCreateInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -385,12 +397,15 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionUncheckedCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -409,12 +424,15 @@ export type UserUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -433,12 +451,15 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUncheckedUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUncheckedUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUncheckedUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUncheckedUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUncheckedUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUncheckedUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -635,6 +656,18 @@ export type UserCreateNestedOneWithoutHandledLoansInput = {
   connect?: Prisma.UserWhereUniqueInput
 }
 
+export type UserCreateNestedOneWithoutBorrowedLoansInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutBorrowedLoansInput, Prisma.UserUncheckedCreateWithoutBorrowedLoansInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutBorrowedLoansInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutReturnedLoansInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReturnedLoansInput, Prisma.UserUncheckedCreateWithoutReturnedLoansInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReturnedLoansInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
 export type UserUpdateOneWithoutHandledLoansNestedInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutHandledLoansInput, Prisma.UserUncheckedCreateWithoutHandledLoansInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutHandledLoansInput
@@ -643,6 +676,26 @@ export type UserUpdateOneWithoutHandledLoansNestedInput = {
   delete?: Prisma.UserWhereInput | boolean
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutHandledLoansInput, Prisma.UserUpdateWithoutHandledLoansInput>, Prisma.UserUncheckedUpdateWithoutHandledLoansInput>
+}
+
+export type UserUpdateOneWithoutBorrowedLoansNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutBorrowedLoansInput, Prisma.UserUncheckedCreateWithoutBorrowedLoansInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutBorrowedLoansInput
+  upsert?: Prisma.UserUpsertWithoutBorrowedLoansInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutBorrowedLoansInput, Prisma.UserUpdateWithoutBorrowedLoansInput>, Prisma.UserUncheckedUpdateWithoutBorrowedLoansInput>
+}
+
+export type UserUpdateOneWithoutReturnedLoansNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReturnedLoansInput, Prisma.UserUncheckedCreateWithoutReturnedLoansInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReturnedLoansInput
+  upsert?: Prisma.UserUpsertWithoutReturnedLoansInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReturnedLoansInput, Prisma.UserUpdateWithoutReturnedLoansInput>, Prisma.UserUncheckedUpdateWithoutReturnedLoansInput>
 }
 
 export type UserCreateNestedOneWithoutAccountsInput = {
@@ -687,6 +740,20 @@ export type UserUpdateOneRequiredWithoutPasswordTokensNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPasswordTokensInput, Prisma.UserUpdateWithoutPasswordTokensInput>, Prisma.UserUncheckedUpdateWithoutPasswordTokensInput>
 }
 
+export type UserCreateNestedOneWithoutReservationParticipantsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReservationParticipantsInput, Prisma.UserUncheckedCreateWithoutReservationParticipantsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReservationParticipantsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutReservationParticipantsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReservationParticipantsInput, Prisma.UserUncheckedCreateWithoutReservationParticipantsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReservationParticipantsInput
+  upsert?: Prisma.UserUpsertWithoutReservationParticipantsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReservationParticipantsInput, Prisma.UserUpdateWithoutReservationParticipantsInput>, Prisma.UserUncheckedUpdateWithoutReservationParticipantsInput>
+}
+
 export type UserCreateWithoutTaughtSectionsInput = {
   id?: string
   role: $Enums.Role
@@ -703,11 +770,14 @@ export type UserCreateWithoutTaughtSectionsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanCreateNestedManyWithoutReturnedByInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTaughtSectionsInput = {
@@ -726,11 +796,14 @@ export type UserUncheckedCreateWithoutTaughtSectionsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutReturnedByInput
   enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTaughtSectionsInput = {
@@ -765,11 +838,14 @@ export type UserUpdateWithoutTaughtSectionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUpdateManyWithoutReturnedByNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTaughtSectionsInput = {
@@ -788,11 +864,14 @@ export type UserUncheckedUpdateWithoutTaughtSectionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUncheckedUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUncheckedUpdateManyWithoutReturnedByNestedInput
   enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUncheckedUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUncheckedUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUncheckedUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutEnrollmentsInput = {
@@ -811,11 +890,14 @@ export type UserCreateWithoutEnrollmentsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionCreateNestedManyWithoutTeacherInput
   requestedResv?: Prisma.ReservationCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutEnrollmentsInput = {
@@ -834,11 +916,14 @@ export type UserUncheckedCreateWithoutEnrollmentsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionUncheckedCreateNestedManyWithoutTeacherInput
   requestedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutEnrollmentsInput = {
@@ -873,11 +958,14 @@ export type UserUpdateWithoutEnrollmentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUpdateManyWithoutTeacherNestedInput
   requestedResv?: Prisma.ReservationUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutEnrollmentsInput = {
@@ -896,11 +984,14 @@ export type UserUncheckedUpdateWithoutEnrollmentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUncheckedUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUncheckedUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUncheckedUpdateManyWithoutTeacherNestedInput
   requestedResv?: Prisma.ReservationUncheckedUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUncheckedUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUncheckedUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutRequestedResvInput = {
@@ -919,11 +1010,14 @@ export type UserCreateWithoutRequestedResvInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutStudentInput
   approvedResv?: Prisma.ReservationCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutRequestedResvInput = {
@@ -942,11 +1036,14 @@ export type UserUncheckedCreateWithoutRequestedResvInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionUncheckedCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutStudentInput
   approvedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutRequestedResvInput = {
@@ -970,11 +1067,14 @@ export type UserCreateWithoutApprovedResvInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationCreateNestedManyWithoutRequesterInput
   handledLoans?: Prisma.LoanCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutApprovedResvInput = {
@@ -993,11 +1093,14 @@ export type UserUncheckedCreateWithoutApprovedResvInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionUncheckedCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutRequesterInput
   handledLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutApprovedResvInput = {
@@ -1032,11 +1135,14 @@ export type UserUpdateWithoutRequestedResvInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutStudentNestedInput
   approvedResv?: Prisma.ReservationUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRequestedResvInput = {
@@ -1055,11 +1161,14 @@ export type UserUncheckedUpdateWithoutRequestedResvInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUncheckedUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUncheckedUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUncheckedUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutStudentNestedInput
   approvedResv?: Prisma.ReservationUncheckedUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUncheckedUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutApprovedResvInput = {
@@ -1089,11 +1198,14 @@ export type UserUpdateWithoutApprovedResvInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUpdateManyWithoutRequesterNestedInput
   handledLoans?: Prisma.LoanUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovedResvInput = {
@@ -1112,11 +1224,14 @@ export type UserUncheckedUpdateWithoutApprovedResvInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUncheckedUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUncheckedUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUncheckedUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUncheckedUpdateManyWithoutRequesterNestedInput
   handledLoans?: Prisma.LoanUncheckedUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutHandledLoansInput = {
@@ -1135,11 +1250,14 @@ export type UserCreateWithoutHandledLoansInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationCreateNestedManyWithoutApproverInput
   passwordTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutHandledLoansInput = {
@@ -1158,16 +1276,133 @@ export type UserUncheckedCreateWithoutHandledLoansInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionUncheckedCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutApproverInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutHandledLoansInput = {
   where: Prisma.UserWhereUniqueInput
   create: Prisma.XOR<Prisma.UserCreateWithoutHandledLoansInput, Prisma.UserUncheckedCreateWithoutHandledLoansInput>
+}
+
+export type UserCreateWithoutBorrowedLoansInput = {
+  id?: string
+  role: $Enums.Role
+  firstName: string
+  lastName: string
+  birthDate: Date | string
+  gender?: $Enums.Gender | null
+  major?: string | null
+  studentType?: $Enums.StudentType | null
+  studentId?: string | null
+  email?: string | null
+  passwordHash?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  returnedLoans?: Prisma.LoanCreateNestedManyWithoutReturnedByInput
+  taughtSections?: Prisma.SectionCreateNestedManyWithoutTeacherInput
+  enrollments?: Prisma.EnrollmentCreateNestedManyWithoutStudentInput
+  requestedResv?: Prisma.ReservationCreateNestedManyWithoutRequesterInput
+  approvedResv?: Prisma.ReservationCreateNestedManyWithoutApproverInput
+  handledLoans?: Prisma.LoanCreateNestedManyWithoutHandledByInput
+  passwordTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutBorrowedLoansInput = {
+  id?: string
+  role: $Enums.Role
+  firstName: string
+  lastName: string
+  birthDate: Date | string
+  gender?: $Enums.Gender | null
+  major?: string | null
+  studentType?: $Enums.StudentType | null
+  studentId?: string | null
+  email?: string | null
+  passwordHash?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  returnedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutReturnedByInput
+  taughtSections?: Prisma.SectionUncheckedCreateNestedManyWithoutTeacherInput
+  enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutStudentInput
+  requestedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutRequesterInput
+  approvedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutApproverInput
+  handledLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutHandledByInput
+  passwordTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutBorrowedLoansInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutBorrowedLoansInput, Prisma.UserUncheckedCreateWithoutBorrowedLoansInput>
+}
+
+export type UserCreateWithoutReturnedLoansInput = {
+  id?: string
+  role: $Enums.Role
+  firstName: string
+  lastName: string
+  birthDate: Date | string
+  gender?: $Enums.Gender | null
+  major?: string | null
+  studentType?: $Enums.StudentType | null
+  studentId?: string | null
+  email?: string | null
+  passwordHash?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanCreateNestedManyWithoutBorrowerInput
+  taughtSections?: Prisma.SectionCreateNestedManyWithoutTeacherInput
+  enrollments?: Prisma.EnrollmentCreateNestedManyWithoutStudentInput
+  requestedResv?: Prisma.ReservationCreateNestedManyWithoutRequesterInput
+  approvedResv?: Prisma.ReservationCreateNestedManyWithoutApproverInput
+  handledLoans?: Prisma.LoanCreateNestedManyWithoutHandledByInput
+  passwordTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutReturnedLoansInput = {
+  id?: string
+  role: $Enums.Role
+  firstName: string
+  lastName: string
+  birthDate: Date | string
+  gender?: $Enums.Gender | null
+  major?: string | null
+  studentType?: $Enums.StudentType | null
+  studentId?: string | null
+  email?: string | null
+  passwordHash?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutBorrowerInput
+  taughtSections?: Prisma.SectionUncheckedCreateNestedManyWithoutTeacherInput
+  enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutStudentInput
+  requestedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutRequesterInput
+  approvedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutApproverInput
+  handledLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutHandledByInput
+  passwordTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutReturnedLoansInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutReturnedLoansInput, Prisma.UserUncheckedCreateWithoutReturnedLoansInput>
 }
 
 export type UserUpsertWithoutHandledLoansInput = {
@@ -1197,11 +1432,14 @@ export type UserUpdateWithoutHandledLoansInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUpdateManyWithoutApproverNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutHandledLoansInput = {
@@ -1220,11 +1458,140 @@ export type UserUncheckedUpdateWithoutHandledLoansInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUncheckedUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUncheckedUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUncheckedUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUncheckedUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUncheckedUpdateManyWithoutApproverNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserUpsertWithoutBorrowedLoansInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutBorrowedLoansInput, Prisma.UserUncheckedUpdateWithoutBorrowedLoansInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutBorrowedLoansInput, Prisma.UserUncheckedCreateWithoutBorrowedLoansInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutBorrowedLoansInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutBorrowedLoansInput, Prisma.UserUncheckedUpdateWithoutBorrowedLoansInput>
+}
+
+export type UserUpdateWithoutBorrowedLoansInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+  major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  returnedLoans?: Prisma.LoanUpdateManyWithoutReturnedByNestedInput
+  taughtSections?: Prisma.SectionUpdateManyWithoutTeacherNestedInput
+  enrollments?: Prisma.EnrollmentUpdateManyWithoutStudentNestedInput
+  requestedResv?: Prisma.ReservationUpdateManyWithoutRequesterNestedInput
+  approvedResv?: Prisma.ReservationUpdateManyWithoutApproverNestedInput
+  handledLoans?: Prisma.LoanUpdateManyWithoutHandledByNestedInput
+  passwordTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutBorrowedLoansInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+  major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  returnedLoans?: Prisma.LoanUncheckedUpdateManyWithoutReturnedByNestedInput
+  taughtSections?: Prisma.SectionUncheckedUpdateManyWithoutTeacherNestedInput
+  enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutStudentNestedInput
+  requestedResv?: Prisma.ReservationUncheckedUpdateManyWithoutRequesterNestedInput
+  approvedResv?: Prisma.ReservationUncheckedUpdateManyWithoutApproverNestedInput
+  handledLoans?: Prisma.LoanUncheckedUpdateManyWithoutHandledByNestedInput
+  passwordTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserUpsertWithoutReturnedLoansInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutReturnedLoansInput, Prisma.UserUncheckedUpdateWithoutReturnedLoansInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutReturnedLoansInput, Prisma.UserUncheckedCreateWithoutReturnedLoansInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutReturnedLoansInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutReturnedLoansInput, Prisma.UserUncheckedUpdateWithoutReturnedLoansInput>
+}
+
+export type UserUpdateWithoutReturnedLoansInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+  major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUpdateManyWithoutBorrowerNestedInput
+  taughtSections?: Prisma.SectionUpdateManyWithoutTeacherNestedInput
+  enrollments?: Prisma.EnrollmentUpdateManyWithoutStudentNestedInput
+  requestedResv?: Prisma.ReservationUpdateManyWithoutRequesterNestedInput
+  approvedResv?: Prisma.ReservationUpdateManyWithoutApproverNestedInput
+  handledLoans?: Prisma.LoanUpdateManyWithoutHandledByNestedInput
+  passwordTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutReturnedLoansInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+  major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUncheckedUpdateManyWithoutBorrowerNestedInput
+  taughtSections?: Prisma.SectionUncheckedUpdateManyWithoutTeacherNestedInput
+  enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutStudentNestedInput
+  requestedResv?: Prisma.ReservationUncheckedUpdateManyWithoutRequesterNestedInput
+  approvedResv?: Prisma.ReservationUncheckedUpdateManyWithoutApproverNestedInput
+  handledLoans?: Prisma.LoanUncheckedUpdateManyWithoutHandledByNestedInput
+  passwordTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -1242,12 +1609,15 @@ export type UserCreateWithoutAccountsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -1265,12 +1635,15 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionUncheckedCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -1304,12 +1677,15 @@ export type UserUpdateWithoutAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -1327,12 +1703,15 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUncheckedUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUncheckedUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUncheckedUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUncheckedUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUncheckedUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUncheckedUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1350,12 +1729,15 @@ export type UserCreateWithoutSessionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1373,12 +1755,15 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionUncheckedCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutHandledByInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1412,12 +1797,15 @@ export type UserUpdateWithoutSessionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1435,12 +1823,15 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUncheckedUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUncheckedUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUncheckedUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUncheckedUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUncheckedUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUncheckedUpdateManyWithoutHandledByNestedInput
   passwordTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutPasswordTokensInput = {
@@ -1459,11 +1850,14 @@ export type UserCreateWithoutPasswordTokensInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanCreateNestedManyWithoutHandledByInput
+  reservationParticipants?: Prisma.ReservationParticipantCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPasswordTokensInput = {
@@ -1482,11 +1876,14 @@ export type UserUncheckedCreateWithoutPasswordTokensInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutReturnedByInput
   taughtSections?: Prisma.SectionUncheckedCreateNestedManyWithoutTeacherInput
   enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutStudentInput
   requestedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutRequesterInput
   approvedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutApproverInput
   handledLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutHandledByInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPasswordTokensInput = {
@@ -1521,11 +1918,14 @@ export type UserUpdateWithoutPasswordTokensInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUpdateManyWithoutHandledByNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPasswordTokensInput = {
@@ -1544,11 +1944,134 @@ export type UserUncheckedUpdateWithoutPasswordTokensInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUncheckedUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUncheckedUpdateManyWithoutReturnedByNestedInput
   taughtSections?: Prisma.SectionUncheckedUpdateManyWithoutTeacherNestedInput
   enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutStudentNestedInput
   requestedResv?: Prisma.ReservationUncheckedUpdateManyWithoutRequesterNestedInput
   approvedResv?: Prisma.ReservationUncheckedUpdateManyWithoutApproverNestedInput
   handledLoans?: Prisma.LoanUncheckedUpdateManyWithoutHandledByNestedInput
+  reservationParticipants?: Prisma.ReservationParticipantUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutReservationParticipantsInput = {
+  id?: string
+  role: $Enums.Role
+  firstName: string
+  lastName: string
+  birthDate: Date | string
+  gender?: $Enums.Gender | null
+  major?: string | null
+  studentType?: $Enums.StudentType | null
+  studentId?: string | null
+  email?: string | null
+  passwordHash?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanCreateNestedManyWithoutReturnedByInput
+  taughtSections?: Prisma.SectionCreateNestedManyWithoutTeacherInput
+  enrollments?: Prisma.EnrollmentCreateNestedManyWithoutStudentInput
+  requestedResv?: Prisma.ReservationCreateNestedManyWithoutRequesterInput
+  approvedResv?: Prisma.ReservationCreateNestedManyWithoutApproverInput
+  handledLoans?: Prisma.LoanCreateNestedManyWithoutHandledByInput
+  passwordTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutReservationParticipantsInput = {
+  id?: string
+  role: $Enums.Role
+  firstName: string
+  lastName: string
+  birthDate: Date | string
+  gender?: $Enums.Gender | null
+  major?: string | null
+  studentType?: $Enums.StudentType | null
+  studentId?: string | null
+  email?: string | null
+  passwordHash?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  borrowedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutBorrowerInput
+  returnedLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutReturnedByInput
+  taughtSections?: Prisma.SectionUncheckedCreateNestedManyWithoutTeacherInput
+  enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutStudentInput
+  requestedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutRequesterInput
+  approvedResv?: Prisma.ReservationUncheckedCreateNestedManyWithoutApproverInput
+  handledLoans?: Prisma.LoanUncheckedCreateNestedManyWithoutHandledByInput
+  passwordTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutReservationParticipantsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutReservationParticipantsInput, Prisma.UserUncheckedCreateWithoutReservationParticipantsInput>
+}
+
+export type UserUpsertWithoutReservationParticipantsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutReservationParticipantsInput, Prisma.UserUncheckedUpdateWithoutReservationParticipantsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutReservationParticipantsInput, Prisma.UserUncheckedCreateWithoutReservationParticipantsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutReservationParticipantsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutReservationParticipantsInput, Prisma.UserUncheckedUpdateWithoutReservationParticipantsInput>
+}
+
+export type UserUpdateWithoutReservationParticipantsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+  major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUpdateManyWithoutReturnedByNestedInput
+  taughtSections?: Prisma.SectionUpdateManyWithoutTeacherNestedInput
+  enrollments?: Prisma.EnrollmentUpdateManyWithoutStudentNestedInput
+  requestedResv?: Prisma.ReservationUpdateManyWithoutRequesterNestedInput
+  approvedResv?: Prisma.ReservationUpdateManyWithoutApproverNestedInput
+  handledLoans?: Prisma.LoanUpdateManyWithoutHandledByNestedInput
+  passwordTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutReservationParticipantsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+  major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  borrowedLoans?: Prisma.LoanUncheckedUpdateManyWithoutBorrowerNestedInput
+  returnedLoans?: Prisma.LoanUncheckedUpdateManyWithoutReturnedByNestedInput
+  taughtSections?: Prisma.SectionUncheckedUpdateManyWithoutTeacherNestedInput
+  enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutStudentNestedInput
+  requestedResv?: Prisma.ReservationUncheckedUpdateManyWithoutRequesterNestedInput
+  approvedResv?: Prisma.ReservationUncheckedUpdateManyWithoutApproverNestedInput
+  handledLoans?: Prisma.LoanUncheckedUpdateManyWithoutHandledByNestedInput
+  passwordTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -1559,23 +2082,29 @@ export type UserUncheckedUpdateWithoutPasswordTokensInput = {
 export type UserCountOutputType = {
   accounts: number
   sessions: number
+  borrowedLoans: number
+  returnedLoans: number
   taughtSections: number
   enrollments: number
   requestedResv: number
   approvedResv: number
   handledLoans: number
   passwordTokens: number
+  reservationParticipants: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
+  borrowedLoans?: boolean | UserCountOutputTypeCountBorrowedLoansArgs
+  returnedLoans?: boolean | UserCountOutputTypeCountReturnedLoansArgs
   taughtSections?: boolean | UserCountOutputTypeCountTaughtSectionsArgs
   enrollments?: boolean | UserCountOutputTypeCountEnrollmentsArgs
   requestedResv?: boolean | UserCountOutputTypeCountRequestedResvArgs
   approvedResv?: boolean | UserCountOutputTypeCountApprovedResvArgs
   handledLoans?: boolean | UserCountOutputTypeCountHandledLoansArgs
   passwordTokens?: boolean | UserCountOutputTypeCountPasswordTokensArgs
+  reservationParticipants?: boolean | UserCountOutputTypeCountReservationParticipantsArgs
 }
 
 /**
@@ -1600,6 +2129,20 @@ export type UserCountOutputTypeCountAccountsArgs<ExtArgs extends runtime.Types.E
  */
 export type UserCountOutputTypeCountSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.SessionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountBorrowedLoansArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LoanWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountReturnedLoansArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LoanWhereInput
 }
 
 /**
@@ -1644,6 +2187,13 @@ export type UserCountOutputTypeCountPasswordTokensArgs<ExtArgs extends runtime.T
   where?: Prisma.PasswordResetTokenWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountReservationParticipantsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReservationParticipantWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1661,12 +2211,15 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
+  borrowedLoans?: boolean | Prisma.User$borrowedLoansArgs<ExtArgs>
+  returnedLoans?: boolean | Prisma.User$returnedLoansArgs<ExtArgs>
   taughtSections?: boolean | Prisma.User$taughtSectionsArgs<ExtArgs>
   enrollments?: boolean | Prisma.User$enrollmentsArgs<ExtArgs>
   requestedResv?: boolean | Prisma.User$requestedResvArgs<ExtArgs>
   approvedResv?: boolean | Prisma.User$approvedResvArgs<ExtArgs>
   handledLoans?: boolean | Prisma.User$handledLoansArgs<ExtArgs>
   passwordTokens?: boolean | Prisma.User$passwordTokensArgs<ExtArgs>
+  reservationParticipants?: boolean | Prisma.User$reservationParticipantsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1722,12 +2275,15 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
+  borrowedLoans?: boolean | Prisma.User$borrowedLoansArgs<ExtArgs>
+  returnedLoans?: boolean | Prisma.User$returnedLoansArgs<ExtArgs>
   taughtSections?: boolean | Prisma.User$taughtSectionsArgs<ExtArgs>
   enrollments?: boolean | Prisma.User$enrollmentsArgs<ExtArgs>
   requestedResv?: boolean | Prisma.User$requestedResvArgs<ExtArgs>
   approvedResv?: boolean | Prisma.User$approvedResvArgs<ExtArgs>
   handledLoans?: boolean | Prisma.User$handledLoansArgs<ExtArgs>
   passwordTokens?: boolean | Prisma.User$passwordTokensArgs<ExtArgs>
+  reservationParticipants?: boolean | Prisma.User$reservationParticipantsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1738,12 +2294,15 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
+    borrowedLoans: Prisma.$LoanPayload<ExtArgs>[]
+    returnedLoans: Prisma.$LoanPayload<ExtArgs>[]
     taughtSections: Prisma.$SectionPayload<ExtArgs>[]
     enrollments: Prisma.$EnrollmentPayload<ExtArgs>[]
     requestedResv: Prisma.$ReservationPayload<ExtArgs>[]
     approvedResv: Prisma.$ReservationPayload<ExtArgs>[]
     handledLoans: Prisma.$LoanPayload<ExtArgs>[]
     passwordTokens: Prisma.$PasswordResetTokenPayload<ExtArgs>[]
+    reservationParticipants: Prisma.$ReservationParticipantPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2155,12 +2714,15 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  borrowedLoans<T extends Prisma.User$borrowedLoansArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$borrowedLoansArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LoanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  returnedLoans<T extends Prisma.User$returnedLoansArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$returnedLoansArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LoanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   taughtSections<T extends Prisma.User$taughtSectionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$taughtSectionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   enrollments<T extends Prisma.User$enrollmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$enrollmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EnrollmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   requestedResv<T extends Prisma.User$requestedResvArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$requestedResvArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReservationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   approvedResv<T extends Prisma.User$approvedResvArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$approvedResvArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReservationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   handledLoans<T extends Prisma.User$handledLoansArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$handledLoansArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LoanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   passwordTokens<T extends Prisma.User$passwordTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$passwordTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PasswordResetTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reservationParticipants<T extends Prisma.User$reservationParticipantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reservationParticipantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReservationParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2639,6 +3201,54 @@ export type User$sessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 }
 
 /**
+ * User.borrowedLoans
+ */
+export type User$borrowedLoansArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Loan
+   */
+  select?: Prisma.LoanSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Loan
+   */
+  omit?: Prisma.LoanOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LoanInclude<ExtArgs> | null
+  where?: Prisma.LoanWhereInput
+  orderBy?: Prisma.LoanOrderByWithRelationInput | Prisma.LoanOrderByWithRelationInput[]
+  cursor?: Prisma.LoanWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LoanScalarFieldEnum | Prisma.LoanScalarFieldEnum[]
+}
+
+/**
+ * User.returnedLoans
+ */
+export type User$returnedLoansArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Loan
+   */
+  select?: Prisma.LoanSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Loan
+   */
+  omit?: Prisma.LoanOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LoanInclude<ExtArgs> | null
+  where?: Prisma.LoanWhereInput
+  orderBy?: Prisma.LoanOrderByWithRelationInput | Prisma.LoanOrderByWithRelationInput[]
+  cursor?: Prisma.LoanWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LoanScalarFieldEnum | Prisma.LoanScalarFieldEnum[]
+}
+
+/**
  * User.taughtSections
  */
 export type User$taughtSectionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2780,6 +3390,30 @@ export type User$passwordTokensArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.PasswordResetTokenScalarFieldEnum | Prisma.PasswordResetTokenScalarFieldEnum[]
+}
+
+/**
+ * User.reservationParticipants
+ */
+export type User$reservationParticipantsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReservationParticipant
+   */
+  select?: Prisma.ReservationParticipantSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReservationParticipant
+   */
+  omit?: Prisma.ReservationParticipantOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReservationParticipantInclude<ExtArgs> | null
+  where?: Prisma.ReservationParticipantWhereInput
+  orderBy?: Prisma.ReservationParticipantOrderByWithRelationInput | Prisma.ReservationParticipantOrderByWithRelationInput[]
+  cursor?: Prisma.ReservationParticipantWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReservationParticipantScalarFieldEnum | Prisma.ReservationParticipantScalarFieldEnum[]
 }
 
 /**

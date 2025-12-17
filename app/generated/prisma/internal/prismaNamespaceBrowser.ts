@@ -62,7 +62,9 @@ export const ModelName = {
   Account: 'Account',
   Session: 'Session',
   VerificationToken: 'VerificationToken',
-  PasswordResetToken: 'PasswordResetToken'
+  PasswordResetToken: 'PasswordResetToken',
+  AccessToken: 'AccessToken',
+  ReservationParticipant: 'ReservationParticipant'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -194,7 +196,9 @@ export const LoanScalarFieldEnum = {
   checkedOutAt: 'checkedOutAt',
   handledById: 'handledById',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  borrowerId: 'borrowerId',
+  returnedById: 'returnedById'
 } as const
 
 export type LoanScalarFieldEnum = (typeof LoanScalarFieldEnum)[keyof typeof LoanScalarFieldEnum]
@@ -247,6 +251,29 @@ export const PasswordResetTokenScalarFieldEnum = {
 } as const
 
 export type PasswordResetTokenScalarFieldEnum = (typeof PasswordResetTokenScalarFieldEnum)[keyof typeof PasswordResetTokenScalarFieldEnum]
+
+
+export const AccessTokenScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  reservationId: 'reservationId',
+  createdAt: 'createdAt'
+} as const
+
+export type AccessTokenScalarFieldEnum = (typeof AccessTokenScalarFieldEnum)[keyof typeof AccessTokenScalarFieldEnum]
+
+
+export const ReservationParticipantScalarFieldEnum = {
+  id: 'id',
+  reservationId: 'reservationId',
+  userId: 'userId',
+  createdAt: 'createdAt'
+} as const
+
+export type ReservationParticipantScalarFieldEnum = (typeof ReservationParticipantScalarFieldEnum)[keyof typeof ReservationParticipantScalarFieldEnum]
 
 
 export const SortOrder = {

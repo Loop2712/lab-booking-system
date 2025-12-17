@@ -321,6 +321,23 @@ export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
 }
 
+export type EnumAccessTokenTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.AccessTokenType | Prisma.EnumAccessTokenTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.AccessTokenType[] | Prisma.ListEnumAccessTokenTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AccessTokenType[] | Prisma.ListEnumAccessTokenTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAccessTokenTypeFilter<$PrismaModel> | $Enums.AccessTokenType
+}
+
+export type EnumAccessTokenTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AccessTokenType | Prisma.EnumAccessTokenTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.AccessTokenType[] | Prisma.ListEnumAccessTokenTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AccessTokenType[] | Prisma.ListEnumAccessTokenTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAccessTokenTypeWithAggregatesFilter<$PrismaModel> | $Enums.AccessTokenType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAccessTokenTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAccessTokenTypeFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -639,6 +656,23 @@ export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumAccessTokenTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.AccessTokenType | Prisma.EnumAccessTokenTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.AccessTokenType[] | Prisma.ListEnumAccessTokenTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AccessTokenType[] | Prisma.ListEnumAccessTokenTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAccessTokenTypeFilter<$PrismaModel> | $Enums.AccessTokenType
+}
+
+export type NestedEnumAccessTokenTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AccessTokenType | Prisma.EnumAccessTokenTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.AccessTokenType[] | Prisma.ListEnumAccessTokenTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AccessTokenType[] | Prisma.ListEnumAccessTokenTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAccessTokenTypeWithAggregatesFilter<$PrismaModel> | $Enums.AccessTokenType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAccessTokenTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAccessTokenTypeFilter<$PrismaModel>
 }
 
 

@@ -33,6 +33,8 @@ export type LoanMinAggregateOutputType = {
   handledById: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  borrowerId: string | null
+  returnedById: string | null
 }
 
 export type LoanMaxAggregateOutputType = {
@@ -44,6 +46,8 @@ export type LoanMaxAggregateOutputType = {
   handledById: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  borrowerId: string | null
+  returnedById: string | null
 }
 
 export type LoanCountAggregateOutputType = {
@@ -55,6 +59,8 @@ export type LoanCountAggregateOutputType = {
   handledById: number
   createdAt: number
   updatedAt: number
+  borrowerId: number
+  returnedById: number
   _all: number
 }
 
@@ -68,6 +74,8 @@ export type LoanMinAggregateInputType = {
   handledById?: true
   createdAt?: true
   updatedAt?: true
+  borrowerId?: true
+  returnedById?: true
 }
 
 export type LoanMaxAggregateInputType = {
@@ -79,6 +87,8 @@ export type LoanMaxAggregateInputType = {
   handledById?: true
   createdAt?: true
   updatedAt?: true
+  borrowerId?: true
+  returnedById?: true
 }
 
 export type LoanCountAggregateInputType = {
@@ -90,6 +100,8 @@ export type LoanCountAggregateInputType = {
   handledById?: true
   createdAt?: true
   updatedAt?: true
+  borrowerId?: true
+  returnedById?: true
   _all?: true
 }
 
@@ -174,6 +186,8 @@ export type LoanGroupByOutputType = {
   handledById: string | null
   createdAt: Date
   updatedAt: Date
+  borrowerId: string | null
+  returnedById: string | null
   _count: LoanCountAggregateOutputType | null
   _min: LoanMinAggregateOutputType | null
   _max: LoanMaxAggregateOutputType | null
@@ -206,9 +220,13 @@ export type LoanWhereInput = {
   handledById?: Prisma.StringNullableFilter<"Loan"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Loan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Loan"> | Date | string
+  borrowerId?: Prisma.StringNullableFilter<"Loan"> | string | null
+  returnedById?: Prisma.StringNullableFilter<"Loan"> | string | null
   reservation?: Prisma.XOR<Prisma.ReservationScalarRelationFilter, Prisma.ReservationWhereInput>
   key?: Prisma.XOR<Prisma.KeyScalarRelationFilter, Prisma.KeyWhereInput>
   handledBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  borrower?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  returnedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }
 
 export type LoanOrderByWithRelationInput = {
@@ -220,9 +238,13 @@ export type LoanOrderByWithRelationInput = {
   handledById?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  borrowerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  returnedById?: Prisma.SortOrderInput | Prisma.SortOrder
   reservation?: Prisma.ReservationOrderByWithRelationInput
   key?: Prisma.KeyOrderByWithRelationInput
   handledBy?: Prisma.UserOrderByWithRelationInput
+  borrower?: Prisma.UserOrderByWithRelationInput
+  returnedBy?: Prisma.UserOrderByWithRelationInput
 }
 
 export type LoanWhereUniqueInput = Prisma.AtLeast<{
@@ -237,9 +259,13 @@ export type LoanWhereUniqueInput = Prisma.AtLeast<{
   handledById?: Prisma.StringNullableFilter<"Loan"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Loan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Loan"> | Date | string
+  borrowerId?: Prisma.StringNullableFilter<"Loan"> | string | null
+  returnedById?: Prisma.StringNullableFilter<"Loan"> | string | null
   reservation?: Prisma.XOR<Prisma.ReservationScalarRelationFilter, Prisma.ReservationWhereInput>
   key?: Prisma.XOR<Prisma.KeyScalarRelationFilter, Prisma.KeyWhereInput>
   handledBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  borrower?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  returnedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }, "id" | "reservationId">
 
 export type LoanOrderByWithAggregationInput = {
@@ -251,6 +277,8 @@ export type LoanOrderByWithAggregationInput = {
   handledById?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  borrowerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  returnedById?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.LoanCountOrderByAggregateInput
   _max?: Prisma.LoanMaxOrderByAggregateInput
   _min?: Prisma.LoanMinOrderByAggregateInput
@@ -268,6 +296,8 @@ export type LoanScalarWhereWithAggregatesInput = {
   handledById?: Prisma.StringNullableWithAggregatesFilter<"Loan"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Loan"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Loan"> | Date | string
+  borrowerId?: Prisma.StringNullableWithAggregatesFilter<"Loan"> | string | null
+  returnedById?: Prisma.StringNullableWithAggregatesFilter<"Loan"> | string | null
 }
 
 export type LoanCreateInput = {
@@ -279,6 +309,8 @@ export type LoanCreateInput = {
   reservation: Prisma.ReservationCreateNestedOneWithoutLoanInput
   key: Prisma.KeyCreateNestedOneWithoutLoansInput
   handledBy?: Prisma.UserCreateNestedOneWithoutHandledLoansInput
+  borrower?: Prisma.UserCreateNestedOneWithoutBorrowedLoansInput
+  returnedBy?: Prisma.UserCreateNestedOneWithoutReturnedLoansInput
 }
 
 export type LoanUncheckedCreateInput = {
@@ -290,6 +322,8 @@ export type LoanUncheckedCreateInput = {
   handledById?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  borrowerId?: string | null
+  returnedById?: string | null
 }
 
 export type LoanUpdateInput = {
@@ -301,6 +335,8 @@ export type LoanUpdateInput = {
   reservation?: Prisma.ReservationUpdateOneRequiredWithoutLoanNestedInput
   key?: Prisma.KeyUpdateOneRequiredWithoutLoansNestedInput
   handledBy?: Prisma.UserUpdateOneWithoutHandledLoansNestedInput
+  borrower?: Prisma.UserUpdateOneWithoutBorrowedLoansNestedInput
+  returnedBy?: Prisma.UserUpdateOneWithoutReturnedLoansNestedInput
 }
 
 export type LoanUncheckedUpdateInput = {
@@ -312,6 +348,8 @@ export type LoanUncheckedUpdateInput = {
   handledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  borrowerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  returnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type LoanCreateManyInput = {
@@ -323,6 +361,8 @@ export type LoanCreateManyInput = {
   handledById?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  borrowerId?: string | null
+  returnedById?: string | null
 }
 
 export type LoanUpdateManyMutationInput = {
@@ -342,6 +382,8 @@ export type LoanUncheckedUpdateManyInput = {
   handledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  borrowerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  returnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type LoanListRelationFilter = {
@@ -368,6 +410,8 @@ export type LoanCountOrderByAggregateInput = {
   handledById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  borrowerId?: Prisma.SortOrder
+  returnedById?: Prisma.SortOrder
 }
 
 export type LoanMaxOrderByAggregateInput = {
@@ -379,6 +423,8 @@ export type LoanMaxOrderByAggregateInput = {
   handledById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  borrowerId?: Prisma.SortOrder
+  returnedById?: Prisma.SortOrder
 }
 
 export type LoanMinOrderByAggregateInput = {
@@ -390,6 +436,22 @@ export type LoanMinOrderByAggregateInput = {
   handledById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  borrowerId?: Prisma.SortOrder
+  returnedById?: Prisma.SortOrder
+}
+
+export type LoanCreateNestedManyWithoutBorrowerInput = {
+  create?: Prisma.XOR<Prisma.LoanCreateWithoutBorrowerInput, Prisma.LoanUncheckedCreateWithoutBorrowerInput> | Prisma.LoanCreateWithoutBorrowerInput[] | Prisma.LoanUncheckedCreateWithoutBorrowerInput[]
+  connectOrCreate?: Prisma.LoanCreateOrConnectWithoutBorrowerInput | Prisma.LoanCreateOrConnectWithoutBorrowerInput[]
+  createMany?: Prisma.LoanCreateManyBorrowerInputEnvelope
+  connect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+}
+
+export type LoanCreateNestedManyWithoutReturnedByInput = {
+  create?: Prisma.XOR<Prisma.LoanCreateWithoutReturnedByInput, Prisma.LoanUncheckedCreateWithoutReturnedByInput> | Prisma.LoanCreateWithoutReturnedByInput[] | Prisma.LoanUncheckedCreateWithoutReturnedByInput[]
+  connectOrCreate?: Prisma.LoanCreateOrConnectWithoutReturnedByInput | Prisma.LoanCreateOrConnectWithoutReturnedByInput[]
+  createMany?: Prisma.LoanCreateManyReturnedByInputEnvelope
+  connect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
 }
 
 export type LoanCreateNestedManyWithoutHandledByInput = {
@@ -399,11 +461,53 @@ export type LoanCreateNestedManyWithoutHandledByInput = {
   connect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
 }
 
+export type LoanUncheckedCreateNestedManyWithoutBorrowerInput = {
+  create?: Prisma.XOR<Prisma.LoanCreateWithoutBorrowerInput, Prisma.LoanUncheckedCreateWithoutBorrowerInput> | Prisma.LoanCreateWithoutBorrowerInput[] | Prisma.LoanUncheckedCreateWithoutBorrowerInput[]
+  connectOrCreate?: Prisma.LoanCreateOrConnectWithoutBorrowerInput | Prisma.LoanCreateOrConnectWithoutBorrowerInput[]
+  createMany?: Prisma.LoanCreateManyBorrowerInputEnvelope
+  connect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+}
+
+export type LoanUncheckedCreateNestedManyWithoutReturnedByInput = {
+  create?: Prisma.XOR<Prisma.LoanCreateWithoutReturnedByInput, Prisma.LoanUncheckedCreateWithoutReturnedByInput> | Prisma.LoanCreateWithoutReturnedByInput[] | Prisma.LoanUncheckedCreateWithoutReturnedByInput[]
+  connectOrCreate?: Prisma.LoanCreateOrConnectWithoutReturnedByInput | Prisma.LoanCreateOrConnectWithoutReturnedByInput[]
+  createMany?: Prisma.LoanCreateManyReturnedByInputEnvelope
+  connect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+}
+
 export type LoanUncheckedCreateNestedManyWithoutHandledByInput = {
   create?: Prisma.XOR<Prisma.LoanCreateWithoutHandledByInput, Prisma.LoanUncheckedCreateWithoutHandledByInput> | Prisma.LoanCreateWithoutHandledByInput[] | Prisma.LoanUncheckedCreateWithoutHandledByInput[]
   connectOrCreate?: Prisma.LoanCreateOrConnectWithoutHandledByInput | Prisma.LoanCreateOrConnectWithoutHandledByInput[]
   createMany?: Prisma.LoanCreateManyHandledByInputEnvelope
   connect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+}
+
+export type LoanUpdateManyWithoutBorrowerNestedInput = {
+  create?: Prisma.XOR<Prisma.LoanCreateWithoutBorrowerInput, Prisma.LoanUncheckedCreateWithoutBorrowerInput> | Prisma.LoanCreateWithoutBorrowerInput[] | Prisma.LoanUncheckedCreateWithoutBorrowerInput[]
+  connectOrCreate?: Prisma.LoanCreateOrConnectWithoutBorrowerInput | Prisma.LoanCreateOrConnectWithoutBorrowerInput[]
+  upsert?: Prisma.LoanUpsertWithWhereUniqueWithoutBorrowerInput | Prisma.LoanUpsertWithWhereUniqueWithoutBorrowerInput[]
+  createMany?: Prisma.LoanCreateManyBorrowerInputEnvelope
+  set?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  disconnect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  delete?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  connect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  update?: Prisma.LoanUpdateWithWhereUniqueWithoutBorrowerInput | Prisma.LoanUpdateWithWhereUniqueWithoutBorrowerInput[]
+  updateMany?: Prisma.LoanUpdateManyWithWhereWithoutBorrowerInput | Prisma.LoanUpdateManyWithWhereWithoutBorrowerInput[]
+  deleteMany?: Prisma.LoanScalarWhereInput | Prisma.LoanScalarWhereInput[]
+}
+
+export type LoanUpdateManyWithoutReturnedByNestedInput = {
+  create?: Prisma.XOR<Prisma.LoanCreateWithoutReturnedByInput, Prisma.LoanUncheckedCreateWithoutReturnedByInput> | Prisma.LoanCreateWithoutReturnedByInput[] | Prisma.LoanUncheckedCreateWithoutReturnedByInput[]
+  connectOrCreate?: Prisma.LoanCreateOrConnectWithoutReturnedByInput | Prisma.LoanCreateOrConnectWithoutReturnedByInput[]
+  upsert?: Prisma.LoanUpsertWithWhereUniqueWithoutReturnedByInput | Prisma.LoanUpsertWithWhereUniqueWithoutReturnedByInput[]
+  createMany?: Prisma.LoanCreateManyReturnedByInputEnvelope
+  set?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  disconnect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  delete?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  connect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  update?: Prisma.LoanUpdateWithWhereUniqueWithoutReturnedByInput | Prisma.LoanUpdateWithWhereUniqueWithoutReturnedByInput[]
+  updateMany?: Prisma.LoanUpdateManyWithWhereWithoutReturnedByInput | Prisma.LoanUpdateManyWithWhereWithoutReturnedByInput[]
+  deleteMany?: Prisma.LoanScalarWhereInput | Prisma.LoanScalarWhereInput[]
 }
 
 export type LoanUpdateManyWithoutHandledByNestedInput = {
@@ -417,6 +521,34 @@ export type LoanUpdateManyWithoutHandledByNestedInput = {
   connect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
   update?: Prisma.LoanUpdateWithWhereUniqueWithoutHandledByInput | Prisma.LoanUpdateWithWhereUniqueWithoutHandledByInput[]
   updateMany?: Prisma.LoanUpdateManyWithWhereWithoutHandledByInput | Prisma.LoanUpdateManyWithWhereWithoutHandledByInput[]
+  deleteMany?: Prisma.LoanScalarWhereInput | Prisma.LoanScalarWhereInput[]
+}
+
+export type LoanUncheckedUpdateManyWithoutBorrowerNestedInput = {
+  create?: Prisma.XOR<Prisma.LoanCreateWithoutBorrowerInput, Prisma.LoanUncheckedCreateWithoutBorrowerInput> | Prisma.LoanCreateWithoutBorrowerInput[] | Prisma.LoanUncheckedCreateWithoutBorrowerInput[]
+  connectOrCreate?: Prisma.LoanCreateOrConnectWithoutBorrowerInput | Prisma.LoanCreateOrConnectWithoutBorrowerInput[]
+  upsert?: Prisma.LoanUpsertWithWhereUniqueWithoutBorrowerInput | Prisma.LoanUpsertWithWhereUniqueWithoutBorrowerInput[]
+  createMany?: Prisma.LoanCreateManyBorrowerInputEnvelope
+  set?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  disconnect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  delete?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  connect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  update?: Prisma.LoanUpdateWithWhereUniqueWithoutBorrowerInput | Prisma.LoanUpdateWithWhereUniqueWithoutBorrowerInput[]
+  updateMany?: Prisma.LoanUpdateManyWithWhereWithoutBorrowerInput | Prisma.LoanUpdateManyWithWhereWithoutBorrowerInput[]
+  deleteMany?: Prisma.LoanScalarWhereInput | Prisma.LoanScalarWhereInput[]
+}
+
+export type LoanUncheckedUpdateManyWithoutReturnedByNestedInput = {
+  create?: Prisma.XOR<Prisma.LoanCreateWithoutReturnedByInput, Prisma.LoanUncheckedCreateWithoutReturnedByInput> | Prisma.LoanCreateWithoutReturnedByInput[] | Prisma.LoanUncheckedCreateWithoutReturnedByInput[]
+  connectOrCreate?: Prisma.LoanCreateOrConnectWithoutReturnedByInput | Prisma.LoanCreateOrConnectWithoutReturnedByInput[]
+  upsert?: Prisma.LoanUpsertWithWhereUniqueWithoutReturnedByInput | Prisma.LoanUpsertWithWhereUniqueWithoutReturnedByInput[]
+  createMany?: Prisma.LoanCreateManyReturnedByInputEnvelope
+  set?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  disconnect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  delete?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  connect?: Prisma.LoanWhereUniqueInput | Prisma.LoanWhereUniqueInput[]
+  update?: Prisma.LoanUpdateWithWhereUniqueWithoutReturnedByInput | Prisma.LoanUpdateWithWhereUniqueWithoutReturnedByInput[]
+  updateMany?: Prisma.LoanUpdateManyWithWhereWithoutReturnedByInput | Prisma.LoanUpdateManyWithWhereWithoutReturnedByInput[]
   deleteMany?: Prisma.LoanScalarWhereInput | Prisma.LoanScalarWhereInput[]
 }
 
@@ -512,6 +644,74 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
 }
 
+export type LoanCreateWithoutBorrowerInput = {
+  id?: string
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  reservation: Prisma.ReservationCreateNestedOneWithoutLoanInput
+  key: Prisma.KeyCreateNestedOneWithoutLoansInput
+  handledBy?: Prisma.UserCreateNestedOneWithoutHandledLoansInput
+  returnedBy?: Prisma.UserCreateNestedOneWithoutReturnedLoansInput
+}
+
+export type LoanUncheckedCreateWithoutBorrowerInput = {
+  id?: string
+  reservationId: string
+  keyId: string
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
+  handledById?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  returnedById?: string | null
+}
+
+export type LoanCreateOrConnectWithoutBorrowerInput = {
+  where: Prisma.LoanWhereUniqueInput
+  create: Prisma.XOR<Prisma.LoanCreateWithoutBorrowerInput, Prisma.LoanUncheckedCreateWithoutBorrowerInput>
+}
+
+export type LoanCreateManyBorrowerInputEnvelope = {
+  data: Prisma.LoanCreateManyBorrowerInput | Prisma.LoanCreateManyBorrowerInput[]
+  skipDuplicates?: boolean
+}
+
+export type LoanCreateWithoutReturnedByInput = {
+  id?: string
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  reservation: Prisma.ReservationCreateNestedOneWithoutLoanInput
+  key: Prisma.KeyCreateNestedOneWithoutLoansInput
+  handledBy?: Prisma.UserCreateNestedOneWithoutHandledLoansInput
+  borrower?: Prisma.UserCreateNestedOneWithoutBorrowedLoansInput
+}
+
+export type LoanUncheckedCreateWithoutReturnedByInput = {
+  id?: string
+  reservationId: string
+  keyId: string
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
+  handledById?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  borrowerId?: string | null
+}
+
+export type LoanCreateOrConnectWithoutReturnedByInput = {
+  where: Prisma.LoanWhereUniqueInput
+  create: Prisma.XOR<Prisma.LoanCreateWithoutReturnedByInput, Prisma.LoanUncheckedCreateWithoutReturnedByInput>
+}
+
+export type LoanCreateManyReturnedByInputEnvelope = {
+  data: Prisma.LoanCreateManyReturnedByInput | Prisma.LoanCreateManyReturnedByInput[]
+  skipDuplicates?: boolean
+}
+
 export type LoanCreateWithoutHandledByInput = {
   id?: string
   checkedInAt?: Date | string | null
@@ -520,6 +720,8 @@ export type LoanCreateWithoutHandledByInput = {
   updatedAt?: Date | string
   reservation: Prisma.ReservationCreateNestedOneWithoutLoanInput
   key: Prisma.KeyCreateNestedOneWithoutLoansInput
+  borrower?: Prisma.UserCreateNestedOneWithoutBorrowedLoansInput
+  returnedBy?: Prisma.UserCreateNestedOneWithoutReturnedLoansInput
 }
 
 export type LoanUncheckedCreateWithoutHandledByInput = {
@@ -530,6 +732,8 @@ export type LoanUncheckedCreateWithoutHandledByInput = {
   checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  borrowerId?: string | null
+  returnedById?: string | null
 }
 
 export type LoanCreateOrConnectWithoutHandledByInput = {
@@ -540,6 +744,54 @@ export type LoanCreateOrConnectWithoutHandledByInput = {
 export type LoanCreateManyHandledByInputEnvelope = {
   data: Prisma.LoanCreateManyHandledByInput | Prisma.LoanCreateManyHandledByInput[]
   skipDuplicates?: boolean
+}
+
+export type LoanUpsertWithWhereUniqueWithoutBorrowerInput = {
+  where: Prisma.LoanWhereUniqueInput
+  update: Prisma.XOR<Prisma.LoanUpdateWithoutBorrowerInput, Prisma.LoanUncheckedUpdateWithoutBorrowerInput>
+  create: Prisma.XOR<Prisma.LoanCreateWithoutBorrowerInput, Prisma.LoanUncheckedCreateWithoutBorrowerInput>
+}
+
+export type LoanUpdateWithWhereUniqueWithoutBorrowerInput = {
+  where: Prisma.LoanWhereUniqueInput
+  data: Prisma.XOR<Prisma.LoanUpdateWithoutBorrowerInput, Prisma.LoanUncheckedUpdateWithoutBorrowerInput>
+}
+
+export type LoanUpdateManyWithWhereWithoutBorrowerInput = {
+  where: Prisma.LoanScalarWhereInput
+  data: Prisma.XOR<Prisma.LoanUpdateManyMutationInput, Prisma.LoanUncheckedUpdateManyWithoutBorrowerInput>
+}
+
+export type LoanScalarWhereInput = {
+  AND?: Prisma.LoanScalarWhereInput | Prisma.LoanScalarWhereInput[]
+  OR?: Prisma.LoanScalarWhereInput[]
+  NOT?: Prisma.LoanScalarWhereInput | Prisma.LoanScalarWhereInput[]
+  id?: Prisma.StringFilter<"Loan"> | string
+  reservationId?: Prisma.StringFilter<"Loan"> | string
+  keyId?: Prisma.StringFilter<"Loan"> | string
+  checkedInAt?: Prisma.DateTimeNullableFilter<"Loan"> | Date | string | null
+  checkedOutAt?: Prisma.DateTimeNullableFilter<"Loan"> | Date | string | null
+  handledById?: Prisma.StringNullableFilter<"Loan"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"Loan"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Loan"> | Date | string
+  borrowerId?: Prisma.StringNullableFilter<"Loan"> | string | null
+  returnedById?: Prisma.StringNullableFilter<"Loan"> | string | null
+}
+
+export type LoanUpsertWithWhereUniqueWithoutReturnedByInput = {
+  where: Prisma.LoanWhereUniqueInput
+  update: Prisma.XOR<Prisma.LoanUpdateWithoutReturnedByInput, Prisma.LoanUncheckedUpdateWithoutReturnedByInput>
+  create: Prisma.XOR<Prisma.LoanCreateWithoutReturnedByInput, Prisma.LoanUncheckedCreateWithoutReturnedByInput>
+}
+
+export type LoanUpdateWithWhereUniqueWithoutReturnedByInput = {
+  where: Prisma.LoanWhereUniqueInput
+  data: Prisma.XOR<Prisma.LoanUpdateWithoutReturnedByInput, Prisma.LoanUncheckedUpdateWithoutReturnedByInput>
+}
+
+export type LoanUpdateManyWithWhereWithoutReturnedByInput = {
+  where: Prisma.LoanScalarWhereInput
+  data: Prisma.XOR<Prisma.LoanUpdateManyMutationInput, Prisma.LoanUncheckedUpdateManyWithoutReturnedByInput>
 }
 
 export type LoanUpsertWithWhereUniqueWithoutHandledByInput = {
@@ -558,20 +810,6 @@ export type LoanUpdateManyWithWhereWithoutHandledByInput = {
   data: Prisma.XOR<Prisma.LoanUpdateManyMutationInput, Prisma.LoanUncheckedUpdateManyWithoutHandledByInput>
 }
 
-export type LoanScalarWhereInput = {
-  AND?: Prisma.LoanScalarWhereInput | Prisma.LoanScalarWhereInput[]
-  OR?: Prisma.LoanScalarWhereInput[]
-  NOT?: Prisma.LoanScalarWhereInput | Prisma.LoanScalarWhereInput[]
-  id?: Prisma.StringFilter<"Loan"> | string
-  reservationId?: Prisma.StringFilter<"Loan"> | string
-  keyId?: Prisma.StringFilter<"Loan"> | string
-  checkedInAt?: Prisma.DateTimeNullableFilter<"Loan"> | Date | string | null
-  checkedOutAt?: Prisma.DateTimeNullableFilter<"Loan"> | Date | string | null
-  handledById?: Prisma.StringNullableFilter<"Loan"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Loan"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Loan"> | Date | string
-}
-
 export type LoanCreateWithoutKeyInput = {
   id?: string
   checkedInAt?: Date | string | null
@@ -580,6 +818,8 @@ export type LoanCreateWithoutKeyInput = {
   updatedAt?: Date | string
   reservation: Prisma.ReservationCreateNestedOneWithoutLoanInput
   handledBy?: Prisma.UserCreateNestedOneWithoutHandledLoansInput
+  borrower?: Prisma.UserCreateNestedOneWithoutBorrowedLoansInput
+  returnedBy?: Prisma.UserCreateNestedOneWithoutReturnedLoansInput
 }
 
 export type LoanUncheckedCreateWithoutKeyInput = {
@@ -590,6 +830,8 @@ export type LoanUncheckedCreateWithoutKeyInput = {
   handledById?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  borrowerId?: string | null
+  returnedById?: string | null
 }
 
 export type LoanCreateOrConnectWithoutKeyInput = {
@@ -626,6 +868,8 @@ export type LoanCreateWithoutReservationInput = {
   updatedAt?: Date | string
   key: Prisma.KeyCreateNestedOneWithoutLoansInput
   handledBy?: Prisma.UserCreateNestedOneWithoutHandledLoansInput
+  borrower?: Prisma.UserCreateNestedOneWithoutBorrowedLoansInput
+  returnedBy?: Prisma.UserCreateNestedOneWithoutReturnedLoansInput
 }
 
 export type LoanUncheckedCreateWithoutReservationInput = {
@@ -636,6 +880,8 @@ export type LoanUncheckedCreateWithoutReservationInput = {
   handledById?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  borrowerId?: string | null
+  returnedById?: string | null
 }
 
 export type LoanCreateOrConnectWithoutReservationInput = {
@@ -662,6 +908,8 @@ export type LoanUpdateWithoutReservationInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   key?: Prisma.KeyUpdateOneRequiredWithoutLoansNestedInput
   handledBy?: Prisma.UserUpdateOneWithoutHandledLoansNestedInput
+  borrower?: Prisma.UserUpdateOneWithoutBorrowedLoansNestedInput
+  returnedBy?: Prisma.UserUpdateOneWithoutReturnedLoansNestedInput
 }
 
 export type LoanUncheckedUpdateWithoutReservationInput = {
@@ -672,6 +920,32 @@ export type LoanUncheckedUpdateWithoutReservationInput = {
   handledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  borrowerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  returnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type LoanCreateManyBorrowerInput = {
+  id?: string
+  reservationId: string
+  keyId: string
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
+  handledById?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  returnedById?: string | null
+}
+
+export type LoanCreateManyReturnedByInput = {
+  id?: string
+  reservationId: string
+  keyId: string
+  checkedInAt?: Date | string | null
+  checkedOutAt?: Date | string | null
+  handledById?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  borrowerId?: string | null
 }
 
 export type LoanCreateManyHandledByInput = {
@@ -682,6 +956,80 @@ export type LoanCreateManyHandledByInput = {
   checkedOutAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  borrowerId?: string | null
+  returnedById?: string | null
+}
+
+export type LoanUpdateWithoutBorrowerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reservation?: Prisma.ReservationUpdateOneRequiredWithoutLoanNestedInput
+  key?: Prisma.KeyUpdateOneRequiredWithoutLoansNestedInput
+  handledBy?: Prisma.UserUpdateOneWithoutHandledLoansNestedInput
+  returnedBy?: Prisma.UserUpdateOneWithoutReturnedLoansNestedInput
+}
+
+export type LoanUncheckedUpdateWithoutBorrowerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  reservationId?: Prisma.StringFieldUpdateOperationsInput | string
+  keyId?: Prisma.StringFieldUpdateOperationsInput | string
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  handledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  returnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type LoanUncheckedUpdateManyWithoutBorrowerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  reservationId?: Prisma.StringFieldUpdateOperationsInput | string
+  keyId?: Prisma.StringFieldUpdateOperationsInput | string
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  handledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  returnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type LoanUpdateWithoutReturnedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reservation?: Prisma.ReservationUpdateOneRequiredWithoutLoanNestedInput
+  key?: Prisma.KeyUpdateOneRequiredWithoutLoansNestedInput
+  handledBy?: Prisma.UserUpdateOneWithoutHandledLoansNestedInput
+  borrower?: Prisma.UserUpdateOneWithoutBorrowedLoansNestedInput
+}
+
+export type LoanUncheckedUpdateWithoutReturnedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  reservationId?: Prisma.StringFieldUpdateOperationsInput | string
+  keyId?: Prisma.StringFieldUpdateOperationsInput | string
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  handledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  borrowerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type LoanUncheckedUpdateManyWithoutReturnedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  reservationId?: Prisma.StringFieldUpdateOperationsInput | string
+  keyId?: Prisma.StringFieldUpdateOperationsInput | string
+  checkedInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  handledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  borrowerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type LoanUpdateWithoutHandledByInput = {
@@ -692,6 +1040,8 @@ export type LoanUpdateWithoutHandledByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reservation?: Prisma.ReservationUpdateOneRequiredWithoutLoanNestedInput
   key?: Prisma.KeyUpdateOneRequiredWithoutLoansNestedInput
+  borrower?: Prisma.UserUpdateOneWithoutBorrowedLoansNestedInput
+  returnedBy?: Prisma.UserUpdateOneWithoutReturnedLoansNestedInput
 }
 
 export type LoanUncheckedUpdateWithoutHandledByInput = {
@@ -702,6 +1052,8 @@ export type LoanUncheckedUpdateWithoutHandledByInput = {
   checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  borrowerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  returnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type LoanUncheckedUpdateManyWithoutHandledByInput = {
@@ -712,6 +1064,8 @@ export type LoanUncheckedUpdateManyWithoutHandledByInput = {
   checkedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  borrowerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  returnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type LoanCreateManyKeyInput = {
@@ -722,6 +1076,8 @@ export type LoanCreateManyKeyInput = {
   handledById?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  borrowerId?: string | null
+  returnedById?: string | null
 }
 
 export type LoanUpdateWithoutKeyInput = {
@@ -732,6 +1088,8 @@ export type LoanUpdateWithoutKeyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reservation?: Prisma.ReservationUpdateOneRequiredWithoutLoanNestedInput
   handledBy?: Prisma.UserUpdateOneWithoutHandledLoansNestedInput
+  borrower?: Prisma.UserUpdateOneWithoutBorrowedLoansNestedInput
+  returnedBy?: Prisma.UserUpdateOneWithoutReturnedLoansNestedInput
 }
 
 export type LoanUncheckedUpdateWithoutKeyInput = {
@@ -742,6 +1100,8 @@ export type LoanUncheckedUpdateWithoutKeyInput = {
   handledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  borrowerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  returnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type LoanUncheckedUpdateManyWithoutKeyInput = {
@@ -752,6 +1112,8 @@ export type LoanUncheckedUpdateManyWithoutKeyInput = {
   handledById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  borrowerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  returnedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -765,9 +1127,13 @@ export type LoanSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   handledById?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  borrowerId?: boolean
+  returnedById?: boolean
   reservation?: boolean | Prisma.ReservationDefaultArgs<ExtArgs>
   key?: boolean | Prisma.KeyDefaultArgs<ExtArgs>
   handledBy?: boolean | Prisma.Loan$handledByArgs<ExtArgs>
+  borrower?: boolean | Prisma.Loan$borrowerArgs<ExtArgs>
+  returnedBy?: boolean | Prisma.Loan$returnedByArgs<ExtArgs>
 }, ExtArgs["result"]["loan"]>
 
 export type LoanSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -779,9 +1145,13 @@ export type LoanSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   handledById?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  borrowerId?: boolean
+  returnedById?: boolean
   reservation?: boolean | Prisma.ReservationDefaultArgs<ExtArgs>
   key?: boolean | Prisma.KeyDefaultArgs<ExtArgs>
   handledBy?: boolean | Prisma.Loan$handledByArgs<ExtArgs>
+  borrower?: boolean | Prisma.Loan$borrowerArgs<ExtArgs>
+  returnedBy?: boolean | Prisma.Loan$returnedByArgs<ExtArgs>
 }, ExtArgs["result"]["loan"]>
 
 export type LoanSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -793,9 +1163,13 @@ export type LoanSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   handledById?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  borrowerId?: boolean
+  returnedById?: boolean
   reservation?: boolean | Prisma.ReservationDefaultArgs<ExtArgs>
   key?: boolean | Prisma.KeyDefaultArgs<ExtArgs>
   handledBy?: boolean | Prisma.Loan$handledByArgs<ExtArgs>
+  borrower?: boolean | Prisma.Loan$borrowerArgs<ExtArgs>
+  returnedBy?: boolean | Prisma.Loan$returnedByArgs<ExtArgs>
 }, ExtArgs["result"]["loan"]>
 
 export type LoanSelectScalar = {
@@ -807,23 +1181,31 @@ export type LoanSelectScalar = {
   handledById?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  borrowerId?: boolean
+  returnedById?: boolean
 }
 
-export type LoanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reservationId" | "keyId" | "checkedInAt" | "checkedOutAt" | "handledById" | "createdAt" | "updatedAt", ExtArgs["result"]["loan"]>
+export type LoanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reservationId" | "keyId" | "checkedInAt" | "checkedOutAt" | "handledById" | "createdAt" | "updatedAt" | "borrowerId" | "returnedById", ExtArgs["result"]["loan"]>
 export type LoanInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   reservation?: boolean | Prisma.ReservationDefaultArgs<ExtArgs>
   key?: boolean | Prisma.KeyDefaultArgs<ExtArgs>
   handledBy?: boolean | Prisma.Loan$handledByArgs<ExtArgs>
+  borrower?: boolean | Prisma.Loan$borrowerArgs<ExtArgs>
+  returnedBy?: boolean | Prisma.Loan$returnedByArgs<ExtArgs>
 }
 export type LoanIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   reservation?: boolean | Prisma.ReservationDefaultArgs<ExtArgs>
   key?: boolean | Prisma.KeyDefaultArgs<ExtArgs>
   handledBy?: boolean | Prisma.Loan$handledByArgs<ExtArgs>
+  borrower?: boolean | Prisma.Loan$borrowerArgs<ExtArgs>
+  returnedBy?: boolean | Prisma.Loan$returnedByArgs<ExtArgs>
 }
 export type LoanIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   reservation?: boolean | Prisma.ReservationDefaultArgs<ExtArgs>
   key?: boolean | Prisma.KeyDefaultArgs<ExtArgs>
   handledBy?: boolean | Prisma.Loan$handledByArgs<ExtArgs>
+  borrower?: boolean | Prisma.Loan$borrowerArgs<ExtArgs>
+  returnedBy?: boolean | Prisma.Loan$returnedByArgs<ExtArgs>
 }
 
 export type $LoanPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -832,6 +1214,8 @@ export type $LoanPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     reservation: Prisma.$ReservationPayload<ExtArgs>
     key: Prisma.$KeyPayload<ExtArgs>
     handledBy: Prisma.$UserPayload<ExtArgs> | null
+    borrower: Prisma.$UserPayload<ExtArgs> | null
+    returnedBy: Prisma.$UserPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -842,6 +1226,8 @@ export type $LoanPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     handledById: string | null
     createdAt: Date
     updatedAt: Date
+    borrowerId: string | null
+    returnedById: string | null
   }, ExtArgs["result"]["loan"]>
   composites: {}
 }
@@ -1239,6 +1625,8 @@ export interface Prisma__LoanClient<T, Null = never, ExtArgs extends runtime.Typ
   reservation<T extends Prisma.ReservationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReservationDefaultArgs<ExtArgs>>): Prisma.Prisma__ReservationClient<runtime.Types.Result.GetResult<Prisma.$ReservationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   key<T extends Prisma.KeyDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.KeyDefaultArgs<ExtArgs>>): Prisma.Prisma__KeyClient<runtime.Types.Result.GetResult<Prisma.$KeyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   handledBy<T extends Prisma.Loan$handledByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Loan$handledByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  borrower<T extends Prisma.Loan$borrowerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Loan$borrowerArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  returnedBy<T extends Prisma.Loan$returnedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Loan$returnedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1276,6 +1664,8 @@ export interface LoanFieldRefs {
   readonly handledById: Prisma.FieldRef<"Loan", 'String'>
   readonly createdAt: Prisma.FieldRef<"Loan", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Loan", 'DateTime'>
+  readonly borrowerId: Prisma.FieldRef<"Loan", 'String'>
+  readonly returnedById: Prisma.FieldRef<"Loan", 'String'>
 }
     
 
@@ -1675,6 +2065,44 @@ export type LoanDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
  * Loan.handledBy
  */
 export type Loan$handledByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
+}
+
+/**
+ * Loan.borrower
+ */
+export type Loan$borrowerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
+}
+
+/**
+ * Loan.returnedBy
+ */
+export type Loan$returnedByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the User
    */

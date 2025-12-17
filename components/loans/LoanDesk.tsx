@@ -98,6 +98,8 @@ async function checkIn(reservationId: string) {
     }
     await load();
   }
+  const [scanToken, setScanToken] = useState("");
+
 
   const pendingRows = useMemo(() => pendingCheckin, [pendingCheckin]);
   const activeRows = useMemo(() => activeLoans, [activeLoans]);
@@ -112,6 +114,20 @@ async function checkIn(reservationId: string) {
           จัดการ “รับกุญแจ (Check-in)” และ “คืนกุญแจ (Return)”
         </p>
       </div>
+
+      <div className="rounded-2xl border p-4 space-y-2">
+        <div className="text-sm font-medium">สแกน/วาง QR Token ของผู้ยืม/ผู้คืน</div>
+        <input
+          className="w-full rounded-lg border bg-background px-3 py-2 text-sm font-mono"
+          placeholder="วาง token ที่ได้จากหน้า /student/qr"
+          value={scanToken}
+          onChange={(e) => setScanToken(e.target.value)}
+        />
+        <div className="text-xs text-muted-foreground">
+          ต้องมี token ก่อนถึงจะกด “รับกุญแจ/คืนกุญแจ” ได้
+        </div>
+      </div>
+
 
       {error && (
         <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
