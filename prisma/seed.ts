@@ -89,6 +89,21 @@ async function main() {
     skipDuplicates: true,
   });
 
+  const allRooms = await prisma.room.findMany({ select: { id: true, code: true } });
+
+for (const r of allRooms) {
+  await prisma.key.upsert({
+    where: { keyCode: `${r.code}-KEY-1` },
+    update: {},
+    create: {
+      keyCode: `${r.code}-KEY-1`,
+      status: "AVAILABLE",
+      roomId: r.id,
+    },
+  });
+}
+
+
   console.log("✅ Rooms seeded");
   console.log("🌱 Seed completed");
 }

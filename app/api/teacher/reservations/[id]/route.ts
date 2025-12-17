@@ -3,12 +3,17 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 import { z } from "zod";
+import { generateRawToken , hashToken } from "@/lib/security/tokens";
 
 export const runtime = "nodejs";
 
 const bodySchema = z.object({
   action: z.enum(["APPROVE", "REJECT"]),
 });
+
+const raw = generateRawToken();
+const tokenHash = hashToken(raw);
+
 
 export async function PATCH(
   req: Request,
@@ -49,5 +54,19 @@ export async function PATCH(
     data: { status: nextStatus, approverId },
   });
 
-  return NextResponse.json({ ok: true });
-}
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+
+  await tx.accessToken.create({
+    data: {
+      type: "PICKUP",
+      tokenHash,
+      expiresAt,
+      reservationId: id,
+    },
+  });
+
+  return NextResponse.json({
+      ok: true,
+      pickupToken: raw,
+    });
+  }
