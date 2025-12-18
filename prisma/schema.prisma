@@ -52,10 +52,6 @@ enum ReservationType {
   AD_HOC // การจองทั่วไปของนักศึกษา (ไม่มี sectionId)
 }
 
-enum AccessTokenType {
-  PICKUP
-  RETURN
-}
 
 enum ReservationStatus {
   PENDING
@@ -227,7 +223,6 @@ model Reservation {
   participants ReservationParticipant[]
   loan         Loan?
 
-  accessTokens AccessToken[]
 
   @@unique([roomId, date, slot])
   @@index([roomId, startAt, endAt])
@@ -318,18 +313,6 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 
   @@index([userId])
-}
-
-model AccessToken {
-  id            String          @id @default(cuid())
-  type          AccessTokenType
-  tokenHash     String          @unique
-  expiresAt     DateTime
-  usedAt        DateTime?
-  reservationId String
-  reservation   Reservation     @relation(fields: [reservationId], references: [id])
-
-  createdAt DateTime @default(now())
 }
 
 model ReservationParticipant {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -241,6 +242,15 @@ export default function MyReservationsTable() {
                     <TableCell>
                       <Badge variant={statusVariant(r.status) as any}>{r.status}</Badge>
                     </TableCell>
+                    <TableCell>
+                      {item.type === "AD_HOC" && !["CHECKED_IN","COMPLETED","CANCELLED","REJECTED","NO_SHOW"].includes(item.status) && (
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/student/reservations/${item.id}/participants`}>
+                            ผู้ร่วม
+                          </Link>
+                        </Button>
+                      )}
+                    </TableCell>
 
                     <TableCell className="text-right">
                       <Button
@@ -252,6 +262,8 @@ export default function MyReservationsTable() {
                         {busyId === r.id ? "กำลังยกเลิก..." : "ยกเลิก"}
                       </Button>
                     </TableCell>
+
+
                   </TableRow>
                 ))
               )}

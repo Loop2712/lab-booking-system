@@ -53,20 +53,7 @@ export async function PATCH(
     where: { id },
     data: { status: nextStatus, approverId },
   });
+  return NextResponse.json({ ok: true });
 
-  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
 
-  await tx.accessToken.create({
-    data: {
-      type: "PICKUP",
-      tokenHash,
-      expiresAt,
-      reservationId: id,
-    },
-  });
-
-  return NextResponse.json({
-      ok: true,
-      pickupToken: raw,
-    });
   }

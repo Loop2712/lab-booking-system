@@ -36,5 +36,38 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 =======
-# lab-booking-system
->>>>>>> 0b1f07b67aeaaa76c73b907fc0b6c309e39f7d9e
+# Lab Booking System
+
+ระบบจองห้องปฏิบัติการ + ยืมคืนกุญแจ (Next.js App Router)
+
+## Tech Stack
+- Next.js (App Router)
+- NextAuth v4 (Credentials)
+- Prisma + PostgreSQL
+- shadcn/ui + Tailwind
+- Upstash Redis (Rate limit)
+
+## Roles
+- STUDENT: จองห้อง, ดูรายการของฉัน, จัดการผู้ร่วม (เฉพาะ AD_HOC), ดู QR Token ของฉัน
+- TEACHER: อนุมัติ/ปฏิเสธคำขอ
+- ADMIN: Loan Desk (ยืม/คืนกุญแจ)
+
+## Core Flow
+1) Student จองห้อง -> PENDING  
+2) Teacher อนุมัติ -> APPROVED  
+3) Loan Desk “รับกุญแจ” (ต้องสแกน/วาง QR Token ของผู้ยืม) -> CHECKED_IN + Key BORROWED + Loan created  
+4) Loan Desk “คืนกุญแจ” (สแกน/วาง QR Token ของผู้คืน) -> COMPLETED + Key AVAILABLE + Loan closed  
+
+## Borrow/Return Permission
+- IN_CLASS: คนที่อยู่ใน Enrollment ของ Section สามารถยืม/คืนได้
+- AD_HOC: ผู้จอง + ผู้ร่วม (ReservationParticipant) รวมไม่เกิน 5 คน
+
+## Run locally
+```bash
+npm install
+npm run dev
+
+# Prisma
+
+npx prisma migrate dev
+npx prisma studio
