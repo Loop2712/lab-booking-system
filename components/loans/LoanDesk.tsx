@@ -62,11 +62,16 @@ async function checkIn(reservationId: string) {
     const res = await fetch("/api/loans/check-in", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reservationId }),
+        body: JSON.stringify({ reservationId, userToken: scanToken.trim() }),
     });
 
     const json = await res.json().catch(() => ({}));
     setBusyId(null);
+
+    if (!scanToken.trim()) {
+      setError("กรุณาสแกน/วาง QR Token ก่อน");
+      return;
+    }
 
     if (!res.ok || !json?.ok) {
         setError(
@@ -87,8 +92,14 @@ async function checkIn(reservationId: string) {
     const res = await fetch("/api/loans/return", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reservationId }),
+      body: JSON.stringify({ reservationId, userToken: scanToken.trim() }),
     });
+
+    if (!scanToken.trim()) {
+      setError("กรุณาสแกน/วาง QR Token ก่อน");
+      return;
+    }
+
     const json = await res.json().catch(() => ({}));
     setBusyId(null);
 
