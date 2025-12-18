@@ -66,14 +66,6 @@ export const ReservationType = {
 export type ReservationType = (typeof ReservationType)[keyof typeof ReservationType]
 
 
-export const AccessTokenType = {
-  PICKUP: 'PICKUP',
-  RETURN: 'RETURN'
-} as const
-
-export type AccessTokenType = (typeof AccessTokenType)[keyof typeof AccessTokenType]
-
-
 export const ReservationStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',

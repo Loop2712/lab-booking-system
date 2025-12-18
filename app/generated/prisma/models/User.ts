@@ -33,6 +33,7 @@ export type UserMinAggregateOutputType = {
   gender: $Enums.Gender | null
   major: string | null
   studentType: $Enums.StudentType | null
+  isActive: boolean | null
   studentId: string | null
   email: string | null
   passwordHash: string | null
@@ -49,6 +50,7 @@ export type UserMaxAggregateOutputType = {
   gender: $Enums.Gender | null
   major: string | null
   studentType: $Enums.StudentType | null
+  isActive: boolean | null
   studentId: string | null
   email: string | null
   passwordHash: string | null
@@ -65,6 +67,7 @@ export type UserCountAggregateOutputType = {
   gender: number
   major: number
   studentType: number
+  isActive: number
   studentId: number
   email: number
   passwordHash: number
@@ -83,6 +86,7 @@ export type UserMinAggregateInputType = {
   gender?: true
   major?: true
   studentType?: true
+  isActive?: true
   studentId?: true
   email?: true
   passwordHash?: true
@@ -99,6 +103,7 @@ export type UserMaxAggregateInputType = {
   gender?: true
   major?: true
   studentType?: true
+  isActive?: true
   studentId?: true
   email?: true
   passwordHash?: true
@@ -115,6 +120,7 @@ export type UserCountAggregateInputType = {
   gender?: true
   major?: true
   studentType?: true
+  isActive?: true
   studentId?: true
   email?: true
   passwordHash?: true
@@ -204,6 +210,7 @@ export type UserGroupByOutputType = {
   gender: $Enums.Gender | null
   major: string | null
   studentType: $Enums.StudentType | null
+  isActive: boolean
   studentId: string | null
   email: string | null
   passwordHash: string | null
@@ -241,6 +248,7 @@ export type UserWhereInput = {
   gender?: Prisma.EnumGenderNullableFilter<"User"> | $Enums.Gender | null
   major?: Prisma.StringNullableFilter<"User"> | string | null
   studentType?: Prisma.EnumStudentTypeNullableFilter<"User"> | $Enums.StudentType | null
+  isActive?: Prisma.BoolFilter<"User"> | boolean
   studentId?: Prisma.StringNullableFilter<"User"> | string | null
   email?: Prisma.StringNullableFilter<"User"> | string | null
   passwordHash?: Prisma.StringNullableFilter<"User"> | string | null
@@ -268,6 +276,7 @@ export type UserOrderByWithRelationInput = {
   gender?: Prisma.SortOrderInput | Prisma.SortOrder
   major?: Prisma.SortOrderInput | Prisma.SortOrder
   studentType?: Prisma.SortOrderInput | Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   studentId?: Prisma.SortOrderInput | Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -300,6 +309,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   gender?: Prisma.EnumGenderNullableFilter<"User"> | $Enums.Gender | null
   major?: Prisma.StringNullableFilter<"User"> | string | null
   studentType?: Prisma.EnumStudentTypeNullableFilter<"User"> | $Enums.StudentType | null
+  isActive?: Prisma.BoolFilter<"User"> | boolean
   passwordHash?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -325,6 +335,7 @@ export type UserOrderByWithAggregationInput = {
   gender?: Prisma.SortOrderInput | Prisma.SortOrder
   major?: Prisma.SortOrderInput | Prisma.SortOrder
   studentType?: Prisma.SortOrderInput | Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   studentId?: Prisma.SortOrderInput | Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -347,6 +358,7 @@ export type UserScalarWhereWithAggregatesInput = {
   gender?: Prisma.EnumGenderNullableWithAggregatesFilter<"User"> | $Enums.Gender | null
   major?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   studentType?: Prisma.EnumStudentTypeNullableWithAggregatesFilter<"User"> | $Enums.StudentType | null
+  isActive?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   studentId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   email?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   passwordHash?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
@@ -363,6 +375,7 @@ export type UserCreateInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -390,6 +403,7 @@ export type UserUncheckedCreateInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -417,6 +431,7 @@ export type UserUpdateInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -444,6 +459,7 @@ export type UserUncheckedUpdateInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -471,6 +487,7 @@ export type UserCreateManyInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -487,6 +504,7 @@ export type UserUpdateManyMutationInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -503,6 +521,7 @@ export type UserUncheckedUpdateManyInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -519,6 +538,7 @@ export type UserCountOrderByAggregateInput = {
   gender?: Prisma.SortOrder
   major?: Prisma.SortOrder
   studentType?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   studentId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
@@ -535,6 +555,7 @@ export type UserMaxOrderByAggregateInput = {
   gender?: Prisma.SortOrder
   major?: Prisma.SortOrder
   studentType?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   studentId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
@@ -551,6 +572,7 @@ export type UserMinOrderByAggregateInput = {
   gender?: Prisma.SortOrder
   major?: Prisma.SortOrder
   studentType?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   studentId?: Prisma.SortOrder
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
@@ -590,6 +612,10 @@ export type NullableStringFieldUpdateOperationsInput = {
 
 export type NullableEnumStudentTypeFieldUpdateOperationsInput = {
   set?: $Enums.StudentType | null
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type UserCreateNestedOneWithoutTaughtSectionsInput = {
@@ -763,6 +789,7 @@ export type UserCreateWithoutTaughtSectionsInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -789,6 +816,7 @@ export type UserUncheckedCreateWithoutTaughtSectionsInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -831,6 +859,7 @@ export type UserUpdateWithoutTaughtSectionsInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -857,6 +886,7 @@ export type UserUncheckedUpdateWithoutTaughtSectionsInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -883,6 +913,7 @@ export type UserCreateWithoutEnrollmentsInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -909,6 +940,7 @@ export type UserUncheckedCreateWithoutEnrollmentsInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -951,6 +983,7 @@ export type UserUpdateWithoutEnrollmentsInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -977,6 +1010,7 @@ export type UserUncheckedUpdateWithoutEnrollmentsInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1003,6 +1037,7 @@ export type UserCreateWithoutRequestedResvInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1029,6 +1064,7 @@ export type UserUncheckedCreateWithoutRequestedResvInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1060,6 +1096,7 @@ export type UserCreateWithoutApprovedResvInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1086,6 +1123,7 @@ export type UserUncheckedCreateWithoutApprovedResvInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1128,6 +1166,7 @@ export type UserUpdateWithoutRequestedResvInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1154,6 +1193,7 @@ export type UserUncheckedUpdateWithoutRequestedResvInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1191,6 +1231,7 @@ export type UserUpdateWithoutApprovedResvInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1217,6 +1258,7 @@ export type UserUncheckedUpdateWithoutApprovedResvInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1243,6 +1285,7 @@ export type UserCreateWithoutHandledLoansInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1269,6 +1312,7 @@ export type UserUncheckedCreateWithoutHandledLoansInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1300,6 +1344,7 @@ export type UserCreateWithoutBorrowedLoansInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1326,6 +1371,7 @@ export type UserUncheckedCreateWithoutBorrowedLoansInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1357,6 +1403,7 @@ export type UserCreateWithoutReturnedLoansInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1383,6 +1430,7 @@ export type UserUncheckedCreateWithoutReturnedLoansInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1425,6 +1473,7 @@ export type UserUpdateWithoutHandledLoansInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1451,6 +1500,7 @@ export type UserUncheckedUpdateWithoutHandledLoansInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1488,6 +1538,7 @@ export type UserUpdateWithoutBorrowedLoansInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1514,6 +1565,7 @@ export type UserUncheckedUpdateWithoutBorrowedLoansInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1551,6 +1603,7 @@ export type UserUpdateWithoutReturnedLoansInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1577,6 +1630,7 @@ export type UserUncheckedUpdateWithoutReturnedLoansInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1603,6 +1657,7 @@ export type UserCreateWithoutAccountsInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1629,6 +1684,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1671,6 +1727,7 @@ export type UserUpdateWithoutAccountsInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1697,6 +1754,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1723,6 +1781,7 @@ export type UserCreateWithoutSessionsInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1749,6 +1808,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1791,6 +1851,7 @@ export type UserUpdateWithoutSessionsInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1817,6 +1878,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1843,6 +1905,7 @@ export type UserCreateWithoutPasswordTokensInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1869,6 +1932,7 @@ export type UserUncheckedCreateWithoutPasswordTokensInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1911,6 +1975,7 @@ export type UserUpdateWithoutPasswordTokensInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1937,6 +2002,7 @@ export type UserUncheckedUpdateWithoutPasswordTokensInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1963,6 +2029,7 @@ export type UserCreateWithoutReservationParticipantsInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -1989,6 +2056,7 @@ export type UserUncheckedCreateWithoutReservationParticipantsInput = {
   gender?: $Enums.Gender | null
   major?: string | null
   studentType?: $Enums.StudentType | null
+  isActive?: boolean
   studentId?: string | null
   email?: string | null
   passwordHash?: string | null
@@ -2031,6 +2099,7 @@ export type UserUpdateWithoutReservationParticipantsInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2057,6 +2126,7 @@ export type UserUncheckedUpdateWithoutReservationParticipantsInput = {
   gender?: Prisma.NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
   major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentType?: Prisma.NullableEnumStudentTypeFieldUpdateOperationsInput | $Enums.StudentType | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2204,6 +2274,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   gender?: boolean
   major?: boolean
   studentType?: boolean
+  isActive?: boolean
   studentId?: boolean
   email?: boolean
   passwordHash?: boolean
@@ -2232,6 +2303,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   gender?: boolean
   major?: boolean
   studentType?: boolean
+  isActive?: boolean
   studentId?: boolean
   email?: boolean
   passwordHash?: boolean
@@ -2248,6 +2320,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   gender?: boolean
   major?: boolean
   studentType?: boolean
+  isActive?: boolean
   studentId?: boolean
   email?: boolean
   passwordHash?: boolean
@@ -2264,6 +2337,7 @@ export type UserSelectScalar = {
   gender?: boolean
   major?: boolean
   studentType?: boolean
+  isActive?: boolean
   studentId?: boolean
   email?: boolean
   passwordHash?: boolean
@@ -2271,7 +2345,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "role" | "firstName" | "lastName" | "birthDate" | "gender" | "major" | "studentType" | "studentId" | "email" | "passwordHash" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "role" | "firstName" | "lastName" | "birthDate" | "gender" | "major" | "studentType" | "isActive" | "studentId" | "email" | "passwordHash" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
@@ -2313,6 +2387,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     gender: $Enums.Gender | null
     major: string | null
     studentType: $Enums.StudentType | null
+    isActive: boolean
     studentId: string | null
     email: string | null
     passwordHash: string | null
@@ -2760,6 +2835,7 @@ export interface UserFieldRefs {
   readonly gender: Prisma.FieldRef<"User", 'Gender'>
   readonly major: Prisma.FieldRef<"User", 'String'>
   readonly studentType: Prisma.FieldRef<"User", 'StudentType'>
+  readonly isActive: Prisma.FieldRef<"User", 'Boolean'>
   readonly studentId: Prisma.FieldRef<"User", 'String'>
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly passwordHash: Prisma.FieldRef<"User", 'String'>

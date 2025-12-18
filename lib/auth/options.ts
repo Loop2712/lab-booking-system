@@ -71,6 +71,7 @@ export const authOptions: NextAuthOptions = {
             where: { studentId: c.studentId },
             select: {
               id: true,
+              isActive: true,
               role: true,
               firstName: true,
               lastName: true,
@@ -114,6 +115,7 @@ export const authOptions: NextAuthOptions = {
           where: { email: c.email },
           select: {
             id: true,
+            isActive: true,
             role: true,
             firstName: true,
             lastName: true,

@@ -396,7 +396,6 @@ export const ModelName = {
   Session: 'Session',
   VerificationToken: 'VerificationToken',
   PasswordResetToken: 'PasswordResetToken',
-  AccessToken: 'AccessToken',
   ReservationParticipant: 'ReservationParticipant'
 } as const
 
@@ -413,7 +412,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "room" | "key" | "course" | "section" | "enrollment" | "reservation" | "loan" | "account" | "session" | "verificationToken" | "passwordResetToken" | "accessToken" | "reservationParticipant"
+    modelProps: "user" | "room" | "key" | "course" | "section" | "enrollment" | "reservation" | "loan" | "account" | "session" | "verificationToken" | "passwordResetToken" | "reservationParticipant"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1305,80 +1304,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    AccessToken: {
-      payload: Prisma.$AccessTokenPayload<ExtArgs>
-      fields: Prisma.AccessTokenFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.AccessTokenFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.AccessTokenFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>
-        }
-        findFirst: {
-          args: Prisma.AccessTokenFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.AccessTokenFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>
-        }
-        findMany: {
-          args: Prisma.AccessTokenFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>[]
-        }
-        create: {
-          args: Prisma.AccessTokenCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>
-        }
-        createMany: {
-          args: Prisma.AccessTokenCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.AccessTokenCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>[]
-        }
-        delete: {
-          args: Prisma.AccessTokenDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>
-        }
-        update: {
-          args: Prisma.AccessTokenUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>
-        }
-        deleteMany: {
-          args: Prisma.AccessTokenDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.AccessTokenUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.AccessTokenUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>[]
-        }
-        upsert: {
-          args: Prisma.AccessTokenUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessTokenPayload>
-        }
-        aggregate: {
-          args: Prisma.AccessTokenAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateAccessToken>
-        }
-        groupBy: {
-          args: Prisma.AccessTokenGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AccessTokenGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.AccessTokenCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AccessTokenCountAggregateOutputType> | number
-        }
-      }
-    }
     ReservationParticipant: {
       payload: Prisma.$ReservationParticipantPayload<ExtArgs>
       fields: Prisma.ReservationParticipantFieldRefs
@@ -1501,6 +1426,7 @@ export const UserScalarFieldEnum = {
   gender: 'gender',
   major: 'major',
   studentType: 'studentType',
+  isActive: 'isActive',
   studentId: 'studentId',
   email: 'email',
   passwordHash: 'passwordHash',
@@ -1662,19 +1588,6 @@ export const PasswordResetTokenScalarFieldEnum = {
 export type PasswordResetTokenScalarFieldEnum = (typeof PasswordResetTokenScalarFieldEnum)[keyof typeof PasswordResetTokenScalarFieldEnum]
 
 
-export const AccessTokenScalarFieldEnum = {
-  id: 'id',
-  type: 'type',
-  tokenHash: 'tokenHash',
-  expiresAt: 'expiresAt',
-  usedAt: 'usedAt',
-  reservationId: 'reservationId',
-  createdAt: 'createdAt'
-} as const
-
-export type AccessTokenScalarFieldEnum = (typeof AccessTokenScalarFieldEnum)[keyof typeof AccessTokenScalarFieldEnum]
-
-
 export const ReservationParticipantScalarFieldEnum = {
   id: 'id',
   reservationId: 'reservationId',
@@ -1786,6 +1699,13 @@ export type ListEnumStudentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -1796,13 +1716,6 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
-    
-
-
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -1859,20 +1772,6 @@ export type EnumReservationStatusFieldRefInput<$PrismaModel> = FieldRefInputType
  * Reference to a field of type 'ReservationStatus[]'
  */
 export type ListEnumReservationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReservationStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'AccessTokenType'
- */
-export type EnumAccessTokenTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccessTokenType'>
-    
-
-
-/**
- * Reference to a field of type 'AccessTokenType[]'
- */
-export type ListEnumAccessTokenTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccessTokenType[]'>
     
 
 
@@ -1996,7 +1895,6 @@ export type GlobalOmitConfig = {
   session?: Prisma.SessionOmit
   verificationToken?: Prisma.VerificationTokenOmit
   passwordResetToken?: Prisma.PasswordResetTokenOmit
-  accessToken?: Prisma.AccessTokenOmit
   reservationParticipant?: Prisma.ReservationParticipantOmit
 }
 

@@ -68,7 +68,9 @@ async function checkIn(reservationId: string) {
     const json = await res.json().catch(() => ({}));
     setBusyId(null);
 
-    if (!scanToken.trim()) {
+    const token = scanToken.trim();
+
+    if (token.length < 10) {
       setError("กรุณาสแกน/วาง QR Token ก่อน");
       return;
     }
@@ -95,7 +97,8 @@ async function checkIn(reservationId: string) {
       body: JSON.stringify({ reservationId, userToken: scanToken.trim() }),
     });
 
-    if (!scanToken.trim()) {
+    const token = scanToken.trim();
+    if (token.length < 10) {
       setError("กรุณาสแกน/วาง QR Token ก่อน");
       return;
     }

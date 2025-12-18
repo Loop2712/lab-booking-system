@@ -1,12 +1,214 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+type Room = { id: string; code: string; name: string; isActive: boolean };
+type KeyRow = {
+  id: string;
+  keyCode: string;
+  status: "AVAILABLE" | "BORROWED" | "LOST" | "DAMAGED";
+  roomId: string;
+  room?: Room;
+};
 
 export default function AdminKeysPage() {
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [keys, setKeys] = useState<KeyRow[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const [form, setForm] = useState({
+    keyCode: "",
+    roomId: "",
+    status:  "AVAILABLE" as "AVAILABLE" | "BORROWED" | "LOST" | "DAMAGED",
+  });
+
+  const roomOptions = useMemo(() => rooms.filter((r) => r.isActive), [rooms]);
+
+  async function loadRooms() {
+    const res = await fetch("/api/admin/rooms", { cache: "no-store" });
+    const json = await res.json().catch(() => ({}));
+    if (res.ok && json?.ok) setRooms(json.rooms ?? []);
+  }
+
+  async function loadKeys() {
+    setError(null);
+    const res = await fetch("/api/admin/keys", { cache: "no-store" });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json?.ok) {
+      setError(json?.message || "โหลดกุญแจไม่สำเร็จ");
+      return;
+    }
+    setKeys(json.keys ?? []);
+  }
+
+  useEffect(() => {
+    loadRooms();
+    loadKeys();
+  }, []);
+
+  async function createKey() {
+    setError(null);
+    if (!form.roomId) {
+      setError("กรุณาเลือกห้องก่อน");
+      return;
+    }
+    setBusy(true);
+    const res = await fetch("/api/admin/keys", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    const json = await res.json().catch(() => ({}));
+    setBusy(false);
+
+    if (!res.ok || !json?.ok) {
+      setError(json?.message || "เพิ่มกุญแจไม่สำเร็จ");
+      return;
+    }
+
+    setForm({ keyCode: "", roomId: "", status: "AVAILABLE" });
+    await loadKeys();
+  }
+
+  async function setAvailable(key: KeyRow) {
+    setError(null);
+    setBusy(true);
+    const res = await fetch(`/api/admin/keys/${key.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "AVAILABLE" }),
+    });
+    const json = await res.json().catch(() => ({}));
+    setBusy(false);
+
+    if (!res.ok || !json?.ok) {
+      setError(json?.message || "อัปเดตไม่สำเร็จ");
+      return;
+    }
+    await loadKeys();
+  }
+
   return (
-    <PlaceholderPage
-      title="Admin • Keys"
-      description="จัดการกุญแจห้อง"
-      backHref="/admin"
-      backLabel="กลับหน้า Admin Dashboard"
-    />
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold">Keys</h1>
+        <p className="text-sm text-muted-foreground">จัดการกุญแจ (1 ห้อง = 1 กุญแจ)</p>
+      </div>
+
+      {error && (
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">เพิ่มกุญแจ</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 sm:grid-cols-2">
+          <Input
+            placeholder="Key Code (unique) เช่น LAB-A-KEY-1"
+            value={form.keyCode}
+            onChange={(e) => setForm((s) => ({ ...s, keyCode: e.target.value }))}
+          />
+
+          <select
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+            value={form.status}
+            onChange={(e) => setForm((s) => ({ ...s, status: e.target.value as any }))}
+          >
+            <option value="AVAILABLE">AVAILABLE</option>
+            <option value="BORROWED">BORROWED</option>
+            <option value="LOST">LOST</option>
+            <option value="DAMAGED">DAMAGED</option>
+          </select>
+
+          <div className="sm:col-span-2">
+            <Button onClick={createKey} disabled={busy}>
+              {busy ? "กำลังบันทึก..." : "เพิ่มกุญแจ"}
+            </Button>
+            <Button variant="outline" className="ml-2" onClick={loadKeys} disabled={busy}>
+              รีเฟรช
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">รายการกุญแจ</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>KeyCode</TableHead>
+                <TableHead>Room</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {keys.map((k) => (
+                <TableRow key={k.id}>
+                  <TableCell className="font-mono">{k.keyCode}</TableCell>
+                  <TableCell>
+                    {k.room ? (
+                      <span>{k.room.code} — {k.room.name}</span>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>{k.status}</TableCell>
+                  <TableCell className="text-right">
+                    <select
+                      className="rounded-md border bg-background px-2 py-1 text-sm"
+                      value={k.status}
+                      onChange={async (e) => {
+                        const next = e.target.value as KeyRow["status"];
+                        setError(null);
+                        setBusy(true);
+                        const res = await fetch(`/api/admin/keys/${k.id}`, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ status: next }),
+                        });
+                        const json = await res.json().catch(() => ({}));
+                        setBusy(false);
+
+                        if (!res.ok || !json?.ok) {
+                          setError(json?.message || "อัปเดตไม่สำเร็จ");
+                          return;
+                        }
+                        await loadKeys();
+                      }}
+                      disabled={busy}
+                    >
+                      <option value="AVAILABLE">AVAILABLE</option>
+                      <option value="BORROWED">BORROWED</option>
+                      <option value="LOST">LOST</option>
+                      <option value="DAMAGED">DAMAGED</option>
+                    </select>
+                  </TableCell>
+
+                </TableRow>
+              ))}
+              {keys.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-sm text-muted-foreground">
+                    ยังไม่มีข้อมูลกุญแจ
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -63,7 +63,6 @@ export const ModelName = {
   Session: 'Session',
   VerificationToken: 'VerificationToken',
   PasswordResetToken: 'PasswordResetToken',
-  AccessToken: 'AccessToken',
   ReservationParticipant: 'ReservationParticipant'
 } as const
 
@@ -92,6 +91,7 @@ export const UserScalarFieldEnum = {
   gender: 'gender',
   major: 'major',
   studentType: 'studentType',
+  isActive: 'isActive',
   studentId: 'studentId',
   email: 'email',
   passwordHash: 'passwordHash',
@@ -251,19 +251,6 @@ export const PasswordResetTokenScalarFieldEnum = {
 } as const
 
 export type PasswordResetTokenScalarFieldEnum = (typeof PasswordResetTokenScalarFieldEnum)[keyof typeof PasswordResetTokenScalarFieldEnum]
-
-
-export const AccessTokenScalarFieldEnum = {
-  id: 'id',
-  type: 'type',
-  tokenHash: 'tokenHash',
-  expiresAt: 'expiresAt',
-  usedAt: 'usedAt',
-  reservationId: 'reservationId',
-  createdAt: 'createdAt'
-} as const
-
-export type AccessTokenScalarFieldEnum = (typeof AccessTokenScalarFieldEnum)[keyof typeof AccessTokenScalarFieldEnum]
 
 
 export const ReservationParticipantScalarFieldEnum = {

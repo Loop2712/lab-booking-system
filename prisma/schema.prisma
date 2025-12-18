@@ -73,7 +73,8 @@ model User {
   gender      Gender?
   major       String?
   studentType StudentType?
-
+  isActive Boolean @default(true)
+  
   studentId String? @unique @db.VarChar(11) // STUDENT เท่านั้น
   email     String? @unique // TEACHER/ADMIN เท่านั้น
 

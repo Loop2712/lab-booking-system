@@ -100,11 +100,6 @@ export type VerificationToken = Prisma.VerificationTokenModel
  */
 export type PasswordResetToken = Prisma.PasswordResetTokenModel
 /**
- * Model AccessToken
- * 
- */
-export type AccessToken = Prisma.AccessTokenModel
-/**
  * Model ReservationParticipant
  * 
  */
