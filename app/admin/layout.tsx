@@ -1,6 +1,8 @@
 import AppShell from "@/components/app-shell/AppShell";
 import { adminNav } from "@/components/app-shell/nav";
+import { requireRole } from "@/lib/auth/guard";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  await requireRole(["ADMIN"]);
   return <AppShell nav={adminNav} headerTitle="Admin Dashboard">{children}</AppShell>;
 }
