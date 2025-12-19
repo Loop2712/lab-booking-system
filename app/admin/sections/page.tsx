@@ -31,6 +31,8 @@ type Section = {
   _count: { enrollments: number; reservations: number };
 };
 
+const DOW = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
+
 function todayStr() {
   const d = new Date();
   const y = d.getFullYear();
@@ -48,7 +50,18 @@ function plusDaysStr(n: number) {
   return `${y}-${m}-${dd}`;
 }
 
-const DOW = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
+function ymd(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${dd}`;
+}
+
+function plusDays(n: number) {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return d;
+}
 
 export default function AdminSectionsPage() {
   const [sections, setSections] = useState<Section[]>([]);
@@ -56,6 +69,7 @@ export default function AdminSectionsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [teachers, setTeachers] = useState<User[]>([]);
 
+  // create section form
   const [courseId, setCourseId] = useState<string>("");
   const [teacherId, setTeacherId] = useState<string>("");
   const [roomId, setRoomId] = useState<string>("");
@@ -66,25 +80,32 @@ export default function AdminSectionsPage() {
   const [term, setTerm] = useState("");
   const [year, setYear] = useState<string>("");
 
+  // filters
+  const [q, setQ] = useState("");
+  const [fTerm, setFTerm] = useState("");
+  const [fYear, setFYear] = useState("");
+  const [fTeacher, setFTeacher] = useState<string>("ALL");
+  const [fRoom, setFRoom] = useState<string>("ALL");
+
+  // range (used by generate range / delete / regenerate)
   const [from, setFrom] = useState(todayStr());
   const [to, setTo] = useState(plusDaysStr(30));
 
-async function load() {
-  const [a, b, c, d] = await Promise.all([
-    fetch("/api/admin/sections").then((r) => r.json()),
-    fetch("/api/admin/courses").then((r) => r.json()),
-    fetch("/api/admin/rooms").then((r) => r.json()),
-    fetch("/api/admin/users").then((r) => r.json()),
-  ]);
+  async function load() {
+    const [a, b, c, d] = await Promise.all([
+      fetch("/api/admin/sections").then((r) => r.json()),
+      fetch("/api/admin/courses").then((r) => r.json()),
+      fetch("/api/admin/rooms").then((r) => r.json()),
+      fetch("/api/admin/users").then((r) => r.json()),
+    ]);
 
-  setSections(a.items ?? []);
-  setCourses(b.items ?? []);
-  setRooms(c.rooms ?? []);
+    setSections(a.items ?? []);
+    setCourses(b.items ?? []);
+    setRooms(c.rooms ?? []);
 
- 
-  const allUsers: User[] = d.users ?? [];
-  setTeachers(allUsers.filter((u) => u.role === "TEACHER"));
-}
+    const allUsers: User[] = d.users ?? [];
+    setTeachers(allUsers.filter((u) => u.role === "TEACHER"));
+  }
 
   useEffect(() => {
     load();
@@ -104,6 +125,23 @@ async function load() {
   }, [teachers, teacherId]);
 
   const canCreate = useMemo(() => !!courseId && !!teacherId && !!roomId, [courseId, teacherId, roomId]);
+
+  const filteredSections = useMemo(() => {
+    return sections.filter((s) => {
+      if (fTerm && (s.term ?? "") !== fTerm) return false;
+      if (fYear && String(s.year ?? "") !== fYear) return false;
+      if (fTeacher !== "ALL" && s.teacher.id !== fTeacher) return false;
+      if (fRoom !== "ALL" && s.room.id !== fRoom) return false;
+
+      if (q.trim()) {
+        const hay =
+          `${s.course.code} ${s.course.name} ${s.room.code} ${s.room.name} ${s.teacher.firstName} ${s.teacher.lastName} ${s.term ?? ""} ${s.year ?? ""}`
+            .toLowerCase();
+        if (!hay.includes(q.toLowerCase())) return false;
+      }
+      return true;
+    });
+  }, [sections, q, fTerm, fYear, fTeacher, fRoom]);
 
   async function create() {
     if (!canCreate) return;
@@ -140,12 +178,50 @@ async function load() {
     await load();
   }
 
+  async function generate30(sectionId: string) {
+    const from30 = ymd(new Date());
+    const to30 = ymd(plusDays(30));
+    const r = await fetch(`/api/admin/sections/${sectionId}/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ from: from30, to: to30 }),
+    });
+    const j = await r.json();
+    if (!j.ok) return alert(j.message ?? "ERROR");
+    alert(`Generated: ${j.created}`);
+    await load();
+  }
+
+  async function deleteGenerated(sectionId: string) {
+    const r = await fetch(
+      `/api/admin/sections/${sectionId}/generated?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+      { method: "DELETE" }
+    );
+    const j = await r.json();
+    if (!j.ok) return alert(j.message ?? "ERROR");
+    alert(`Deleted: ${j.deleted}`);
+    await load();
+  }
+
+  async function regenerate(sectionId: string) {
+    const r = await fetch(`/api/admin/sections/${sectionId}/regenerate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ from, to }),
+    });
+    const j = await r.json();
+    if (!j.ok) return alert(j.message ?? "ERROR");
+    alert(`Deleted: ${j.deleted} | Created: ${j.created}`);
+    await load();
+  }
+
   const courseLabel = (c: Course) => `${c.code} — ${c.name}`;
   const roomLabel = (r: Room) => `${r.code}${r.roomNumber ? ` (${r.roomNumber})` : ""} — ${r.name}`;
   const teacherLabel = (t: User) => `${t.firstName} ${t.lastName}${t.email ? ` (${t.email})` : ""}`;
 
   return (
     <div className="space-y-6">
+      {/* Create Section */}
       <Card>
         <CardHeader>
           <CardTitle>Create Section (ตารางสอนรายสัปดาห์)</CardTitle>
@@ -260,9 +336,10 @@ async function load() {
         </CardContent>
       </Card>
 
+      {/* Range */}
       <Card>
         <CardHeader>
-          <CardTitle>Generate IN_CLASS Reservations</CardTitle>
+          <CardTitle>Generate / Delete / Regenerate (range)</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-2 items-end">
           <div className="space-y-2">
@@ -276,32 +353,80 @@ async function load() {
         </CardContent>
       </Card>
 
+      {/* Sections list */}
       <Card>
         <CardHeader>
           <CardTitle>Sections</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
-          {sections.map((s) => (
+
+        <CardContent className="space-y-3">
+          {/* Search / Filter */}
+          <div className="grid gap-2 md:grid-cols-5">
+            <Input placeholder="Search (code/name/room/teacher)..." value={q} onChange={(e) => setQ(e.target.value)} />
+
+            <Input placeholder="Term (เช่น 1/2)" value={fTerm} onChange={(e) => setFTerm(e.target.value)} />
+
+            <Input placeholder="Year (เช่น 2025)" value={fYear} onChange={(e) => setFYear(e.target.value)} />
+
+            <Select value={fTeacher} onValueChange={setFTeacher}>
+              <SelectTrigger>
+                <SelectValue placeholder="Teacher" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All teachers</SelectItem>
+                {teachers.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.firstName} {t.lastName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={fRoom} onValueChange={setFRoom}>
+              <SelectTrigger>
+                <SelectValue placeholder="Room" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All rooms</SelectItem>
+                {rooms.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>
+                    {r.code} — {r.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* List */}
+          {filteredSections.map((s) => (
             <div key={s.id} className="border rounded-md p-3 space-y-1">
               <div className="font-medium">
                 {s.course.code} {s.course.name}
               </div>
+
               <div className="text-sm text-muted-foreground">
-                {s.dayOfWeek} {s.startTime}-{s.endTime} | Room: {s.room.code} | Teacher: {s.teacher.firstName}{" "}
-                {s.teacher.lastName}
+                {s.dayOfWeek} {s.startTime}-{s.endTime} | Room: {s.room.code} | Teacher: {s.teacher.firstName} {s.teacher.lastName}
+                {s.term ? ` | term: ${s.term}` : ""}{s.year ? ` | year: ${s.year}` : ""}
               </div>
+
               <div className="text-sm text-muted-foreground">
                 enrollments: {s._count.enrollments} | generated reservations: {s._count.reservations}
               </div>
 
-              <div className="flex gap-2 pt-2">
-                <Button onClick={() => generate(s.id)}>Generate</Button>
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button onClick={() => generate30(s.id)}>Generate 30 days</Button>
+                <Button variant="secondary" onClick={() => generate(s.id)}>Generate (range)</Button>
+                <Button variant="outline" onClick={() => deleteGenerated(s.id)}>Delete (range)</Button>
+                <Button variant="destructive" onClick={() => regenerate(s.id)}>Regenerate (range)</Button>
               </div>
 
               <div className="text-xs text-muted-foreground break-all">id: {s.id}</div>
             </div>
           ))}
-          {sections.length === 0 && <div className="text-sm text-muted-foreground">ยังไม่มี section</div>}
+
+          {filteredSections.length === 0 && (
+            <div className="text-sm text-muted-foreground">ไม่พบ section ตามเงื่อนไข</div>
+          )}
         </CardContent>
       </Card>
     </div>

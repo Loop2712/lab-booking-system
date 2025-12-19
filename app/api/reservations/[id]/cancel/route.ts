@@ -21,16 +21,27 @@ export async function POST(
 
   const found = await prisma.reservation.findFirst({
     where: { id, requesterId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, startAt: true },
   });
 
   if (!found) {
     return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
   }
 
-  if (found.status !== "PENDING") {
+  // ✅ อนุญาตยกเลิกได้ทั้ง PENDING และ APPROVED (ตามงานจริงที่ควรยกเลิกได้)
+  if (found.status !== "PENDING" && found.status !== "APPROVED") {
     return NextResponse.json(
-      { ok: false, message: "CANNOT_CANCEL_NON_PENDING" },
+      { ok: false, message: "CANNOT_CANCEL_STATUS" },
+      { status: 400 }
+    );
+  }
+
+  // ✅ กฎ: ยกเลิกก่อนเริ่มอย่างน้อย 60 นาที
+  const now = new Date();
+  const cancelDeadline = new Date(found.startAt.getTime() - 60 * 60 * 1000);
+  if (now > cancelDeadline) {
+    return NextResponse.json(
+      { ok: false, message: "CANCEL_TOO_LATE" },
       { status: 400 }
     );
   }

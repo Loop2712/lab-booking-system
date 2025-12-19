@@ -43,13 +43,27 @@ export async function POST(req: Request) {
           requesterId: true,
           roomId: true,
           sectionId: true,
+          startAt: true,
           loan: { select: { id: true } },
         },
       });
 
       if (!resv) return { ok: false as const, status: 404, message: "NOT_FOUND" };
-      if (resv.status !== "APPROVED") return { ok: false as const, status: 400, message: "NOT_APPROVED" };
+     if (resv.status !== "APPROVED") return { ok: false as const, status: 400, message: "NOT_APPROVED" };
       if (resv.loan) return { ok: false as const, status: 400, message: "ALREADY_CHECKED_IN" };
+
+      // ✅ กฎ: check-in เลทเกิน 30 นาที => NO_SHOW
+        const now = new Date();
+        const lateLimit = new Date(resv.startAt.getTime() + 30 * 60 * 1000);
+
+        if (now > lateLimit) {
+          await tx.reservation.update({
+            where: { id: resv.id },
+            data: { status: "NO_SHOW" },
+          });
+
+          return { ok: false as const, status: 400, message: "LATE_CHECKIN_NO_SHOW" };
+        }
 
       // ✅ ตรวจสิทธิ์คนยืมตามประเภท
       if (resv.type === "IN_CLASS") {
