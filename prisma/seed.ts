@@ -13,8 +13,8 @@ async function main() {
   console.log("🌱 Seeding database...");
 
   /* ================= USERS ================= */
-  const adminHash = await bcrypt.hash("20040220", 10);
-  const teacherHash = await bcrypt.hash("20040220", 10);
+  const adminHash = await bcrypt.hash("19900101", 10);
+  const teacherHash = await bcrypt.hash("19850515", 10);
   const studentHash = await bcrypt.hash("20040220", 10);
 
   await prisma.user.upsert({

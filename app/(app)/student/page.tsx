@@ -101,7 +101,7 @@ export default async function StudentDashboard() {
           <Link href="/student/reservations">รายการจองของฉัน</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/student/qr">QR Token ของฉัน</Link>
+          <Link href="/student/check">QR Token ของฉัน</Link>
         </Button>
       </div>
     </div>
