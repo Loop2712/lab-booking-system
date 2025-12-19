@@ -14,14 +14,18 @@ function b64url(input: Buffer | string) {
     .replace(/\//g, "_");
 }
 
-function b64urlToBuffer(s: string) {
-  const pad = s.length % 4 === 0 ? "" : "=".repeat(4 - (s.length % 4));
-  const b64 = s.replace(/-/g, "+").replace(/_/g, "/") + pad;
-  return Buffer.from(b64, "base64");
+function b64urlToBuffer(input: string) {
+  // เติม padding กลับ
+  let s = input.replace(/-/g, "+").replace(/_/g, "/");
+  const pad = s.length % 4;
+  if (pad) s += "=".repeat(4 - pad);
+  return Buffer.from(s, "base64");
 }
 
 function sign(payloadB64: string, secret: string) {
-  return b64url(crypto.createHmac("sha256", secret).update(payloadB64).digest());
+  const h = crypto.createHmac("sha256", secret);
+  h.update(payloadB64);
+  return b64url(h.digest());
 }
 
 export function makeUserQrToken(uid: string, ttlSeconds = 60 * 60 * 24 * 30) {
@@ -38,13 +42,16 @@ export function verifyUserQrToken(token: string) {
   const secret = process.env.QR_TOKEN_SECRET;
   if (!secret) throw new Error("QR_TOKEN_SECRET is missing");
 
-  const [payloadB64, sig] = token.split(".");
+  const parts = token.split(".");
+  if (parts.length !== 2) return { ok: false as const, reason: "BAD_FORMAT" };
+
+  const [payloadB64, sig] = parts;
   if (!payloadB64 || !sig) return { ok: false as const, reason: "BAD_FORMAT" };
 
   const expected = sign(payloadB64, secret);
+
   const a = Buffer.from(expected);
   const b = Buffer.from(sig);
-
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
     return { ok: false as const, reason: "BAD_SIGNATURE" };
   }
