@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import ReserveForm from "@/app/student/reserve/reserve-form";
+import ReserveForm from "@/app/(app)/student/reserve/reserve-form";
 
 export const runtime = "nodejs";
 

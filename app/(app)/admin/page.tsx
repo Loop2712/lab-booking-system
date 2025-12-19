@@ -80,9 +80,6 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button asChild>
-          <Link href="/admin/loans">ไปหน้า Loan Desk</Link>
-        </Button>
         {/* เผื่ออนาคต: admin master data */}
         <Button asChild variant="outline">
           <Link href="/teacher/requests">ดูคำขอ (Teacher)</Link>

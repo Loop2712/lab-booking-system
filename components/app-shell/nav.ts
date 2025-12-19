@@ -19,7 +19,6 @@ export const adminNav: NavItem[] = [
   { title: "Keys", href: "/admin/keys", icon: "key" },
   { title: "Users", href: "/admin/users", icon: "users" },
   { title: "Check-in / Check-out", href: "/admin/check", icon: "key" },
-  { title: "Loan Desk", href: "/admin/loans", icon: "key" },
   { title: "Courses", href: "/admin/courses", icon: "key" },
   { title: "Sections", href: "/admin/sections", icon: "key" },
 
@@ -33,7 +32,6 @@ export const teacherNav: NavItem[] = [
   { title: "Approve Requests", href: "/teacher/requests", icon: "approve" },
   { title: "My Schedule", href: "/teacher/schedule", icon: "calendar" },
   { title: "Check-in / Check-out", href: "/teacher/check", icon: "key" },
-  { title: "Loan Desk", href: "/teacher/loans", icon: "key" },
 
   { title: "Settings", href: "/settings/password", icon: "settings" },
 ];

@@ -23,6 +23,7 @@ export async function POST(req: Request) {
     );
   }
 
+  // 1) Verify QR token
   const vt = verifyUserQrToken(body.data.userToken);
   if (!vt.ok) {
     return NextResponse.json(
@@ -32,6 +33,20 @@ export async function POST(req: Request) {
   }
 
   const returnedById = vt.uid; // ✅ schema ใช้ returnedById
+
+  // ✅ 2) Role guard: allow only STUDENT / TEACHER
+  const user = await prisma.user.findUnique({
+    where: { id: returnedById },
+    select: { id: true, role: true, isActive: true },
+  });
+
+  if (!user || !user.isActive) {
+    return NextResponse.json({ ok: false, message: "USER_NOT_FOUND" }, { status: 404 });
+  }
+
+  if (user.role !== "STUDENT" && user.role !== "TEACHER") {
+    return NextResponse.json({ ok: false, message: "ROLE_NOT_ALLOWED" }, { status: 403 });
+  }
 
   try {
     const result = await prisma.$transaction(async (tx) => {
@@ -47,9 +62,11 @@ export async function POST(req: Request) {
       });
 
       if (!resv) return { ok: false as const, status: 404, message: "RESERVATION_NOT_FOUND" };
-      if (resv.status !== "CHECKED_IN") return { ok: false as const, status: 400, message: "INVALID_STATUS" };
+      if (resv.status !== "CHECKED_IN")
+        return { ok: false as const, status: 400, message: "INVALID_STATUS" };
       if (!resv.loan?.id) return { ok: false as const, status: 400, message: "NO_LOAN" };
 
+      // 3) Ownership check: requester หรือ participant เท่านั้นถึงคืนได้
       const okOwner =
         resv.requesterId === returnedById || resv.participants.some((p) => p.userId === returnedById);
       if (!okOwner) return { ok: false as const, status: 403, message: "NOT_OWNER" };
@@ -73,9 +90,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     console.error("KIOSK_RETURN_ERROR:", e);
-    return NextResponse.json(
-      { ok: false, message: "ERROR", detail: e?.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, message: "ERROR", detail: e?.message }, { status: 500 });
   }
 }

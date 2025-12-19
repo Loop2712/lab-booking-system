@@ -31,9 +31,9 @@ const createUserSchema = z
     studentType: studentTypeEnum.optional().nullable(),
 
     studentId: z.string().length(11).optional().nullable(), // STUDENT only
-    email: z.string().email().optional().nullable(),        // TEACHER/ADMIN only
+    email: z.string().email().optional().nullable(), // TEACHER/ADMIN only
 
-    // ไม่บังคับใช้ตอนนี้ (ถ้าระบบ auth ไม่ใช้ hash)
+    // optional override (mostly for import)
     passwordHash: z.string().optional().nullable(),
   })
   .superRefine((val, ctx) => {
@@ -57,37 +57,37 @@ export async function GET(req: Request) {
   const activeParam = searchParams.get("active") || "1"; // default show active
   const activeFilter = activeParam === "all" ? undefined : activeParam === "1" ? true : false;
 
-    const users = await prisma.user.findMany({
+  const users = await prisma.user.findMany({
     where: {
-        ...(activeFilter === undefined ? {} : { isActive: activeFilter }),
-        ...(q
+      ...(activeFilter === undefined ? {} : { isActive: activeFilter }),
+      ...(q
         ? {
             OR: [
-                { firstName: { contains: q, mode: "insensitive" } },
-                { lastName: { contains: q, mode: "insensitive" } },
-                { studentId: { contains: q } },
-                { email: { contains: q, mode: "insensitive" } },
+              { firstName: { contains: q, mode: "insensitive" } },
+              { lastName: { contains: q, mode: "insensitive" } },
+              { studentId: { contains: q } },
+              { email: { contains: q, mode: "insensitive" } },
             ],
-            }
+          }
         : {}),
     },
     orderBy: [{ createdAt: "desc" }],
     select: {
-        id: true,
-        role: true,
-        firstName: true,
-        lastName: true,
-        birthDate: true,
-        gender: true,
-        major: true,
-        studentType: true,
-        studentId: true,
-        email: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
+      id: true,
+      role: true,
+      firstName: true,
+      lastName: true,
+      birthDate: true,
+      gender: true,
+      major: true,
+      studentType: true,
+      studentId: true,
+      email: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
     },
-    });
+  });
 
   return NextResponse.json({ ok: true, users });
 }
@@ -97,10 +97,19 @@ export async function POST(req: Request) {
   const denied = assertAdmin(session as any);
   if (denied) return denied;
 
-  const body = createUserSchema.parse(await req.json());
-  const birthDate = new Date(`${body.birthDate}T00:00:00.000Z`);
+  const parsed = createUserSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, message: "BAD_BODY", detail: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  const body = parsed.data;
 
   try {
+    const birthDate = new Date(`${body.birthDate}T00:00:00.000Z`);
+
     const user = await prisma.user.create({
       data: {
         role: body.role,
