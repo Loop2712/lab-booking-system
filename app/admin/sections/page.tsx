@@ -193,6 +193,7 @@ export default function AdminSectionsPage() {
   }
 
   async function deleteGenerated(sectionId: string) {
+     if (!confirm(`Delete generated IN_CLASS in range ${from} → ${to} ?`)) return;
     const r = await fetch(
       `/api/admin/sections/${sectionId}/generated?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
       { method: "DELETE" }
@@ -204,6 +205,7 @@ export default function AdminSectionsPage() {
   }
 
   async function regenerate(sectionId: string) {
+    if (!confirm(`Regenerate in range ${from} → ${to} ? (delete then generate)`)) return;
     const r = await fetch(`/api/admin/sections/${sectionId}/regenerate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

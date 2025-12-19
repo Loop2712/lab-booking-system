@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { url } from "inspector/promises";
 
 type Role = "ADMIN" | "TEACHER" | "STUDENT";
 type Gender = "MALE" | "FEMALE" | "OTHER";
@@ -43,6 +44,61 @@ export default function AdminUsersPage() {
   const [active, setActive] = useState<"1" | "0" | "all">("1");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+    // CSV import
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [importBusy, setImportBusy] = useState(false);
+  const [importMsg, setImportMsg] = useState<string | null>(null);
+  const [importErr, setImportErr] = useState<string | null>(null);
+  const [importPreview, setImportPreview] = useState<any | null>(null);
+
+  async function runImport(dryRun: boolean) {
+    if (!csvFile) {
+      setImportErr("กรุณาเลือกไฟล์ CSV");
+      return;
+    }
+    setImportBusy(true);
+    setImportMsg(null);
+    setImportErr(null);
+
+    try {
+      const fd = new FormData();
+      fd.append("file", csvFile);
+
+      const res = await fetch(`/api/admin/users/import?dryRun=${dryRun ? "1" : "0"}`, {
+        method: "POST",
+        body: fd,
+      });
+      const text = await res.text();
+      let data: any = null;
+        try { data = JSON.parse(text); } catch {}
+
+        if (!res.ok || !data.ok) {
+          console.error("API ERROR RAW:", text);
+          setImportErr(data?.message ?? `HTTP ${res.status}`);
+          return;
+        }
+
+
+
+      if (dryRun) {
+        setImportPreview(data);
+        setImportMsg(`ตรวจสอบผ่าน: ทั้งหมด ${data.total} แถว | จะสร้างใหม่ ${data.wouldCreate} | จะอัปเดต ${data.wouldUpdate}`);
+      } else {
+        setImportPreview(null);
+        setImportMsg(`นำเข้าสำเร็จ: ทั้งหมด ${data.total} แถว | สร้างใหม่ ${data.created} | อัปเดต ${data.updated}`);
+        // reload list
+        await load();
+      }
+    } catch (e: any) {
+      setImportPreview(null);
+      setImportErr(e?.message || "เกิดข้อผิดพลาด");
+    } finally {
+      setImportBusy(false);
+    }
+  }
+
+
 
   // Create form
   const [role, setRole] = useState<Role>("STUDENT");
@@ -281,6 +337,60 @@ export default function AdminUsersPage() {
               {busy ? "กำลังสร้าง..." : "สร้างผู้ใช้"}
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+            <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Import นักศึกษา (CSV)</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="text-sm text-muted-foreground">
+            ต้องมีคอลัมน์: <span className="font-mono">studentId, firstName, lastName, birthDate</span>
+            {" "} (birthDate รองรับ <span className="font-mono">YYYY-MM-DD</span> หรือ <span className="font-mono">YYYYMMDD</span>)
+          </div>
+
+          <Input
+            type="file"
+            accept=".csv,text/csv"
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              setCsvFile(f);
+              setImportPreview(null);
+              setImportMsg(null);
+              setImportErr(null);
+            }}
+          />
+
+          <div className="flex flex-wrap gap-2">
+            <Button disabled={!csvFile || importBusy} onClick={() => runImport(true)}>
+              {importBusy ? "กำลังทำงาน..." : "ตรวจสอบไฟล์ (Dry-run)"}
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={!csvFile || importBusy || !importPreview}
+              onClick={() => runImport(false)}
+              title={!importPreview ? "ต้องกด Dry-run ให้ผ่านก่อน" : ""}
+            >
+              {importBusy ? "กำลังนำเข้า..." : "นำเข้า (Upsert)"}
+            </Button>
+          </div>
+
+          {importMsg && <div className="text-sm text-green-600">{importMsg}</div>}
+          {importErr && (
+            <div className="text-sm text-red-600 whitespace-pre-wrap">
+              {importErr}
+            </div>
+          )}
+
+          {importPreview?.sample?.length ? (
+            <div className="pt-2">
+              <div className="text-sm font-semibold mb-2">ตัวอย่าง 10 แถวแรก (หลัง parse)</div>
+              <div className="overflow-auto border rounded-md">
+                <pre className="text-xs p-3">{JSON.stringify(importPreview.sample, null, 2)}</pre>
+              </div>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 
