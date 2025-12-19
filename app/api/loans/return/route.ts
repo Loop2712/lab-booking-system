@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       if (resv.type === "IN_CLASS") {
         if (!resv.sectionId) return { ok: false as const, status: 400, message: "MISSING_SECTION" };
         const enrolled = await tx.enrollment.findFirst({
-          where: { sectionId: resv.sectionId, userId: returnedById },
+          where: { sectionId: resv.sectionId, studentId: returnedById },
           select: { id: true },
         });
         if (!enrolled) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };

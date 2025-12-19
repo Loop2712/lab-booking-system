@@ -18,6 +18,8 @@ export const adminNav: NavItem[] = [
   { title: "Keys", href: "/admin/keys", icon: "key" },
   { title: "Users", href: "/admin/users", icon: "users" },
   { title: "Loan Desk", href: "/admin/loans", icon: "key" },
+  { title: "Courses", href: "/admin/courses", icon: "key" },
+  { title: "Sections", href: "/admin/sections", icon: "key" },
 
   { title: "Settings", href: "/settings/password", icon: "settings" },
 ];
@@ -35,6 +37,7 @@ export const studentNav: NavItem[] = [
   { title: "Dashboard", href: "/student", icon: "dashboard" },
   { title: "Reserve Room", href: "/student/reserve", icon: "calendar" },
   { title: "My Reservations", href: "/student/reservations", icon: "calendar" },
+  { title: "My Courses", href: "/student/courses", icon: "key" },
   
   { title: "Settings", href: "/settings/password", icon: "settings" },
 ];
