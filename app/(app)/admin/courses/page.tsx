@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 type Course = { id: string; code: string; name: string };
 
-export default function AdminรายวิชาPage() {
+export default function AdminCoursesPage() {
   const [items, setItems] = useState<Course[]>([]);
   const [code, setCode] = useState("");
   const [name, setName] = useState("");

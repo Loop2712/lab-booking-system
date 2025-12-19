@@ -2,7 +2,7 @@ import ห้องTodayClient from "./rooms-today-client";
 
 export const runtime = "nodejs";
 
-export default async function ห้องTodayPage() {
+export default async function RoomsTodayPage() {
   // ✅ เอา requireRole ออก เพื่อให้ public เข้าได้
   return (
     <div className="space-y-4">

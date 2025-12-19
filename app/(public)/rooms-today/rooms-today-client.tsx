@@ -64,7 +64,7 @@ function statusLabel(status?: Booking["status"]) {
   return status;
 }
 
-export default function ห้องTodayClient() {
+export default function RoomsTodayClient() {
   const [data, setData] = useState<Payload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);

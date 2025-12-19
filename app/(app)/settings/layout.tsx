@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth/options";
 
 export const runtime = "nodejs";
 
-export default async function ตั้งค่าLayout({ children }: { children: React.ReactNode }) {
+export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
   // ต้องล็อกอินก่อน (ทุก role ใช้ได้)
   const session = await requireRole(["ADMIN", "TEACHER", "STUDENT"]);
   const role = (session as any)?.role as "ADMIN" | "TEACHER" | "STUDENT" | undefined;

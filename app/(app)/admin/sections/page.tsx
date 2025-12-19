@@ -41,10 +41,10 @@ function todayStr() {
   return `${y}-${m}-${dd}`;
 }
 
-export default function Adminกลุ่มเรียนPage() {
-  const [sections, setกลุ่มเรียน] = useState<Section[]>([]);
-  const [courses, setรายวิชา] = useState<Course[]>([]);
-  const [rooms, setห้อง] = useState<Room[]>([]);
+export default function AdminSectionsPage() {
+  const [sections, setSections] = useState<Section[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [teachers, setTeachers] = useState<User[]>([]);
 
   // create section form
@@ -77,9 +77,9 @@ export default function Adminกลุ่มเรียนPage() {
       fetch("/api/admin/users").then((r) => r.json()),
     ]);
 
-    setกลุ่มเรียน(a.items ?? []);
-    setรายวิชา(b.items ?? []);
-    setห้อง(c.rooms ?? []);
+    setSections(a.items ?? []);
+    setCourses(b.items ?? []);
+    setRooms(c.rooms ?? []);
 
     const allผู้ใช้: User[] = d.users ?? [];
     setTeachers(allผู้ใช้.filter((u) => u.role === "TEACHER"));

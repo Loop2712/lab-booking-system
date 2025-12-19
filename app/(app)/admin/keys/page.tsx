@@ -15,7 +15,7 @@ type KeyRow = {
   room?: Room;
 };
 
-export default function AdminกุญแจPage() {
+export default function AdminKeysPage() {
   const [rooms, setห้อง] = useState<Room[]>([]);
   const [keys, setกุญแจ] = useState<KeyRow[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -29,13 +29,13 @@ export default function AdminกุญแจPage() {
 
   const roomOptions = useMemo(() => rooms.filter((r) => r.isActive), [rooms]);
 
-  async function loadห้อง() {
+  async function loadRooms() {
     const res = await fetch("/api/admin/rooms", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
     if (res.ok && json?.ok) setห้อง(json.rooms ?? []);
   }
 
-  async function loadกุญแจ() {
+  async function loadKeys() {
     setError(null);
     const res = await fetch("/api/admin/keys", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
@@ -47,8 +47,8 @@ export default function AdminกุญแจPage() {
   }
 
   useEffect(() => {
-    loadห้อง();
-    loadกุญแจ();
+    loadRooms();
+    loadKeys();
   }, []);
 
   async function createKey() {
@@ -72,7 +72,7 @@ export default function AdminกุญแจPage() {
     }
 
     setForm({ keyCode: "", roomId: "", status: "AVAILABLE" });
-    await loadกุญแจ();
+    await loadKeys();
   }
 
   async function setAvailable(key: KeyRow) {
@@ -90,7 +90,7 @@ export default function AdminกุญแจPage() {
       setError(json?.message || "อัปเดตไม่สำเร็จ");
       return;
     }
-    await loadกุญแจ();
+    await loadKeys();
   }
 
   return (
@@ -132,7 +132,7 @@ export default function AdminกุญแจPage() {
             <Button onClick={createKey} disabled={busy}>
               {busy ? "กำลังบันทึก..." : "เพิ่มกุญแจ"}
             </Button>
-            <Button variant="outline" className="ml-2" onClick={loadกุญแจ} disabled={busy}>
+            <Button variant="outline" className="ml-2" onClick={loadKeys} disabled={busy}>
               รีเฟรช
             </Button>
           </div>
@@ -185,7 +185,7 @@ export default function AdminกุญแจPage() {
                           setError(json?.message || "อัปเดตไม่สำเร็จ");
                           return;
                         }
-                        await loadกุญแจ();
+                        await loadKeys();
                       }}
                       disabled={busy}
                     >

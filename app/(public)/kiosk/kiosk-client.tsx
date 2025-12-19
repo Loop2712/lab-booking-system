@@ -34,7 +34,7 @@ export default function KioskClient() {
   const [scannerKey, setScannerKey] = useState<string>("");
   const [keySaved, setKeySaved] = useState<boolean>(false);
 
-  const [rooms, setห้อง] = useState<Room[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [roomId, setRoomId] = useState<string>("");
 
   const [mode, setMode] = useState<"CHECKIN" | "RETURN">("CHECKIN");
@@ -44,7 +44,7 @@ export default function KioskClient() {
 
   const [lookup, setLookup] = useState<LookupResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [loadingห้อง, setLoadingห้อง] = useState(false);
+  const [loadingRooms, setLoadingRooms] = useState(false);
   const [loadingLookup, setLoadingLookup] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
@@ -68,14 +68,14 @@ export default function KioskClient() {
     window.localStorage.removeItem(LS_KEY);
     setScannerKey("");
     setKeySaved(false);
-    setห้อง([]);
+    setRooms([]);
     setRoomId("");
     setLookup(null);
     setToken("");
   }
 
-  async function fetchห้อง(k: string) {
-    setLoadingห้อง(true);
+  async function fetchRooms(k: string) {
+    setLoadingRooms(true);
     setErr(null);
     try {
       const res = await fetch("/api/kiosk/rooms", {
@@ -85,16 +85,16 @@ export default function KioskClient() {
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json?.ok) {
         setErr(json?.message || "โหลดรายการห้องไม่สำเร็จ");
-        setห้อง([]);
-        setLoadingห้อง(false);
+        setRooms([]);
+        setLoadingRooms(false);
         return;
       }
-      setห้อง(Array.isArray(json.rooms) ? json.rooms : []);
-      setLoadingห้อง(false);
+      setRooms(Array.isArray(json.rooms) ? json.rooms : []);
+      setLoadingRooms(false);
     } catch (e: any) {
       setErr(e?.message || "ERROR");
-      setห้อง([]);
-      setLoadingห้อง(false);
+      setRooms([]);
+      setLoadingRooms(false);
     }
   }
 
@@ -179,7 +179,7 @@ export default function KioskClient() {
 
   useEffect(() => {
     if (keySaved && scannerKey.trim()) {
-      fetchห้อง(scannerKey.trim());
+      fetchRooms(scannerKey.trim());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keySaved]);
@@ -249,10 +249,10 @@ export default function KioskClient() {
                   setRoomId(v);
                   setLookup(null);
                 }}
-                disabled={!keySaved || loadingห้อง}
+                disabled={!keySaved || loadingRooms}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={loadingห้อง ? "กำลังโหลด..." : "เลือกห้อง"} />
+                  <SelectValue placeholder={loadingRooms ? "กำลังโหลด..." : "เลือกห้อง"} />
                 </SelectTrigger>
                 <SelectContent>
                   {rooms.map((r) => (

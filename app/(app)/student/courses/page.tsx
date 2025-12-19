@@ -27,7 +27,7 @@ type SectionItem = {
 export default function StudentรายวิชาPage() {
   const [open, setOpen] = useState(false);
 
-  const [sections, setกลุ่มเรียน] = useState<SectionItem[]>([]);
+  const [sections, setSections] = useState<SectionItem[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState<string>("");
 
   const [myEnrollments, setMyEnrollments] = useState<any[]>([]);
@@ -38,15 +38,15 @@ export default function StudentรายวิชาPage() {
     setMyEnrollments(j.items ?? []);
   }
 
-  async function loadกลุ่มเรียน() {
+  async function loadSections() {
     const r = await fetch("/api/student/sections");
     const j = await r.json();
-    setกลุ่มเรียน(j.items ?? []);
+    setSections(j.items ?? []);
   }
 
   useEffect(() => {
     loadMy();
-    loadกลุ่มเรียน();
+    loadSections();
   }, []);
 
   const selected = useMemo(
@@ -132,7 +132,7 @@ export default function StudentรายวิชาPage() {
             Add
           </Button>
 
-          <Button variant="secondary" onClick={() => { loadMy(); loadกลุ่มเรียน(); }}>
+          <Button variant="secondary" onClick={() => { loadMy(); loadSections(); }}>
             Refresh
           </Button>
         </CardContent>

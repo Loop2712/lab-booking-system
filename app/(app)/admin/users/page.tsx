@@ -38,7 +38,7 @@ function toYmd(dateIso: string) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-export default function Adminผู้ใช้Page() {
+export default function AdminUsersPage() {
   const [items, setItems] = useState<UserRow[]>([]);
   const [q, setQ] = useState("");
   const [active, setActive] = useState<"1" | "0" | "all">("1");
