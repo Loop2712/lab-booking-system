@@ -374,6 +374,9 @@ export default function AdminUsersPage() {
             >
               {importBusy ? "กำลังนำเข้า..." : "นำเข้า (Upsert)"}
             </Button>
+            <Button asChild variant="outline">
+              <a href="/api/admin/users/template?format=xlsx">ดาวน์โหลด Template (XLSX)</a>
+            </Button>
           </div>
 
           {importMsg && <div className="text-sm text-green-600">{importMsg}</div>}
