@@ -41,28 +41,6 @@ function todayStr() {
   return `${y}-${m}-${dd}`;
 }
 
-function plusDaysStr(n: number) {
-  const d = new Date();
-  d.setDate(d.getDate() + n);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${dd}`;
-}
-
-function ymd(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${dd}`;
-}
-
-function plusDays(n: number) {
-  const d = new Date();
-  d.setDate(d.getDate() + n);
-  return d;
-}
-
 export default function AdminSectionsPage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -89,7 +67,7 @@ export default function AdminSectionsPage() {
 
   // range (used by generate range / delete / regenerate)
   const [from, setFrom] = useState(todayStr());
-  const [to, setTo] = useState(plusDaysStr(30));
+  const [to, setTo] = useState(todayStr()); // ✅ เอา default +30 วันออกแล้ว
 
   async function load() {
     const [a, b, c, d] = await Promise.all([
@@ -174,38 +152,24 @@ export default function AdminSectionsPage() {
     });
     const j = await r.json();
     if (!j.ok) return alert(j.message ?? "ERROR");
-    alert(`Generated: ${j.created}`);
-    await load();
-  }
-
-  async function generate30(sectionId: string) {
-    const from30 = ymd(new Date());
-    const to30 = ymd(plusDays(30));
-    const r = await fetch(`/api/admin/sections/${sectionId}/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ from: from30, to: to30 }),
-    });
-    const j = await r.json();
-    if (!j.ok) return alert(j.message ?? "ERROR");
-    alert(`Generated: ${j.created}`);
+    alert(`สร้างรายการสำเร็จ: ${j.created} รายการ`);
     await load();
   }
 
   async function deleteGenerated(sectionId: string) {
-     if (!confirm(`Delete generated IN_CLASS in range ${from} → ${to} ?`)) return;
+    if (!confirm(`ลบรายการจองแบบเรียนในชั้น (IN_CLASS) ในช่วง ${from} ถึง ${to} ใช่ไหม?`)) return;
     const r = await fetch(
       `/api/admin/sections/${sectionId}/generated?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
       { method: "DELETE" }
     );
     const j = await r.json();
     if (!j.ok) return alert(j.message ?? "ERROR");
-    alert(`Deleted: ${j.deleted}`);
+    alert(`ลบรายการสำเร็จ: ${j.deleted} รายการ`);
     await load();
   }
 
   async function regenerate(sectionId: string) {
-    if (!confirm(`Regenerate in range ${from} → ${to} ? (delete then generate)`)) return;
+    if (!confirm(`สร้างใหม่ในช่วง ${from} ถึง ${to} ใช่ไหม? (ระบบจะลบของเดิมแล้วสร้างใหม่)`)) return;
     const r = await fetch(`/api/admin/sections/${sectionId}/regenerate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -213,7 +177,7 @@ export default function AdminSectionsPage() {
     });
     const j = await r.json();
     if (!j.ok) return alert(j.message ?? "ERROR");
-    alert(`Deleted: ${j.deleted} | Created: ${j.created}`);
+    alert(`สร้างใหม่สำเร็จ: ลบ ${j.deleted} รายการ | สร้าง ${j.created} รายการ`);
     await load();
   }
 
@@ -341,15 +305,15 @@ export default function AdminSectionsPage() {
       {/* Range */}
       <Card>
         <CardHeader>
-          <CardTitle>Generate / Delete / Regenerate (range)</CardTitle>
+          <CardTitle>สร้าง/ลบ/สร้างใหม่ (ตามช่วงวันที่)</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-2 items-end">
           <div className="space-y-2">
-            <div className="text-sm">From (YYYY-MM-DD)</div>
+            <div className="text-sm">วันที่เริ่มต้น (YYYY-MM-DD)</div>
             <Input value={from} onChange={(e) => setFrom(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <div className="text-sm">To (YYYY-MM-DD)</div>
+            <div className="text-sm">วันที่สิ้นสุด (YYYY-MM-DD)</div>
             <Input value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
         </CardContent>
@@ -412,14 +376,13 @@ export default function AdminSectionsPage() {
               </div>
 
               <div className="text-sm text-muted-foreground">
-                enrollments: {s._count.enrollments} | generated reservations: {s._count.reservations}
+                จำนวนนักศึกษาในกลุ่ม: {s._count.enrollments} | จำนวนรายการที่สร้างแล้ว: {s._count.reservations}
               </div>
 
               <div className="flex flex-wrap gap-2 pt-2">
-                <Button onClick={() => generate30(s.id)}>Generate 30 days</Button>
-                <Button variant="secondary" onClick={() => generate(s.id)}>Generate (range)</Button>
-                <Button variant="outline" onClick={() => deleteGenerated(s.id)}>Delete (range)</Button>
-                <Button variant="destructive" onClick={() => regenerate(s.id)}>Regenerate (range)</Button>
+                <Button variant="secondary" onClick={() => generate(s.id)}>สร้างรายการ (ช่วงวันที่)</Button>
+                <Button variant="outline" onClick={() => deleteGenerated(s.id)}>ลบรายการที่สร้าง (ช่วงวันที่)</Button>
+                <Button variant="destructive" onClick={() => regenerate(s.id)}>สร้างใหม่ (ลบแล้วสร้าง)</Button>
               </div>
 
               <div className="text-xs text-muted-foreground break-all">id: {s.id}</div>
