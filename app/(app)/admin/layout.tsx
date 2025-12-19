@@ -4,5 +4,5 @@ import { requireRole } from "@/lib/auth/guard";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireRole(["ADMIN"]);
-  return <AppShell nav={adminNav} headerTitle="Admin Dashboard">{children}</AppShell>;
+  return <AppShell nav={adminNav} headerTitle="แดชบอร์ดแอดมิน">{children}</AppShell>;
 }

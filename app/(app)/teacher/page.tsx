@@ -22,8 +22,8 @@ export default async function TeacherDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">Teacher Dashboard</h1>
-        <p className="text-sm text-muted-foreground">สรุปคำขอจอง และงานที่ต้องทำใน Loan Desk</p>
+        <h1 className="text-2xl font-semibold">แดชบอร์ดอาจารย์</h1>
+        <p className="text-sm text-muted-foreground">สรุปคำขอจอง และงานที่ต้องทำใน โต๊ะยืมคืน</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -57,7 +57,7 @@ export default async function TeacherDashboard() {
           <Link href="/teacher/requests">ไปหน้าอนุมัติคำขอ</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/teacher/loans">ไปหน้า Loan Desk</Link>
+          <Link href="/teacher/loans">ไปหน้า โต๊ะยืมคืน</Link>
         </Button>
         <Button asChild variant="outline">
           <Link href="/teacher/qr">QR Token ของฉัน</Link>

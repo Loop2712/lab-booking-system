@@ -24,10 +24,10 @@ type SectionItem = {
   teacher: { firstName: string; lastName: string; email?: string | null };
 };
 
-export default function StudentCoursesPage() {
+export default function StudentรายวิชาPage() {
   const [open, setOpen] = useState(false);
 
-  const [sections, setSections] = useState<SectionItem[]>([]);
+  const [sections, setกลุ่มเรียน] = useState<SectionItem[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState<string>("");
 
   const [myEnrollments, setMyEnrollments] = useState<any[]>([]);
@@ -38,15 +38,15 @@ export default function StudentCoursesPage() {
     setMyEnrollments(j.items ?? []);
   }
 
-  async function loadSections() {
+  async function loadกลุ่มเรียน() {
     const r = await fetch("/api/student/sections");
     const j = await r.json();
-    setSections(j.items ?? []);
+    setกลุ่มเรียน(j.items ?? []);
   }
 
   useEffect(() => {
     loadMy();
-    loadSections();
+    loadกลุ่มเรียน();
   }, []);
 
   const selected = useMemo(
@@ -106,7 +106,7 @@ export default function StudentCoursesPage() {
                 <CommandInput placeholder="พิมพ์ค้นหา เช่น รหัสวิชา / ชื่อวิชา / ห้อง / อาจารย์..." />
                 <CommandList>
                   <CommandEmpty>ไม่พบรายการ</CommandEmpty>
-                  <CommandGroup heading="Sections ที่เปิดใช้งาน">
+                  <CommandGroup heading="กลุ่มเรียน ที่เปิดใช้งาน">
                     {sections.map((s) => (
                       <CommandItem
                         key={s.id}
@@ -132,7 +132,7 @@ export default function StudentCoursesPage() {
             Add
           </Button>
 
-          <Button variant="secondary" onClick={() => { loadMy(); loadSections(); }}>
+          <Button variant="secondary" onClick={() => { loadMy(); loadกลุ่มเรียน(); }}>
             Refresh
           </Button>
         </CardContent>

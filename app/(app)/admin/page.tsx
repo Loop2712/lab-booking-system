@@ -26,8 +26,8 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
-        <p className="text-sm text-muted-foreground">ภาพรวมระบบ + ทางลัดไป Loan Desk และข้อมูลหลัก</p>
+        <h1 className="text-2xl font-semibold">แดชบอร์ดแอดมิน</h1>
+        <p className="text-sm text-muted-foreground">ภาพรวมระบบ + ทางลัดไป โต๊ะยืมคืน และข้อมูลหลัก</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

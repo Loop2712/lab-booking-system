@@ -38,7 +38,7 @@ function toYmd(dateIso: string) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-export default function AdminUsersPage() {
+export default function Adminผู้ใช้Page() {
   const [items, setItems] = useState<UserRow[]>([]);
   const [q, setQ] = useState("");
   const [active, setActive] = useState<"1" | "0" | "all">("1");
@@ -240,7 +240,7 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Users</h1>
+        <h1 className="text-2xl font-semibold">ผู้ใช้</h1>
         <p className="text-sm text-muted-foreground">จัดการผู้ใช้งานในระบบ (Admin)</p>
       </div>
 

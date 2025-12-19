@@ -21,7 +21,7 @@ export default function TeacherSchedulePage() {
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>My Sections</CardTitle>
+          <CardTitle>My กลุ่มเรียน</CardTitle>
           <Button variant="secondary" onClick={load}>
             Refresh
           </Button>

@@ -15,9 +15,9 @@ type KeyRow = {
   room?: Room;
 };
 
-export default function AdminKeysPage() {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [keys, setKeys] = useState<KeyRow[]>([]);
+export default function AdminกุญแจPage() {
+  const [rooms, setห้อง] = useState<Room[]>([]);
+  const [keys, setกุญแจ] = useState<KeyRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -29,13 +29,13 @@ export default function AdminKeysPage() {
 
   const roomOptions = useMemo(() => rooms.filter((r) => r.isActive), [rooms]);
 
-  async function loadRooms() {
+  async function loadห้อง() {
     const res = await fetch("/api/admin/rooms", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
-    if (res.ok && json?.ok) setRooms(json.rooms ?? []);
+    if (res.ok && json?.ok) setห้อง(json.rooms ?? []);
   }
 
-  async function loadKeys() {
+  async function loadกุญแจ() {
     setError(null);
     const res = await fetch("/api/admin/keys", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
@@ -43,12 +43,12 @@ export default function AdminKeysPage() {
       setError(json?.message || "โหลดกุญแจไม่สำเร็จ");
       return;
     }
-    setKeys(json.keys ?? []);
+    setกุญแจ(json.keys ?? []);
   }
 
   useEffect(() => {
-    loadRooms();
-    loadKeys();
+    loadห้อง();
+    loadกุญแจ();
   }, []);
 
   async function createKey() {
@@ -72,7 +72,7 @@ export default function AdminKeysPage() {
     }
 
     setForm({ keyCode: "", roomId: "", status: "AVAILABLE" });
-    await loadKeys();
+    await loadกุญแจ();
   }
 
   async function setAvailable(key: KeyRow) {
@@ -90,13 +90,13 @@ export default function AdminKeysPage() {
       setError(json?.message || "อัปเดตไม่สำเร็จ");
       return;
     }
-    await loadKeys();
+    await loadกุญแจ();
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Keys</h1>
+        <h1 className="text-2xl font-semibold">กุญแจ</h1>
         <p className="text-sm text-muted-foreground">จัดการกุญแจ (1 ห้อง = 1 กุญแจ)</p>
       </div>
 
@@ -132,7 +132,7 @@ export default function AdminKeysPage() {
             <Button onClick={createKey} disabled={busy}>
               {busy ? "กำลังบันทึก..." : "เพิ่มกุญแจ"}
             </Button>
-            <Button variant="outline" className="ml-2" onClick={loadKeys} disabled={busy}>
+            <Button variant="outline" className="ml-2" onClick={loadกุญแจ} disabled={busy}>
               รีเฟรช
             </Button>
           </div>
@@ -185,7 +185,7 @@ export default function AdminKeysPage() {
                           setError(json?.message || "อัปเดตไม่สำเร็จ");
                           return;
                         }
-                        await loadKeys();
+                        await loadกุญแจ();
                       }}
                       disabled={busy}
                     >

@@ -41,10 +41,10 @@ function todayStr() {
   return `${y}-${m}-${dd}`;
 }
 
-export default function AdminSectionsPage() {
-  const [sections, setSections] = useState<Section[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [rooms, setRooms] = useState<Room[]>([]);
+export default function Adminกลุ่มเรียนPage() {
+  const [sections, setกลุ่มเรียน] = useState<Section[]>([]);
+  const [courses, setรายวิชา] = useState<Course[]>([]);
+  const [rooms, setห้อง] = useState<Room[]>([]);
   const [teachers, setTeachers] = useState<User[]>([]);
 
   // create section form
@@ -77,12 +77,12 @@ export default function AdminSectionsPage() {
       fetch("/api/admin/users").then((r) => r.json()),
     ]);
 
-    setSections(a.items ?? []);
-    setCourses(b.items ?? []);
-    setRooms(c.rooms ?? []);
+    setกลุ่มเรียน(a.items ?? []);
+    setรายวิชา(b.items ?? []);
+    setห้อง(c.rooms ?? []);
 
-    const allUsers: User[] = d.users ?? [];
-    setTeachers(allUsers.filter((u) => u.role === "TEACHER"));
+    const allผู้ใช้: User[] = d.users ?? [];
+    setTeachers(allผู้ใช้.filter((u) => u.role === "TEACHER"));
   }
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export default function AdminSectionsPage() {
 
   const canCreate = useMemo(() => !!courseId && !!teacherId && !!roomId, [courseId, teacherId, roomId]);
 
-  const filteredSections = useMemo(() => {
+  const filteredกลุ่มเรียน = useMemo(() => {
     return sections.filter((s) => {
       if (fTerm && (s.term ?? "") !== fTerm) return false;
       if (fYear && String(s.year ?? "") !== fYear) return false;
@@ -319,10 +319,10 @@ export default function AdminSectionsPage() {
         </CardContent>
       </Card>
 
-      {/* Sections list */}
+      {/* กลุ่มเรียน list */}
       <Card>
         <CardHeader>
-          <CardTitle>Sections</CardTitle>
+          <CardTitle>กลุ่มเรียน</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-3">
@@ -364,7 +364,7 @@ export default function AdminSectionsPage() {
           </div>
 
           {/* List */}
-          {filteredSections.map((s) => (
+          {filteredกลุ่มเรียน.map((s) => (
             <div key={s.id} className="border rounded-md p-3 space-y-1">
               <div className="font-medium">
                 {s.course.code} {s.course.name}
@@ -389,7 +389,7 @@ export default function AdminSectionsPage() {
             </div>
           ))}
 
-          {filteredSections.length === 0 && (
+          {filteredกลุ่มเรียน.length === 0 && (
             <div className="text-sm text-muted-foreground">ไม่พบ section ตามเงื่อนไข</div>
           )}
         </CardContent>

@@ -18,8 +18,8 @@ type Room = {
   _count?: { keys: number };
 };
 
-export default function AdminRoomsPage() {
-  const [rooms, setRooms] = useState<Room[]>([]);
+export default function Adminห้องPage() {
+  const [rooms, setห้อง] = useState<Room[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -40,7 +40,7 @@ export default function AdminRoomsPage() {
       setError(json?.message || "โหลดห้องไม่สำเร็จ");
       return;
     }
-    setRooms(json.rooms ?? []);
+    setห้อง(json.rooms ?? []);
   }
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export default function AdminRoomsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Rooms</h1>
+        <h1 className="text-2xl font-semibold">ห้อง</h1>
         <p className="text-sm text-muted-foreground">จัดการห้อง (เพิ่ม/ปิดใช้งาน)</p>
       </div>
 
@@ -147,7 +147,7 @@ export default function AdminRoomsPage() {
                 <TableHead>Room</TableHead>
                 <TableHead>Floor</TableHead>
                 <TableHead>PC</TableHead>
-                <TableHead>Keys</TableHead>
+                <TableHead>กุญแจ</TableHead>
                 <TableHead className="text-right">Active</TableHead>
               </TableRow>
             </TableHeader>

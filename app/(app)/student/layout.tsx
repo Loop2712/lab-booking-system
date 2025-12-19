@@ -4,5 +4,5 @@ import { requireRole } from "@/lib/auth/guard";
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   await requireRole(["STUDENT"]);
-  return <AppShell nav={studentNav} headerTitle="Student Dashboard">{children}</AppShell>;
+  return <AppShell nav={studentNav} headerTitle="แดชบอร์ดนักศึกษา">{children}</AppShell>;
 }

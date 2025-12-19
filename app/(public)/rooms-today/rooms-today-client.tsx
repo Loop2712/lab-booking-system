@@ -64,7 +64,7 @@ function statusLabel(status?: Booking["status"]) {
   return status;
 }
 
-export default function RoomsTodayClient() {
+export default function ห้องTodayClient() {
   const [data, setData] = useState<Payload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -109,6 +109,7 @@ export default function RoomsTodayClient() {
   }, [data, q]);
 
   return (
+    <div className="card-container">
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
@@ -207,6 +208,7 @@ export default function RoomsTodayClient() {
           </Card>
         ))}
       </div>
+    </div>
     </div>
   );
 }

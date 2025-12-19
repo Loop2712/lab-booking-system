@@ -1,8 +1,31 @@
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth/options";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export default function PublicHomePage() {
+export const runtime = "nodejs";
+
+function dashboardHref(role?: string) {
+  if (role === "ADMIN") return "/admin";
+  if (role === "TEACHER") return "/teacher";
+  return "/student";
+}
+
+export default async function PublicHomePage() {
+  const session = await getServerSession(authOptions);
+  const role = (session as any)?.role as string | undefined;
+
+  const isLoggedIn = !!session;
+
+  const loginCardTitle = isLoggedIn ? "แดชบอร์ด" : "เข้าสู่ระบบ";
+  const loginCardDesc = isLoggedIn
+    ? "คุณได้เข้าสู่ระบบแล้ว สามารถไปที่แดชบอร์ดได้เลย"
+    : "สำหรับนักศึกษา / อาจารย์ / เจ้าหน้าที่";
+
+  const buttonHref = isLoggedIn ? dashboardHref(role) : "/login";
+  const buttonText = isLoggedIn ? "ไปหน้าแดชบอร์ด" : "ไปหน้า Login";
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black flex items-center justify-center p-6">
       <div className="w-full max-w-3xl space-y-6">
@@ -30,14 +53,12 @@ export default function PublicHomePage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>เข้าสู่ระบบ</CardTitle>
+              <CardTitle>{loginCardTitle}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                สำหรับนักศึกษา / อาจารย์ / เจ้าหน้าที่
-              </p>
+              <p className="text-sm text-muted-foreground">{loginCardDesc}</p>
               <Button asChild className="w-full">
-                <Link href="/login">ไปหน้า Login</Link>
+                <Link href={buttonHref}>{buttonText}</Link>
               </Button>
             </CardContent>
           </Card>

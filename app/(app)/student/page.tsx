@@ -31,7 +31,7 @@ export default async function StudentDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">Student Dashboard</h1>
+        <h1 className="text-2xl font-semibold">แดชบอร์ดนักศึกษา</h1>
         <p className="text-sm text-muted-foreground">สรุปรายการจองของคุณ และทางลัดที่ใช้บ่อย</p>
       </div>
 

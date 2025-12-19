@@ -59,7 +59,7 @@ export default function TeacherCalendarPage() {
 
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState<UIEvent | null>(null);
-    const [rooms, setRooms] = useState<any[]>([]);
+    const [rooms, setห้อง] = useState<any[]>([]);
     const [openCreate, setOpenCreate] = useState(false);
     const [roomId, setRoomId] = useState("");
     const [date, setDate] = useState<Date | undefined>(undefined);
@@ -72,7 +72,7 @@ export default function TeacherCalendarPage() {
         (async () => {
             const r = await fetch("/api/rooms");
             const j = await r.json();
-            if (r.ok && j.ok) setRooms(j.rooms ?? []);
+            if (r.ok && j.ok) setห้อง(j.rooms ?? []);
         })();
     }, []);
 

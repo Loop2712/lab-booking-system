@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 type Course = { id: string; code: string; name: string };
 
-export default function AdminCoursesPage() {
+export default function AdminรายวิชาPage() {
   const [items, setItems] = useState<Course[]>([]);
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
@@ -46,7 +46,7 @@ export default function AdminCoursesPage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Courses</CardTitle>
+          <CardTitle>รายวิชา</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-2">
           <Input placeholder="Code (เช่น SCS409)" value={code} onChange={(e) => setCode(e.target.value)} />

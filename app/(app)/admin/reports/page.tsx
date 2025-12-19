@@ -24,17 +24,17 @@ export default function AdminReportsPage() {
   const [from, setFrom] = useState(ymd(new Date()));
   const [to, setTo] = useState(plusDaysStr(30));
 
-  const [rooms, setRooms] = useState<any[]>([]);
+  const [rooms, setห้อง] = useState<any[]>([]);
   const [roomId, setRoomId] = useState("ALL");
   const [type, setType] = useState("ALL");
   const [status, setStatus] = useState("ALL");
 
   const [data, setData] = useState<any>(null);
 
-  async function loadRooms() {
+  async function loadห้อง() {
     const r = await fetch("/api/admin/rooms");
     const j = await r.json();
-    setRooms(j.rooms ?? []);
+    setห้อง(j.rooms ?? []);
   }
 
   async function load() {
@@ -65,7 +65,7 @@ export default function AdminReportsPage() {
   }
 
   useEffect(() => {
-    loadRooms();
+    loadห้อง();
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

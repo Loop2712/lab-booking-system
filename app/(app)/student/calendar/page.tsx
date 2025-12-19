@@ -59,7 +59,7 @@ export default function StudentCalendarPage() {
   const [weekStart, setWeekStart] = useState<Date | null>(null);
 
   const [loading, setLoading] = useState(false);
-  const [sections, setSections] = useState<any[]>([]);
+  const [sections, setกลุ่มเรียน] = useState<any[]>([]);
   const [adhoc, setAdhoc] = useState<any[]>([]);
   const [inClass, setInClass] = useState<any[]>([]);
 
@@ -100,7 +100,7 @@ export default function StudentCalendarPage() {
         return;
       }
 
-      setSections(j.sections ?? []);
+      setกลุ่มเรียน(j.sections ?? []);
       setAdhoc(j.reservations?.adhoc ?? []);
       setInClass(j.reservations?.inClass ?? []);
     } finally {
