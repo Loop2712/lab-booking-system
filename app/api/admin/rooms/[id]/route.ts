@@ -1,17 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
-
-function assertAdmin(session: any) {
-  if (!session || session.role !== "ADMIN") {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  return null;
-}
 
 const patchSchema = z.object({
   roomNumber: z.string().min(1).optional(),
@@ -28,10 +20,12 @@ export async function PATCH(
 ) {
   const { id } = await ctx.params;
 
-  const body = await req.json();
-  const parsed = patchSchema.safeParse(body);
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
+
+  const parsed = patchSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ ok: false }, { status: 400 });
+    return NextResponse.json({ ok: false, message: "BAD_BODY", detail: parsed.error.flatten() }, { status: 400 });
   }
 
   const room = await prisma.room.update({
@@ -47,9 +41,8 @@ export async function DELETE(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
-  const denied = assertAdmin(session as any);
-  if (denied) return denied;
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
   try {
     await prisma.room.delete({ where: { id: params.id } });

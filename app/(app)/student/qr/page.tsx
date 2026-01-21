@@ -7,19 +7,22 @@ export default function StudentQrPage() {
   const [token, setToken] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  async function load() {
-    setError(null);
+  async function load({ initial }: { initial?: boolean } = {}) {
+    if (!initial) {
+      setError(null);
+    }
     const res = await fetch("/api/qr/me", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
     if (!res.ok || !json?.ok) {
       setError("โหลด QR token ไม่สำเร็จ");
       return;
     }
+    setError(null);
     setToken(json.token);
   }
 
   useEffect(() => {
-    load();
+    void load({ initial: true });
   }, []);
 
   async function copy() {

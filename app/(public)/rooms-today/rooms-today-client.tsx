@@ -72,9 +72,11 @@ export default function RoomsTodayClient() {
 
   const [q, setQ] = useState("");
 
-  async function load() {
+  async function load({ initial }: { initial?: boolean } = {}) {
     try {
-      setError(null);
+      if (!initial) {
+        setError(null);
+      }
       const res = await fetch("/api/rooms/today", { cache: "no-store" });
       const json = (await res.json().catch(() => ({}))) as Payload;
       if (!res.ok || !json?.ok) {
@@ -82,6 +84,7 @@ export default function RoomsTodayClient() {
         setLoading(false);
         return;
       }
+      setError(null);
       setData(json);
       setLastUpdated(new Date());
       setLoading(false);
@@ -92,7 +95,7 @@ export default function RoomsTodayClient() {
   }
 
   useEffect(() => {
-    load();
+    void load({ initial: true });
     const t = setInterval(load, 10_000); // ✅ realtime แบบ polling
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -20,18 +20,23 @@ export default function ParticipantsPage() {
 
   const total = useMemo(() => 1 + items.length, [items.length]); // + requester
 
-  async function load() {
-    setError(null);
+  async function load({ initial }: { initial?: boolean } = {}) {
+    if (!initial) {
+      setError(null);
+    }
     const res = await fetch(`/api/reservations/${id}/participants`, { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
     if (!res.ok || !json?.ok) {
       setError(json?.message ? `โหลดไม่สำเร็จ: ${json.message}` : "โหลดไม่สำเร็จ");
       return;
     }
+    setError(null);
     setItems(json.participants ?? []);
   }
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => {
+    void load({ initial: true });
+  }, [id]);
 
   async function add() {
     setError(null);

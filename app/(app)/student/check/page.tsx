@@ -6,9 +6,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+type CalendarEvent = {
+  kind?: string;
+  type?: string;
+  title?: string;
+  courseCode?: string;
+  roomCode?: string;
+  time?: string;
+  slot?: string;
+  meta?: string;
+  status?: string;
+  raw?: { status?: string };
+};
+
 type CalendarPayload = {
   ok: boolean;
-  events: any[];
+  events: CalendarEvent[];
+  message?: string;
 };
 
 function ymdBangkok(d = new Date()) {
@@ -32,17 +46,19 @@ function addDaysYmd(ymd: string, days: number) {
 }
 
 export default function StudentCheckPage() {
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
   const today = useMemo(() => ymdBangkok(new Date()), []);
   const tomorrow = useMemo(() => addDaysYmd(today, 1), [today]);
 
-  async function load() {
+  async function load({ initial }: { initial?: boolean } = {}) {
     try {
-      setErr(null);
-      setLoading(true);
+      if (!initial) {
+        setErr(null);
+        setLoading(true);
+      }
       const res = await fetch(`/api/student/calendar?from=${today}&to=${tomorrow}`, { cache: "no-store" });
       const json = (await res.json().catch(() => ({}))) as CalendarPayload;
       if (!res.ok || !json?.ok) {
@@ -51,6 +67,7 @@ export default function StudentCheckPage() {
         setLoading(false);
         return;
       }
+      setErr(null);
       setEvents(Array.isArray(json.events) ? json.events : []);
       setLoading(false);
     } catch (e: any) {
@@ -61,7 +78,7 @@ export default function StudentCheckPage() {
   }
 
   useEffect(() => {
-    load();
+    void load({ initial: true });
     const t = setInterval(load, 10_000); // realtime แบบ polling
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps

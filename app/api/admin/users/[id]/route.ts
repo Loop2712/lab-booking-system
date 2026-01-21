@@ -1,17 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
-
-function assertAdmin(session: any) {
-  if (!session || session.role !== "ADMIN") {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  return null;
-}
 
 const roleEnum = z.enum(["ADMIN", "TEACHER", "STUDENT"]);
 const genderEnum = z.enum(["MALE", "FEMALE", "OTHER"]);
@@ -42,9 +34,8 @@ export async function PATCH(
 ) {
   const { id } = await ctx.params;
 
-  const session = await getServerSession(authOptions);
-  const denied = assertAdmin(session as any);
-  if (denied) return denied;
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
   const json = await req.json().catch(() => null);
   const parsed = patchUserSchema.safeParse(json);
@@ -93,9 +84,8 @@ export async function DELETE(
 ) {
   const { id } = await ctx.params;
 
-  const session = await getServerSession(authOptions);
-  const denied = assertAdmin(session as any);
-  if (denied) return denied;
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
   try {
     await prisma.user.update({

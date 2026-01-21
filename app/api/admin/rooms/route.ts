@@ -1,17 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
-
-function assertAdmin(session: any) {
-  if (!session || session.role !== "ADMIN") {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  return null;
-}
 
 const createRoomSchema = z.object({
   roomNumber: z.string().min(1),
@@ -23,9 +15,8 @@ const createRoomSchema = z.object({
 });
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  const denied = assertAdmin(session as any);
-  if (denied) return denied;
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
   const rooms = await prisma.room.findMany({
     orderBy: [{ floor: "asc" }, { roomNumber: "asc" }],
@@ -36,14 +27,16 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const denied = assertAdmin(session as any);
-  if (denied) return denied;
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
-  const body = createRoomSchema.parse(await req.json());
+  const body = createRoomSchema.safeParse(await req.json().catch(() => null));
+  if (!body.success) {
+    return NextResponse.json({ ok: false, message: "BAD_BODY", detail: body.error.flatten() }, { status: 400 });
+  }
 
   try {
-    const room = await prisma.room.create({ data: body });
+    const room = await prisma.room.create({ data: body.data });
     return NextResponse.json({ ok: true, room });
   } catch (e: any) {
     // unique constraint เช่น code หรือ (roomNumber,floor)

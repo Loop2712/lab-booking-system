@@ -34,9 +34,11 @@ export default function TeacherRequestsTable() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function load() {
-    setLoading(true);
-    setError(null);
+  async function load({ initial }: { initial?: boolean } = {}) {
+    if (!initial) {
+      setLoading(true);
+      setError(null);
+    }
     const res = await fetch("/api/teacher/reservations/pending", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
     setLoading(false);
@@ -44,10 +46,13 @@ export default function TeacherRequestsTable() {
       setError("โหลดข้อมูลไม่สำเร็จ");
       return;
     }
+    setError(null);
     setItems(json.items as Item[]);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    void load({ initial: true });
+  }, []);
 
   async function decide(id: string, action: "APPROVE" | "REJECT") {
     setBusyId(id);

@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
-
-function isAdmin(role?: string) {
-  return role === "ADMIN";
-}
 
 const createSchema = z.object({
   courseId: z.string().min(1),
@@ -23,9 +18,8 @@ const createSchema = z.object({
 });
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  if (!isAdmin(role)) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
   const items = await prisma.section.findMany({
     orderBy: [{ year: "desc" }, { term: "desc" }, { createdAt: "desc" }],
@@ -41,23 +35,25 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  if (!isAdmin(role)) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
-  const body = createSchema.parse(await req.json());
+  const body = createSchema.safeParse(await req.json().catch(() => null));
+  if (!body.success) {
+    return NextResponse.json({ ok: false, message: "BAD_BODY", detail: body.error.flatten() }, { status: 400 });
+  }
 
   const created = await prisma.section.create({
     data: {
-      courseId: body.courseId,
-      teacherId: body.teacherId,
-      roomId: body.roomId,
-      dayOfWeek: body.dayOfWeek,
-      startTime: body.startTime,
-      endTime: body.endTime,
-      term: body.term ?? null,
-      year: body.year ?? null,
-      isActive: body.isActive ?? true,
+      courseId: body.data.courseId,
+      teacherId: body.data.teacherId,
+      roomId: body.data.roomId,
+      dayOfWeek: body.data.dayOfWeek,
+      startTime: body.data.startTime,
+      endTime: body.data.endTime,
+      term: body.data.term ?? null,
+      year: body.data.year ?? null,
+      isActive: body.data.isActive ?? true,
     },
   });
 

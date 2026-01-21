@@ -71,9 +71,11 @@ export default function MyReservationsTable() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [sortOrder, setSortOrder] = useState<SortOrder>("DESC");
 
-  async function load() {
-    setError(null);
-    setLoading(true);
+  async function load({ initial }: { initial?: boolean } = {}) {
+    if (!initial) {
+      setError(null);
+      setLoading(true);
+    }
 
     const res = await fetch("/api/reservations/my", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
@@ -84,11 +86,12 @@ export default function MyReservationsTable() {
       return;
     }
 
+    setError(null);
     setItems(json.items as Item[]);
   }
 
   useEffect(() => {
-    load();
+    void load({ initial: true });
   }, []);
 
   async function cancel(id: string) {

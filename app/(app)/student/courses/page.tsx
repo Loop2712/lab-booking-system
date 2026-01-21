@@ -24,13 +24,26 @@ type SectionItem = {
   teacher: { firstName: string; lastName: string; email?: string | null };
 };
 
+type EnrollmentItem = {
+  id: string;
+  sectionId: string;
+  section: {
+    course: { code: string; name: string };
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+    room: { code: string };
+    teacher: { firstName: string; lastName: string };
+  };
+};
+
 export default function StudentรายวิชาPage() {
   const [open, setOpen] = useState(false);
 
   const [sections, setSections] = useState<SectionItem[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState<string>("");
 
-  const [myEnrollments, setMyEnrollments] = useState<any[]>([]);
+  const [myEnrollments, setMyEnrollments] = useState<EnrollmentItem[]>([]);
 
   async function loadMy() {
     const r = await fetch("/api/student/enrollments");

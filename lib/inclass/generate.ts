@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import type { Prisma } from "@prisma/client";
 
 type DayName = "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
 
@@ -7,7 +8,7 @@ function toDayName(jsDay: number): DayName {
   return (["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][jsDay] as DayName) ?? "MON";
 }
 
-function startOfDay(d: Date) {
+function startOfDayUTC(d: Date) {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0));
 }
 
@@ -43,8 +44,8 @@ export async function generateInClassReservations(args: {
     return { ok: false as const, message: "SECTION_NOT_FOUND" };
   }
 
-  const fromDate = startOfDay(new Date(`${args.from}T00:00:00Z`));
-  const toDate = startOfDay(new Date(`${args.to}T00:00:00Z`));
+  const fromDate = startOfDayUTC(new Date(`${args.from}T00:00:00Z`));
+  const toDate = startOfDayUTC(new Date(`${args.to}T00:00:00Z`));
 
   if (toDate < fromDate) {
     return { ok: false as const, message: "BAD_RANGE" };
@@ -52,12 +53,12 @@ export async function generateInClassReservations(args: {
 
   const slot = `${section.startTime}-${section.endTime}`;
 
-  const data: any[] = [];
+  const data: Prisma.ReservationCreateManyInput[] = [];
   for (let d = fromDate; d <= toDate; d = addDays(d, 1)) {
     const dayName = toDayName(d.getUTCDay());
     if (dayName !== section.dayOfWeek) continue;
 
-    const dateOnly = startOfDay(d);
+    const dateOnly = startOfDayUTC(d);
     const startAt = combineUTC(d, section.startTime);
     const endAt = combineUTC(d, section.endTime);
 

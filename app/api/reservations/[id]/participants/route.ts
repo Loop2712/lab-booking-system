@@ -1,18 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
 
 const addSchema = z.object({
   studentId: z.string().min(11).max(11), // 11 หลัก
 });
-
-function mustBeStudent(session: any) {
-  return session?.role === "STUDENT" && typeof session?.uid === "string";
-}
 
 async function assertOwner(reservationId: string, uid: string) {
   const resv = await prisma.reservation.findUnique({
@@ -44,13 +39,10 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const session = await getServerSession(authOptions);
-  if (!mustBeStudent(session)) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  const uid = (session as any).uid as string;
+  const auth = await requireRoleApi(["STUDENT"], { requireUid: true });
+  if (!auth.ok) return auth.response;
 
-  const check = await assertOwner(id, uid);
+  const check = await assertOwner(id, auth.uid);
   if (!check.ok) return NextResponse.json({ ok: false, message: check.message }, { status: check.status });
 
   const participants = await prisma.reservationParticipant.findMany({
@@ -80,20 +72,20 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  const session = await getServerSession(authOptions);
-  if (!mustBeStudent(session)) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  const uid = (session as any).uid as string;
+  const auth = await requireRoleApi(["STUDENT"], { requireUid: true });
+  if (!auth.ok) return auth.response;
 
-  const check = await assertOwner(id, uid);
+  const check = await assertOwner(id, auth.uid);
   if (!check.ok) return NextResponse.json({ ok: false, message: check.message }, { status: check.status });
 
-  const body = addSchema.parse(await req.json());
+  const body = addSchema.safeParse(await req.json().catch(() => null));
+  if (!body.success) {
+    return NextResponse.json({ ok: false, message: "BAD_BODY", detail: body.error.flatten() }, { status: 400 });
+  }
 
   // หา user จาก studentId
   const user = await prisma.user.findUnique({
-    where: { studentId: body.studentId },
+    where: { studentId: body.data.studentId },
     select: { id: true, role: true, firstName: true, lastName: true, studentId: true },
   });
 
@@ -101,7 +93,7 @@ export async function POST(
     return NextResponse.json({ ok: false, message: "STUDENT_NOT_FOUND" }, { status: 404 });
   }
 
-  if (user.id === uid) {
+  if (user.id === auth.uid) {
     return NextResponse.json({ ok: false, message: "CANNOT_ADD_SELF" }, { status: 400 });
   }
 
@@ -152,20 +144,20 @@ export async function DELETE(
 ) {
   const { id } = await params;
 
-  const session = await getServerSession(authOptions);
-  if (!mustBeStudent(session)) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  const uid = (session as any).uid as string;
+  const auth = await requireRoleApi(["STUDENT"], { requireUid: true });
+  if (!auth.ok) return auth.response;
 
-  const check = await assertOwner(id, uid);
+  const check = await assertOwner(id, auth.uid);
   if (!check.ok) return NextResponse.json({ ok: false, message: check.message }, { status: check.status });
 
-  const body = delSchema.parse(await req.json());
+  const body = delSchema.safeParse(await req.json().catch(() => null));
+  if (!body.success) {
+    return NextResponse.json({ ok: false, message: "BAD_BODY", detail: body.error.flatten() }, { status: 400 });
+  }
 
   // ลบได้เฉพาะ participant ที่อยู่ใน reservation นี้
   const p = await prisma.reservationParticipant.findUnique({
-    where: { id: body.participantId },
+    where: { id: body.data.participantId },
     select: { id: true, reservationId: true },
   });
 

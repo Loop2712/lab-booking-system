@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 import { z } from "zod";
 import { generateRawToken , hashToken } from "@/lib/security/tokens";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
 
@@ -21,15 +20,13 @@ export async function PATCH(
 ) {
   const { id } = await params;
 
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  const approverId = (session as any)?.uid as string | undefined;
+  const auth = await requireRoleApi(["TEACHER"], { requireUid: true });
+  if (!auth.ok) return auth.response;
 
-  if (role !== "TEACHER" || !approverId) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  const body = bodySchema.safeParse(await req.json().catch(() => null));
+  if (!body.success) {
+    return NextResponse.json({ ok: false, message: "BAD_BODY", detail: body.error.flatten() }, { status: 400 });
   }
-
-  const body = bodySchema.parse(await req.json());
 
   const found = await prisma.reservation.findUnique({
     where: { id },
@@ -47,13 +44,11 @@ export async function PATCH(
     );
   }
 
-  const nextStatus = body.action === "APPROVE" ? "APPROVED" : "REJECTED";
+  const nextStatus = body.data.action === "APPROVE" ? "APPROVED" : "REJECTED";
 
   await prisma.reservation.update({
     where: { id },
-    data: { status: nextStatus, approverId },
+    data: { status: nextStatus, approverId: auth.uid },
   });
   return NextResponse.json({ ok: true });
-
-
-  }
+}

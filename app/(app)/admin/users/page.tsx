@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { url } from "inspector/promises";
 
 type Role = "ADMIN" | "TEACHER" | "STUDENT";
 type Gender = "MALE" | "FEMALE" | "OTHER";
@@ -118,19 +117,22 @@ export default function AdminUsersPage() {
     return `/api/admin/users?${sp.toString()}`;
   }, [q, active]);
 
-  async function load() {
-    setError(null);
+  async function load({ initial }: { initial?: boolean } = {}) {
+    if (!initial) {
+      setError(null);
+    }
     const res = await fetch(queryUrl, { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
     if (!res.ok || !json?.ok) {
       setError(json?.message || "โหลด users ไม่สำเร็จ");
       return;
     }
+    setError(null);
     setItems(json.users ?? []);
   }
 
   useEffect(() => {
-    load();
+    void load({ initial: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryUrl]);
 

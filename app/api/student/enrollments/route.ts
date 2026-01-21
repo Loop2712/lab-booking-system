@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
-
-function isStudent(role?: string) {
-  return role === "STUDENT";
-}
 
 const addSchema = z.object({
   sectionId: z.string().min(1),
@@ -19,14 +14,11 @@ const delSchema = z.object({
 });
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  const uid = (session as any)?.uid as string | undefined;
-
-  if (!isStudent(role) || !uid) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  const auth = await requireRoleApi(["STUDENT"], { requireUid: true });
+  if (!auth.ok) return auth.response;
 
   const items = await prisma.enrollment.findMany({
-    where: { studentId: uid },
+    where: { studentId: auth.uid },
     include: {
       section: {
         include: {
@@ -43,18 +35,18 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  const uid = (session as any)?.uid as string | undefined;
+  const auth = await requireRoleApi(["STUDENT"], { requireUid: true });
+  if (!auth.ok) return auth.response;
 
-  if (!isStudent(role) || !uid) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-
-  const body = addSchema.parse(await req.json());
+  const body = addSchema.safeParse(await req.json().catch(() => null));
+  if (!body.success) {
+    return NextResponse.json({ ok: false, message: "BAD_BODY", detail: body.error.flatten() }, { status: 400 });
+  }
 
   const created = await prisma.enrollment.create({
     data: {
-      studentId: uid,
-      sectionId: body.sectionId,
+      studentId: auth.uid,
+      sectionId: body.data.sectionId,
     },
   });
 
@@ -62,19 +54,19 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  const uid = (session as any)?.uid as string | undefined;
+  const auth = await requireRoleApi(["STUDENT"], { requireUid: true });
+  if (!auth.ok) return auth.response;
 
-  if (!isStudent(role) || !uid) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-
-  const body = delSchema.parse(await req.json());
+  const body = delSchema.safeParse(await req.json().catch(() => null));
+  if (!body.success) {
+    return NextResponse.json({ ok: false, message: "BAD_BODY", detail: body.error.flatten() }, { status: 400 });
+  }
 
   await prisma.enrollment.delete({
     where: {
       studentId_sectionId: {
-        studentId: uid,
-        sectionId: body.sectionId,
+        studentId: auth.uid,
+        sectionId: body.data.sectionId,
       },
     },
   });

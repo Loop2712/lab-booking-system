@@ -10,7 +10,26 @@ type UIEvent = {
   title: string;
   time: string;
   meta: string;
-  raw?: any;
+  raw?: SectionItem | ReservationItem;
+};
+
+type SectionItem = {
+  id: string;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  course: { code: string; name: string };
+  room: { code: string };
+  teacher: { firstName: string; lastName: string };
+};
+
+type ReservationItem = {
+  id: string;
+  date: string;
+  slot: string;
+  status: string;
+  room: { code: string };
+  section?: { course: { code: string; name: string } };
 };
 
 function ymd(d: Date) {
@@ -59,9 +78,9 @@ export default function StudentCalendarPage() {
   const [weekStart, setWeekStart] = useState<Date | null>(null);
 
   const [loading, setLoading] = useState(false);
-  const [sections, setSections] = useState<any[]>([]);
-  const [adhoc, setAdhoc] = useState<any[]>([]);
-  const [inClass, setInClass] = useState<any[]>([]);
+  const [sections, setSections] = useState<SectionItem[]>([]);
+  const [adhoc, setAdhoc] = useState<ReservationItem[]>([]);
+  const [inClass, setInClass] = useState<ReservationItem[]>([]);
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<UIEvent | null>(null);
@@ -85,10 +104,12 @@ export default function StudentCalendarPage() {
     return `${prettyDate(weekStart)} – ${prettyDate(addDays(weekStart, 6))}`;
   }, [weekStart]);
 
-  async function load() {
+  async function load({ initial }: { initial?: boolean } = {}) {
     if (!from || !to) return;
 
-    setLoading(true);
+    if (!initial) {
+      setLoading(true);
+    }
     try {
       const r = await fetch(`/api/student/calendar?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
       const text = await r.text();
@@ -109,7 +130,7 @@ export default function StudentCalendarPage() {
   }
 
   useEffect(() => {
-    if (mounted && weekStart) load();
+    if (mounted && weekStart) void load({ initial: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted, from, to]);
 

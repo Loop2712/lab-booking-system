@@ -1,17 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
-
-function assertAdmin(session: any) {
-  if (!session || session.role !== "ADMIN") {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  return null;
-}
 
 const roleEnum = z.enum(["ADMIN", "TEACHER", "STUDENT"]);
 const genderEnum = z.enum(["MALE", "FEMALE", "OTHER"]);
@@ -48,9 +40,8 @@ const createUserSchema = z
   });
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  const denied = assertAdmin(session as any);
-  if (denied) return denied;
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") || "").trim();
@@ -93,9 +84,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const denied = assertAdmin(session as any);
-  if (denied) return denied;
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
   const parsed = createUserSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
