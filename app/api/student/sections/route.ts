@@ -1,21 +1,12 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
 
-function isStudent(role?: string) {
-  return role === "STUDENT";
-}
-
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-
-  if (!isStudent(role)) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
+  const auth = await requireRoleApi(["STUDENT"]);
+  if (!auth.ok) return auth.response;
 
   const items = await prisma.section.findMany({
     where: { isActive: true },

@@ -1,23 +1,15 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
 
-function isTeacher(role?: string) {
-  return role === "TEACHER";
-}
-
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  const uid = (session as any)?.uid as string | undefined;
-
-  if (!isTeacher(role) || !uid) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  const auth = await requireRoleApi(["TEACHER"], { requireUid: true });
+  if (!auth.ok) return auth.response;
 
   const items = await prisma.section.findMany({
-    where: { teacherId: uid, isActive: true },
+    where: { teacherId: auth.uid, isActive: true },
     include: {
       course: true,
       room: true,

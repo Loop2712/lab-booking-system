@@ -16,7 +16,23 @@ type UIEvent = {
     title: string;
     time: string;
     meta: string;
-    raw?: any;
+    raw?: ReservationItem;
+};
+
+type ReservationItem = {
+    id: string;
+    date: string;
+    slot: string;
+    status: string;
+    room: { code: string };
+    section: { course: { code: string; name: string } };
+};
+
+type RoomOption = {
+    id: string;
+    floor: number;
+    roomNumber: string;
+    computerCount: number;
 };
 
 function ymd(d: Date) {
@@ -55,11 +71,11 @@ export default function TeacherCalendarPage() {
     const [weekStart, setWeekStart] = useState<Date | null>(null);
 
     const [loading, setLoading] = useState(false);
-    const [inClass, setInClass] = useState<any[]>([]);
+    const [inClass, setInClass] = useState<ReservationItem[]>([]);
 
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState<UIEvent | null>(null);
-    const [rooms, setRooms] = useState<any[]>([]);
+    const [rooms, setRooms] = useState<RoomOption[]>([]);
     const [openCreate, setOpenCreate] = useState(false);
     const [roomId, setRoomId] = useState("");
     const [date, setDate] = useState<Date | undefined>(undefined);
@@ -96,10 +112,12 @@ export default function TeacherCalendarPage() {
         return `${prettyDate(weekStart)} – ${prettyDate(addDays(weekStart, 6))}`;
     }, [weekStart]);
 
-    async function load() {
+    async function load({ initial }: { initial?: boolean } = {}) {
         if (!from || !to) return;
 
-        setLoading(true);
+        if (!initial) {
+            setLoading(true);
+        }
         try {
             const r = await fetch(`/api/teacher/calendar?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
             const text = await r.text();
@@ -118,7 +136,7 @@ export default function TeacherCalendarPage() {
     }
 
     useEffect(() => {
-        if (mounted && weekStart) load();
+        if (mounted && weekStart) void load({ initial: true });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mounted, from, to]);
 

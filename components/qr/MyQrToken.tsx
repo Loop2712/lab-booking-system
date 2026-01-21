@@ -16,8 +16,10 @@ export default function MyQrToken() {
 
   const qrUrl = useMemo(() => (token ? makeQrUrl(token) : ""), [token]);
 
-  async function load() {
-    setError(null);
+  async function load({ initial }: { initial?: boolean } = {}) {
+    if (!initial) {
+      setError(null);
+    }
     const res = await fetch("/api/qr/me", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
     if (!res.ok || !json?.ok) {
@@ -25,6 +27,7 @@ export default function MyQrToken() {
       setToken("");
       return;
     }
+    setError(null);
     setToken(String(json.token || ""));
   }
 
@@ -37,7 +40,7 @@ export default function MyQrToken() {
   }
 
   useEffect(() => {
-    load();
+    void load({ initial: true });
   }, []);
 
   return (

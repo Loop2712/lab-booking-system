@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
-
-function isAdmin(role?: string) {
-  return role === "ADMIN";
-}
 
 const patchSchema = z.object({
   courseId: z.string().min(1).optional(),
@@ -23,24 +18,25 @@ const patchSchema = z.object({
 });
 
 export async function PATCH(req: Request, ctx: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  if (!isAdmin(role)) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
-  const body = patchSchema.parse(await req.json());
+  const body = patchSchema.safeParse(await req.json().catch(() => null));
+  if (!body.success) {
+    return NextResponse.json({ ok: false, message: "BAD_BODY", detail: body.error.flatten() }, { status: 400 });
+  }
 
   const updated = await prisma.section.update({
     where: { id: ctx.params.id },
-    data: body as any,
+    data: body.data,
   });
 
   return NextResponse.json({ ok: true, item: updated });
 }
 
 export async function DELETE(_req: Request, ctx: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  if (!isAdmin(role)) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
   await prisma.section.delete({ where: { id: ctx.params.id } });
   return NextResponse.json({ ok: true });

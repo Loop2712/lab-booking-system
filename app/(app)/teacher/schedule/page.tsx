@@ -5,7 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function TeacherSchedulePage() {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<
+    Array<{
+      id: string;
+      dayOfWeek: string;
+      startTime: string;
+      endTime: string;
+      course: { code: string; name: string };
+      room: { code: string };
+      _count: { enrollments: number };
+    }>
+  >([]);
 
   async function load() {
     const r = await fetch("/api/teacher/sections");

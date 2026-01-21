@@ -1,26 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
+import { startOfDayUTC } from "@/lib/datetime";
 
 export const runtime = "nodejs";
 
-function isStudent(role?: string) {
-  return role === "STUDENT";
-}
-
-function startOfDayUTC(ymd: string) {
-  return new Date(`${ymd}T00:00:00.000Z`);
-}
-
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  const uid = (session as any)?.uid as string | undefined;
-
-  if (!isStudent(role) || !uid) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
+  const auth = await requireRoleApi(["STUDENT"], { requireUid: true });
+  if (!auth.ok) return auth.response;
 
   const url = new URL(req.url);
   const from = url.searchParams.get("from");
@@ -33,7 +20,7 @@ export async function GET(req: Request) {
   const toDate = startOfDayUTC(to);
 
   const enrollments = await prisma.enrollment.findMany({
-    where: { studentId: uid },
+    where: { studentId: auth.uid },
     select: { sectionId: true },
   });
   const sectionIds = enrollments.map((e) => e.sectionId);
@@ -52,7 +39,7 @@ export async function GET(req: Request) {
   const adhoc = await prisma.reservation.findMany({
     where: {
       type: "AD_HOC",
-      requesterId: uid,
+      requesterId: auth.uid,
       date: { gte: fromDate, lte: toDate },
     },
     include: { room: true },

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
+import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
+import { bangkokDateTimeToUTC, startOfDayUTC } from "@/lib/datetime";
 
 export const runtime = "nodejs";
 
@@ -9,49 +10,38 @@ export const runtime = "nodejs";
 function slotToTime(slot: string, date: string) {
   // slot ตัวอย่าง: "08:00-12:00"
   const [s, e] = slot.split("-");
-  const startAt = new Date(`${date}T${s}:00+07:00`);
-  const endAt = new Date(`${date}T${e}:00+07:00`);
+  const startAt = bangkokDateTimeToUTC(date, s);
+  const endAt = bangkokDateTimeToUTC(date, e);
   return { startAt, endAt };
 }
 
+const createReservationSchema = z.object({
+  roomId: z.string().min(1),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  slotId: z.string().regex(/^\d{2}:\d{2}-\d{2}:\d{2}$/),
+  note: z.string().optional().nullable(),
+});
+
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const auth = await requireRoleApi(["STUDENT", "TEACHER", "ADMIN"], { requireUid: true });
+    if (!auth.ok) return auth.response;
 
-    const role = (session as any)?.role;
-    const uid =
-      (session as any)?.uid ||
-      (session as any)?.user?.id;
-
-    if (!uid || !role) {
+    const body = createReservationSchema.safeParse(await req.json().catch(() => null));
+    if (!body.success) {
       return NextResponse.json(
-        { ok: false, message: "UNAUTHORIZED" },
-        { status: 401 }
-      );
-    }
-
-    if (!["STUDENT", "TEACHER", "ADMIN"].includes(role)) {
-      return NextResponse.json(
-        { ok: false, message: "FORBIDDEN" },
-        { status: 403 }
-      );
-    }
-
-    const body = await req.json();
-    const { roomId, date, slotId, note } = body;
-
-    if (!roomId || !date || !slotId) {
-      return NextResponse.json(
-        { ok: false, message: "ข้อมูลไม่ครบ (roomId, date, slotId)" },
+        { ok: false, message: "BAD_BODY", detail: body.error.flatten() },
         { status: 400 }
       );
     }
 
+    const { roomId, date, slotId, note } = body.data;
+
     // แปลง slot → startAt / endAt
     const { startAt, endAt } = slotToTime(slotId, date);
 
-    const isTeacher = role === "TEACHER";
-    const isAdmin = role === "ADMIN";
+    const isTeacher = auth.role === "TEACHER";
+    const isAdmin = auth.role === "ADMIN";
 
     const reservation = await prisma.reservation.create({
       data: {
@@ -59,11 +49,11 @@ export async function POST(req: Request) {
 
         // ⭐ requirement หลัก
         status: (isTeacher || isAdmin) ? "APPROVED" : "PENDING",
-        approverId: (isTeacher || isAdmin) ? uid : null,
+        approverId: (isTeacher || isAdmin) ? auth.uid ?? null : null,
 
-        requesterId: uid,
+        requesterId: auth.uid,
         roomId,
-        date: new Date(date),
+        date: startOfDayUTC(date),
         slot: slotId,
         startAt,
         endAt,

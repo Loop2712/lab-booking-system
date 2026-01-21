@@ -1,22 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    const role = (session as any)?.role;
-
-    if (!session || !role) {
-      return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-    }
-
-    if (!["STUDENT", "TEACHER", "ADMIN"].includes(role)) {
-      return NextResponse.json({ ok: false, message: "FORBIDDEN" }, { status: 403 });
-    }
+    const auth = await requireRoleApi(["STUDENT", "TEACHER", "ADMIN"]);
+    if (!auth.ok) return auth.response;
 
     const rooms = await prisma.room.findMany({
       orderBy: [{ floor: "asc" }, { roomNumber: "asc" }],

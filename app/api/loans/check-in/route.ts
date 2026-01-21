@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 import { verifyUserQrToken } from "@/lib/security/user-qr";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
 
@@ -12,21 +11,16 @@ const bodySchema = z.object({
   userToken: z.string().min(10),
 });
 
-function canUse(role?: string) {
-  return role === "TEACHER" || role === "ADMIN";
-}
-
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
+  const auth = await requireRoleApi(["TEACHER", "ADMIN"]);
+  if (!auth.ok) return auth.response;
 
-  if (!canUse(role)) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  const body = bodySchema.safeParse(await req.json().catch(() => null));
+  if (!body.success) {
+    return NextResponse.json({ ok: false, message: "BAD_BODY", detail: body.error.flatten() }, { status: 400 });
   }
 
-  const body = bodySchema.parse(await req.json());
-
-  const vt = verifyUserQrToken(body.userToken);
+  const vt = verifyUserQrToken(body.data.userToken);
   if (!vt.ok) {
     return NextResponse.json({ ok: false, message: "BAD_QR_TOKEN", reason: vt.reason }, { status: 400 });
   }
@@ -35,7 +29,7 @@ export async function POST(req: Request) {
   try {
     const result = await prisma.$transaction(async (tx) => {
       const resv = await tx.reservation.findUnique({
-        where: { id: body.reservationId },
+        where: { id: body.data.reservationId },
         select: {
           id: true,
           status: true,

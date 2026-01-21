@@ -32,19 +32,22 @@ export default function Adminห้องPage() {
     isActive: true,
   });
 
-  async function load() {
-    setError(null);
+  async function load({ initial }: { initial?: boolean } = {}) {
+    if (!initial) {
+      setError(null);
+    }
     const res = await fetch("/api/admin/rooms", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
     if (!res.ok || !json?.ok) {
       setError(json?.message || "โหลดห้องไม่สำเร็จ");
       return;
     }
+    setError(null);
     setห้อง(json.rooms ?? []);
   }
 
   useEffect(() => {
-    load();
+    void load({ initial: true });
   }, []);
 
   async function createRoom() {

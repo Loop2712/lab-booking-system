@@ -1,22 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
+import { startOfDayUTC } from "@/lib/datetime";
 
 export const runtime = "nodejs";
 
-function isAdmin(role?: string) {
-  return role === "ADMIN";
-}
-
-function startOfDayUTC(ymd: string) {
-  return new Date(`${ymd}T00:00:00.000Z`);
-}
-
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  if (!isAdmin(role)) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
   const url = new URL(req.url);
   const from = url.searchParams.get("from");

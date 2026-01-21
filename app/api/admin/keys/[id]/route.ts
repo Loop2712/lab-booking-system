@@ -1,17 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
-
-function assertAdmin(session: any) {
-  if (!session || session.role !== "ADMIN") {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  return null;
-}
 
 const patchSchema = z.object({
   keyCode: z.string().min(1).optional(),
@@ -23,16 +15,18 @@ export async function PATCH(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
-  const denied = assertAdmin(session as any);
-  if (denied) return denied;
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
-  const body = patchSchema.parse(await req.json());
+  const body = patchSchema.safeParse(await req.json().catch(() => null));
+  if (!body.success) {
+    return NextResponse.json({ ok: false, message: "BAD_BODY", detail: body.error.flatten() }, { status: 400 });
+  }
 
   try {
     const key = await prisma.key.update({
       where: { id: params.id },
-      data: body,
+      data: body.data,
     });
     return NextResponse.json({ ok: true, key });
   } catch (e: any) {
@@ -47,9 +41,8 @@ export async function DELETE(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
-  const denied = assertAdmin(session as any);
-  if (denied) return denied;
+  const auth = await requireRoleApi(["ADMIN"]);
+  if (!auth.ok) return auth.response;
 
   try {
     await prisma.key.delete({ where: { id: params.id } });

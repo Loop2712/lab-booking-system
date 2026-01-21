@@ -33,9 +33,11 @@ export default function LoanDesk({ title }: { title: string }) {
   const [pendingCheckin, setPendingCheckin] = useState<ReservationRow[]>([]);
   const [activeLoans, setActiveLoans] = useState<ReservationRow[]>([]);
 
-  async function load() {
-    setLoading(true);
-    setError(null);
+  async function load({ initial }: { initial?: boolean } = {}) {
+    if (!initial) {
+      setLoading(true);
+      setError(null);
+    }
     const res = await fetch("/api/loans/queue", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
     setLoading(false);
@@ -49,11 +51,14 @@ export default function LoanDesk({ title }: { title: string }) {
       return;
     }
 
+    setError(null);
     setPendingCheckin(json.pendingCheckin ?? []);
     setActiveLoans(json.activeLoans ?? []);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    void load({ initial: true });
+  }, []);
 
 async function checkIn(reservationId: string) {
     setBusyId(reservationId);

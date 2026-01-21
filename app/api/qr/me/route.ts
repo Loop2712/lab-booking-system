@@ -1,18 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { makeUserQrToken } from "@/lib/security/user-qr";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  const uid = (session as any)?.uid as string | undefined;
+  const auth = await requireRoleApi(["STUDENT", "TEACHER", "ADMIN"], { requireUid: true });
+  if (!auth.ok) return auth.response;
 
-  if (!uid) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-
-  const token = makeUserQrToken(uid);
+  const token = makeUserQrToken(auth.uid);
   return NextResponse.json({ ok: true, token });
 }

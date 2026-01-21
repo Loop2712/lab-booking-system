@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 import * as XLSX from "xlsx";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
-
-// -------------------- auth --------------------
-function assertAdmin(session: any) {
-  if (!session || session.role !== "ADMIN") {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  return null;
-}
 
 // -------------------- utils --------------------
 function normalizeKey(k: string) {
@@ -178,9 +169,8 @@ async function loadRowsFromFile(fileObj: File): Promise<{ rows: Record<string, a
 // -------------------- route --------------------
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    const denied = assertAdmin(session);
-    if (denied) return denied;
+    const auth = await requireRoleApi(["ADMIN"]);
+    if (!auth.ok) return auth.response;
 
     const url = new URL(req.url);
     const dryRun = url.searchParams.get("dryRun") === "1";

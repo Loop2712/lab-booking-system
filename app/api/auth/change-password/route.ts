@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcrypt";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
 
 export const runtime = "nodejs";
 
@@ -20,16 +19,16 @@ const schema = z
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    const uid = (session as any)?.uid as string | undefined;
-    if (!uid) {
-      return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+    const auth = await requireRoleApi(["STUDENT", "TEACHER", "ADMIN"], { requireUid: true });
+    if (!auth.ok) return auth.response;
+
+    const body = schema.safeParse(await req.json().catch(() => null));
+    if (!body.success) {
+      return NextResponse.json({ ok: false, message: "VALIDATION_ERROR", details: body.error.issues }, { status: 400 });
     }
 
-    const body = schema.parse(await req.json());
-
     const user = await prisma.user.findUnique({
-      where: { id: uid },
+      where: { id: auth.uid },
       select: { id: true, passwordHash: true, birthDate: true },
     });
 
@@ -41,14 +40,14 @@ export async function POST(req: Request) {
     let currentOk = false;
 
     if (user.passwordHash) {
-      currentOk = await bcrypt.compare(body.currentPassword, user.passwordHash);
+      currentOk = await bcrypt.compare(body.data.currentPassword, user.passwordHash);
     } else {
       // fallback เฉพาะช่วง migrate: เทียบวันเกิด YYYYMMDD
       const yyyy = user.birthDate.getUTCFullYear();
       const mm = String(user.birthDate.getUTCMonth() + 1).padStart(2, "0");
       const dd = String(user.birthDate.getUTCDate()).padStart(2, "0");
       const yyyymmdd = `${yyyy}${mm}${dd}`;
-      currentOk = body.currentPassword === yyyymmdd;
+      currentOk = body.data.currentPassword === yyyymmdd;
     }
 
     if (!currentOk) {
@@ -56,14 +55,14 @@ export async function POST(req: Request) {
     }
 
     // กันตั้งรหัสใหม่ซ้ำกับเดิมแบบง่าย ๆ
-    if (body.currentPassword === body.newPassword) {
+    if (body.data.currentPassword === body.data.newPassword) {
       return NextResponse.json(
         { ok: false, message: "NEW_PASSWORD_SAME_AS_OLD" },
         { status: 400 }
       );
     }
 
-    const newHash = await bcrypt.hash(body.newPassword, 10);
+    const newHash = await bcrypt.hash(body.data.newPassword, 10);
 
     await prisma.user.update({
       where: { id: uid },

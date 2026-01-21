@@ -18,27 +18,39 @@ function plusDaysStr(n: number) {
   return ymd(d);
 }
 
+type RoomOption = { id: string; code: string; name: string };
+
+type ReportSummary = {
+  total: number;
+  byRoom: Array<{ roomId: string; room: string; count: number }>;
+  byType: Array<{ type: string; count: number }>;
+  byStatus: Array<{ status: string; count: number }>;
+  topRequesters: Array<{ requesterId: string; requester: string; count: number }>;
+};
+
 export default function AdminReportsPage() {
   const [loading, setLoading] = useState(false);
 
   const [from, setFrom] = useState(ymd(new Date()));
   const [to, setTo] = useState(plusDaysStr(30));
 
-  const [rooms, c] = useState<any[]>([]);
+  const [rooms, setRooms] = useState<RoomOption[]>([]);
   const [roomId, setRoomId] = useState("ALL");
   const [type, setType] = useState("ALL");
   const [status, setStatus] = useState("ALL");
 
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<ReportSummary | null>(null);
 
   async function loadRooms() {
     const r = await fetch("/api/admin/rooms");
     const j = await r.json();
-    setRooms(j.rooms ?? []);
+    setRooms(Array.isArray(j.rooms) ? j.rooms : []);
   }
 
-  async function load() {
-    setLoading(true);
+  async function load({ initial }: { initial?: boolean } = {}) {
+    if (!initial) {
+      setLoading(true);
+    }
     try {
       const qs = new URLSearchParams({
         from,
@@ -65,8 +77,8 @@ export default function AdminReportsPage() {
   }
 
   useEffect(() => {
-    loadRooms();
-    load();
+    void loadRooms();
+    void load({ initial: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -152,7 +164,7 @@ export default function AdminReportsPage() {
         <Card>
           <CardHeader><CardTitle>By Type</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {(data?.byType ?? []).map((x: any) => (
+            {(data?.byType ?? []).map((x) => (
               <div key={x.type} className="flex justify-between border rounded-md p-2">
                 <div>{x.type}</div>
                 <div className="font-medium">{x.count}</div>
@@ -164,7 +176,7 @@ export default function AdminReportsPage() {
         <Card>
           <CardHeader><CardTitle>By Status</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {(data?.byStatus ?? []).map((x: any) => (
+            {(data?.byStatus ?? []).map((x) => (
               <div key={x.status} className="flex justify-between border rounded-md p-2">
                 <div>{x.status}</div>
                 <div className="font-medium">{x.count}</div>
@@ -176,7 +188,7 @@ export default function AdminReportsPage() {
         <Card>
           <CardHeader><CardTitle>By Room</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {(data?.byRoom ?? []).map((x: any) => (
+            {(data?.byRoom ?? []).map((x) => (
               <div key={x.roomId} className="flex justify-between border rounded-md p-2">
                 <div className="truncate">{x.room}</div>
                 <div className="font-medium">{x.count}</div>
@@ -188,7 +200,7 @@ export default function AdminReportsPage() {
         <Card className="md:col-span-2">
           <CardHeader><CardTitle>Top Requesters</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {(data?.topRequesters ?? []).map((x: any) => (
+            {(data?.topRequesters ?? []).map((x) => (
               <div key={x.requesterId} className="flex justify-between border rounded-md p-2">
                 <div className="truncate">{x.requester}</div>
                 <div className="font-medium">{x.count}</div>

@@ -1,26 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireRoleApi } from "@/lib/auth/guard";
+import { startOfDayUTC } from "@/lib/datetime";
 
 export const runtime = "nodejs";
 
-function isTeacher(role?: string) {
-  return role === "TEACHER";
-}
-
-function startOfDayUTC(ymd: string) {
-  return new Date(`${ymd}T00:00:00.000Z`);
-}
-
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  const uid = (session as any)?.uid as string | undefined;
-
-  if (!isTeacher(role) || !uid) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
+  const auth = await requireRoleApi(["TEACHER"], { requireUid: true });
+  if (!auth.ok) return auth.response;
 
   const url = new URL(req.url);
   const from = url.searchParams.get("from");
@@ -33,7 +20,7 @@ export async function GET(req: Request) {
   const toDate = startOfDayUTC(to);
 
   const sections = await prisma.section.findMany({
-    where: { teacherId: uid, isActive: true },
+    where: { teacherId: auth.uid, isActive: true },
     include: {
       course: true,
       room: true,
