@@ -1,61 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { signIn, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { Eye, EyeOff, AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-type LoginType = "STUDENT" | "STAFF";
-type Role = "ADMIN" | "TEACHER" | "STUDENT";
+import { humanizeSignInError } from "./component/messages";
+import { redirectAfterLogin } from "./component/redirectAfterLogin";
+import { loginStudent } from "./component/loginStudent";
+import { loginTeacher } from "./component/loginTeacher";
 
-function roleToDashboard(role: Role | undefined) {
-  if (role === "ADMIN") return "/admin";
-  if (role === "TEACHER") return "/teacher";
-  if (role === "STUDENT") return "/student";
-  return "/";
-}
-
-function normalizeCallbackUrl(callbackUrl: string | undefined) {
-  if (!callbackUrl) return null;
-  if (callbackUrl === "/login" || callbackUrl.startsWith("/api/auth")) return null;
-
-  try {
-    if (callbackUrl.startsWith("http")) {
-      const u = new URL(callbackUrl);
-      return u.pathname + (u.search ?? "");
-    }
-  } catch {
-    // ignore
-  }
-
-  if (!callbackUrl.startsWith("/")) return null;
-  return callbackUrl;
-}
-
-function isCallbackAllowedForRole(path: string, role: Role | undefined) {
-  if (!role) return false;
-
-  if (path.startsWith("/admin")) return role === "ADMIN";
-  if (path.startsWith("/teacher")) return role === "TEACHER";
-  if (path.startsWith("/student")) return role === "STUDENT";
-  return true;
-}
-
-function humanizeSignInError(code: string | undefined | null) {
-  if (!code) return null;
-
-  if (code === "RATE_LIMITED") {
-    return "พยายามเข้าสู่ระบบถี่เกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง";
-  }
-  if (code === "CredentialsSignin") {
-    return "ข้อมูลไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง";
-  }
-
-  return "เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่";
-}
+type LoginMode = "STUDENT" | "STAFF";
 
 export default function LoginForm({
   callbackUrl,
@@ -66,12 +24,14 @@ export default function LoginForm({
 }) {
   const { update } = useSession();
 
-  const [loginType, setLoginType] = useState<LoginType>("STUDENT");
+  const [mode, setMode] = useState<LoginMode>("STUDENT");
 
+  // student
   const [studentId, setStudentId] = useState("");
+  // staff
   const [email, setEmail] = useState("");
 
-  // ✅ ให้ทั้ง student/staff กรอกรหัสผ่านเอง
+  // shared password input (student: 11 digits studentId, staff: YYYYMMDD)
   const [password, setPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
@@ -81,56 +41,20 @@ export default function LoginForm({
     humanizeSignInError(initialError)
   );
 
-  const isStudent = loginType === "STUDENT";
+  const isStudent = mode === "STUDENT";
 
   const canSubmit = useMemo(() => {
     if (isStudent) {
       const idOk = studentId.trim().length === 11;
       const passOk = password.trim().length === 11;
-      // ✅ policy: password ของ student คือรหัสนักศึกษา
-      const match = studentId.trim() === password.trim();
+      const match = studentId.trim() === password.trim(); // policy: pass = studentId
       return idOk && passOk && match;
     }
 
     const emailOk = email.trim().length > 3;
-    const passOk = password.match(/^\d{8}$/); // YYYYMMDD
-    return emailOk && !!passOk;
+    const passOk = /^\d{8}$/.test(password); // YYYYMMDD
+    return emailOk && passOk;
   }, [isStudent, studentId, email, password]);
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const res = await signIn("credentials", {
-      redirect: false,
-      callbackUrl,
-      loginType,
-      // ✅ ใช้ชื่อ field เป็น password (ฝั่ง server จะอ่านจาก credentials.password)
-      password: password.trim(),
-      studentId: isStudent ? studentId.trim() : undefined,
-      email: !isStudent ? email.trim() : undefined,
-    });
-
-    setLoading(false);
-
-    if (!res?.ok) {
-      setError(humanizeSignInError(res?.error) ?? "เข้าสู่ระบบไม่สำเร็จ");
-      return;
-    }
-
-    // refresh session เพื่อให้ role ล่าสุดมาแน่ ๆ
-    const newSession = await update();
-    const role = (newSession as any)?.role as Role | undefined;
-
-    const normalized = normalizeCallbackUrl(callbackUrl);
-    const target =
-      normalized && isCallbackAllowedForRole(normalized, role)
-        ? normalized
-        : roleToDashboard(role);
-
-    window.location.href = target;
-  }
 
   const studentMismatch =
     isStudent &&
@@ -138,16 +62,53 @@ export default function LoginForm({
     password.trim().length > 0 &&
     studentId.trim() !== password.trim();
 
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const res = isStudent
+        ? await loginStudent({
+            callbackUrl,
+            studentId: studentId.trim(),
+            password: password.trim(),
+          })
+        : await loginTeacher({
+            callbackUrl,
+            email: email.trim().toLowerCase(),
+            password,
+          });
+
+      if (!res?.ok) {
+        setError(humanizeSignInError(res?.error) ?? "เข้าสู่ระบบไม่สำเร็จ");
+        setLoading(false);
+        return;
+      }
+
+      // redirect ตาม role หลัง session อัปเดต
+      await redirectAfterLogin({
+        callbackUrl,
+        updateSession: async () => (await update()) as any,
+      });
+    } catch (err) {
+      console.error(err);
+      setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       <div className="space-y-2">
-        <Label>Login as</Label>
+        <Label>ประเภทผู้ใช้</Label>
         <div className="grid grid-cols-2 gap-2">
           <Button
             type="button"
-            variant={loginType === "STUDENT" ? "default" : "outline"}
+            variant={mode === "STUDENT" ? "default" : "outline"}
             onClick={() => {
-              setLoginType("STUDENT");
+              setMode("STUDENT");
               setPassword("");
               setError(null);
             }}
@@ -156,9 +117,9 @@ export default function LoginForm({
           </Button>
           <Button
             type="button"
-            variant={loginType === "STAFF" ? "default" : "outline"}
+            variant={mode === "STAFF" ? "default" : "outline"}
             onClick={() => {
-              setLoginType("STAFF");
+              setMode("STAFF");
               setPassword("");
               setError(null);
             }}
@@ -171,7 +132,7 @@ export default function LoginForm({
       {isStudent ? (
         <>
           <div className="space-y-2">
-            <Label>Student ID (11 digits)</Label>
+            <Label>รหัสนักศึกษา (11 หลัก)</Label>
             <Input
               value={studentId}
               onChange={(e) =>
@@ -183,7 +144,7 @@ export default function LoginForm({
           </div>
 
           <div className="space-y-2">
-            <Label>Password (Student ID)</Label>
+            <Label>รหัสผ่าน (รหัสนักศึกษา)</Label>
             <div className="relative">
               <Input
                 value={password}
@@ -212,7 +173,7 @@ export default function LoginForm({
               </p>
             ) : (
               <p className="text-xs text-muted-foreground">
-                สำหรับนักศึกษา: รหัสผ่านคือ “รหัสนักศึกษา” (กรอกเพื่อยืนยัน)
+                นักศึกษา: รหัสผ่านเริ่มต้นคือ “รหัสนักศึกษา” (กรอกเพื่อยืนยัน)
               </p>
             )}
           </div>
@@ -230,7 +191,7 @@ export default function LoginForm({
           </div>
 
           <div className="space-y-2">
-            <Label>Password (YYYYMMDD)</Label>
+            <Label>รหัสผ่าน (YYYYMMDD)</Label>
             <div className="relative">
               <Input
                 value={password}
@@ -253,7 +214,7 @@ export default function LoginForm({
               </button>
             </div>
             <p className="text-xs text-muted-foreground">
-              สำหรับบุคลากร: ใช้วันเกิดรูปแบบ YYYYMMDD เป็นรหัสผ่านเริ่มต้น
+              บุคลากร (ครู/แอดมิน): ใช้วันเกิดรูปแบบ YYYYMMDD เป็นรหัสผ่านเริ่มต้น
             </p>
           </div>
         </>
