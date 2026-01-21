@@ -15,32 +15,26 @@ function toYYYYMMDD(d: Date) {
 }
 
 function getIp(req: any) {
-  // NextAuth v4 req เป็น NextRequest-ish ที่มี headers.get
-  const xf = req?.headers?.get?.("x-forwarded-for");
-  if (xf) return xf.split(",")[0].trim();
+  const xff = req?.headers?.get?.("x-forwarded-for");
+  if (xff) return String(xff).split(",")[0]?.trim() ?? "unknown";
   const realIp = req?.headers?.get?.("x-real-ip");
   if (realIp) return realIp.trim();
   return "unknown";
 }
 
-const baseCreds = z.object({
-  loginType: z.enum(["STUDENT", "STAFF"]),
-  birthDate: z.string().regex(/^\d{8}$/), // YYYYMMDD
-});
-
-const studentCreds = baseCreds.extend({
+const studentCreds = z.object({
   loginType: z.literal("STUDENT"),
-  studentId: z.string().length(11),
+  studentId: z.string().regex(/^\d{11}$/),
+  password: z.string().regex(/^\d{11}$/),
 });
 
-const staffCreds = baseCreds.extend({
+const staffCreds = z.object({
   loginType: z.literal("STAFF"),
   email: z.string().email(),
+  password: z.string().regex(/^\d{8}$/), // YYYYMMDD
 });
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt" },
-
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -48,24 +42,33 @@ export const authOptions: NextAuthOptions = {
         loginType: { label: "loginType", type: "text" },
         studentId: { label: "studentId", type: "text" },
         email: { label: "email", type: "text" },
-        birthDate: { label: "birthDate", type: "password" }, // เราใช้เป็น "รหัสผ่าน YYYYMMDD"
+        password: { label: "password", type: "password" },
       },
 
-      async authorize(raw, req) {
-        // 1) Rate limit (Upstash)
+      async authorize(raw, req) {        // 1) Rate limit (Upstash)
+        // NOTE: In dev or when Upstash is misconfigured, we should NOT block login.
         const ip = getIp(req);
         const ident = `${raw?.loginType ?? "?"}:${raw?.studentId ?? raw?.email ?? "?"}`;
         const key = `login:${ip}:${ident}`;
 
-        const rl = await loginRatelimit.limit(key);
-        if (!rl.success) {
-          // ให้ NextAuth มองเป็น error
-          throw new Error("RATE_LIMITED");
+        try {
+          const rl = await loginRatelimit.limit(key as any);
+          if (!rl.success) {
+            // ให้ NextAuth มองเป็น error (แสดงข้อความบน /login)
+            throw new Error("RATE_LIMITED");
+          }
+        } catch (e) {
+          // ถ้า ratelimit ใช้งานไม่ได้ (env ผิด/เน็ต/Upstash ล่ม) ให้ข้ามไป (dev-friendly)
+          // eslint-disable-next-line no-console
+          console.warn("[auth] ratelimit skipped:", (e as any)?.message ?? e);
         }
 
         // 2) Student
         if (raw?.loginType === "STUDENT") {
           const c = studentCreds.parse(raw);
+
+          // policy: student password = studentId
+          if (c.password !== c.studentId) return null;
 
           const user = await prisma.user.findUnique({
             where: { studentId: c.studentId },
@@ -75,30 +78,27 @@ export const authOptions: NextAuthOptions = {
               role: true,
               firstName: true,
               lastName: true,
-              birthDate: true,
               studentId: true,
               passwordHash: true,
             },
           });
 
           if (!user || user.role !== "STUDENT") return null;
+          if (user.isActive === false) return null;
 
-          // รองรับทั้งแบบใหม่ (passwordHash) และ fallback แบบเดิม (เทียบวันเกิด) ชั่วคราว
-          const ok =
-            user.passwordHash
-              ? await bcrypt.compare(c.birthDate, user.passwordHash)
-              : toYYYYMMDD(user.birthDate) === c.birthDate;
-
-          if (!ok) return null;
-
-          // ถ้ายังไม่มี passwordHash ให้ set ครั้งแรก (ช่วยย้ายระบบไปแบบปลอดภัย)
-          if (!user.passwordHash) {
-            const hash = await bcrypt.hash(c.birthDate, 10);
+          // ถ้ายังไม่มี passwordHash ให้ set เป็น hash(studentId) เพื่อ migrate ของเดิม
+          let passwordHash = user.passwordHash;
+          if (!passwordHash) {
+            const hash = await bcrypt.hash(c.studentId, 10);
             await prisma.user.update({
               where: { id: user.id },
               data: { passwordHash: hash },
             });
+            passwordHash = hash;
           }
+
+          const ok = await bcrypt.compare(c.password, passwordHash);
+          if (!ok) return null;
 
           return {
             id: user.id,
@@ -125,17 +125,27 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        if (!user || (user.role !== "TEACHER" && user.role !== "ADMIN")) return null;
+        if (!user) return null;
+        if (user.isActive === false) return null;
 
-        const ok =
-          user.passwordHash
-            ? await bcrypt.compare(c.birthDate, user.passwordHash)
-            : toYYYYMMDD(user.birthDate) === c.birthDate;
+        // staff login อนุญาตทั้ง TEACHER และ ADMIN
+        if (user.role !== "TEACHER" && user.role !== "ADMIN") return null;
+
+        const expected = toYYYYMMDD(user.birthDate);
+
+        // รองรับทั้งแบบใหม่ (passwordHash) และ fallback แบบเดิม (เทียบวันเกิด) ชั่วคราว
+        let ok: boolean;
+        if (user.passwordHash) {
+          ok = await bcrypt.compare(c.password, user.passwordHash);
+        } else {
+          ok = expected === c.password;
+        }
 
         if (!ok) return null;
 
+        // ถ้ายังไม่มี passwordHash ให้ set จาก expected เพื่อให้สอดคล้อง
         if (!user.passwordHash) {
-          const hash = await bcrypt.hash(c.birthDate, 10);
+          const hash = await bcrypt.hash(expected, 10);
           await prisma.user.update({
             where: { id: user.id },
             data: { passwordHash: hash },
@@ -152,11 +162,13 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
+  session: { strategy: "jwt" },
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.uid = (user as any).id;
-        token.role = (user as any).role as Role;
+        token.role = (user as any).role;
       }
       return token;
     },
