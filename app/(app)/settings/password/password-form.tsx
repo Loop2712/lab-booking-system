@@ -80,7 +80,7 @@ export default function PasswordForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       <div className="space-y-2">
-        <Label>รหัสผ่านเดิม</Label>
+        <Label>Code</Label>
         <div className="relative">
           <Input
             value={currentPassword}
@@ -101,7 +101,7 @@ export default function PasswordForm() {
       </div>
 
       <div className="space-y-2">
-        <Label>รหัสผ่านใหม่</Label>
+        <Label>Code</Label>
         <div className="relative">
           <Input
             value={newPassword}
@@ -122,7 +122,7 @@ export default function PasswordForm() {
       </div>
 
       <div className="space-y-2">
-        <Label>ยืนยันรหัสผ่านใหม่</Label>
+        <Label>ConfirmCode</Label>
         <div className="relative">
           <Input
             value={confirmPassword}

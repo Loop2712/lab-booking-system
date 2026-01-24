@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import bcrypt from "bcrypt";
 
 export const runtime = "nodejs";
 
@@ -110,6 +111,12 @@ export async function POST(req: Request) {
   try {
     const birthDate = new Date(`${body.birthDate}T00:00:00.000Z`);
 
+    // ✅ นักศึกษา: ตั้งรหัสผ่านเริ่มต้น = studentId
+    const defaultPasswordHash =
+      body.role === "STUDENT" && body.studentId && !body.passwordHash
+        ? await bcrypt.hash(body.studentId, 10)
+        : null;
+
     const user = await prisma.user.create({
       data: {
         role: body.role,
@@ -121,7 +128,7 @@ export async function POST(req: Request) {
         studentType: body.studentType ?? null,
         studentId: body.studentId ?? null,
         email: body.email ?? null,
-        passwordHash: body.passwordHash ?? null,
+        passwordHash: body.passwordHash ?? defaultPasswordHash,
       },
       select: { id: true },
     });

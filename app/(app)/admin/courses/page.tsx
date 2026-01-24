@@ -1,11 +1,12 @@
 "use client";
+import type { Course } from "./types";
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-type Course = { id: string; code: string; name: string };
+ code: string; name: string };
 
 export default function AdminCoursesPage() {
   const [items, setItems] = useState<Course[]>([]);
@@ -46,7 +47,7 @@ export default function AdminCoursesPage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>รายวิชา</CardTitle>
+          <CardTitle>Courses</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-2">
           <Input placeholder="Code (เช่น SCS409)" value={code} onChange={(e) => setCode(e.target.value)} />
@@ -57,7 +58,7 @@ export default function AdminCoursesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>รายการ</CardTitle>
+          <CardTitle>List</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           {items.map((c) => (
@@ -71,7 +72,7 @@ export default function AdminCoursesPage() {
               </Button>
             </div>
           ))}
-          {items.length === 0 && <div className="text-sm text-muted-foreground">ยังไม่มีข้อมูล</div>}
+          {items.length === 0 && <div className="text-sm text-muted-foreground">ยังไม่มีรายวิชา</div>}
         </CardContent>
       </Card>
     </div>

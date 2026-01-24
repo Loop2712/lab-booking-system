@@ -1,4 +1,9 @@
 "use client";
+import type { UIEvent } from "./types";
+import { ymd } from "@/lib/date/ymd";
+import { addDays } from "@/lib/date/addDays";
+import { startOfWeek } from "@/lib/date/startOfWeek";
+import { prettyDate } from "@/lib/date/prettyDate";
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,43 +17,13 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 
-type UIEvent = {
-    title: string;
     time: string;
     meta: string;
     raw?: any;
 };
 
-function ymd(d: Date) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${dd}`;
-}
-function addDays(d: Date, n: number) {
-    const x = new Date(d);
-    x.setDate(x.getDate() + n);
-    return x;
-}
-function startOfWeek(d: Date) {
-    const x = new Date(d);
-    const day = x.getDay(); // 0 sun
-    const diff = (day === 0 ? -6 : 1) - day; // monday start
-    x.setDate(x.getDate() + diff);
-    x.setHours(0, 0, 0, 0);
-    return x;
-}
 
 // ✅ fix locale+timezone ลด hydration mismatch
-const fmt = new Intl.DateTimeFormat("en-GB", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    timeZone: "Asia/Bangkok",
-});
-function prettyDate(d: Date) {
-    return fmt.format(d);
-}
 
 export default function TeacherCalendarPage() {
     const [mounted, setMounted] = useState(false);
@@ -181,7 +156,7 @@ export default function TeacherCalendarPage() {
                 </CardHeader>
 
                 <CardContent className="text-sm text-muted-foreground">
-                    แสดงเฉพาะ IN_CLASS ที่ generate แล้ว (คลิกดูรายละเอียดได้)
+                    แสดงทั้งตารางเรียน (IN_CLASS) ที่ระบบสร้างจาก Section และการจองแบบจองเอง (AD_HOC)
                 </CardContent>
             </Card>
 
@@ -220,7 +195,7 @@ export default function TeacherCalendarPage() {
                                             </button>
                                         ))}
 
-                                        {items.length === 0 && <div className="text-sm text-muted-foreground">ไม่มีรายการ</div>}
+                                        {items.length === 0 && <div className="text-sm text-muted-foreground">List</div>}
                                     </>
                                 )}
                             </CardContent>
@@ -256,19 +231,19 @@ export default function TeacherCalendarPage() {
                     )}
                 </DialogContent>
             </Dialog>
-            <Button onClick={() => setOpenCreate(true)}>จอง AD_HOC</Button>
+            <Button onClick={() => setOpenCreate(true)}>Booking AD_HOC</Button>
 
             <Dialog open={openCreate} onOpenChange={setOpenCreate}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>จองห้อง (AD_HOC) — อนุมัติทันที</DialogTitle>
+                        <DialogTitle>จองห้อง (AD_HOC)</DialogTitle>
                         <DialogDescription>
-                            เลือกห้อง วันที่ และช่วงเวลา ระบบจะสร้างรายการจองแบบอนุมัติทันทีสำหรับอาจารย์
+                            เลือกห้อง วันที่ และช่วงเวลา (การจองของอาจารย์จะอนุมัติทันที)
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-3">
                         <div>
-                            <div className="text-sm mb-1">ห้อง</div>
+                            <div className="text-sm mb-1">Room</div>
                             <Select value={roomId} onValueChange={setRoomId}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="เลือกห้อง" />
@@ -286,7 +261,7 @@ export default function TeacherCalendarPage() {
                         <div>
                             <div className="text-sm mb-1">วันที่ (YYYY-MM-DD)</div>
                             <div>
-                                <div className="text-sm mb-1">วันที่</div>
+                                <div className="text-sm mb-1">เลือกวันที่</div>
 
                                 <Popover>
                                     <PopoverTrigger asChild>
@@ -363,11 +338,11 @@ export default function TeacherCalendarPage() {
                                     }
                                 }}
                             >
-                                สร้างการจอง
+                                Booking
                             </Button>
 
                             <Button variant="secondary" onClick={() => setOpenCreate(false)}>
-                                ยกเลิก
+                                Cancel
                             </Button>
                         </div>
                     </div>

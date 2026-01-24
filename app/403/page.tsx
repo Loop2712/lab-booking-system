@@ -1,13 +1,8 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
+import { roleToDashboard } from "./roleToDashboard";
 
-function roleToDashboard(role?: string) {
-  if (role === "ADMIN") return "/admin";
-  if (role === "TEACHER") return "/teacher";
-  if (role === "STUDENT") return "/student";
-  return "/login";
-}
 
 export default async function ForbiddenPage() {
   const session = await getServerSession(authOptions);
@@ -28,13 +23,13 @@ export default async function ForbiddenPage() {
             href={dash}
             className="inline-flex items-center justify-center rounded-xl bg-black px-4 py-2 text-sm text-white"
           >
-            กลับไปแดชบอร์ดของฉัน
+            กลับไปหน้าแดชบอร์ด
           </Link>
           <Link
             href="/login"
             className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm"
           >
-            ไปหน้าเข้าสู่ระบบ
+            Login
           </Link>
         </div>
       </div>

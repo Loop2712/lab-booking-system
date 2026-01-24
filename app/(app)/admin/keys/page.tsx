@@ -1,4 +1,5 @@
 "use client";
+import type { KeyRow, KeyStatus, Room } from "./types";
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -13,10 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-type Room = { id: string; code: string; name: string; isActive: boolean };
-type KeyStatus = "AVAILABLE" | "BORROWED" | "LOST" | "DAMAGED";
-type KeyRow = {
-  id: string;
+ code: string; name: string; isActive: boolean };
   keyCode: string;
   status: KeyStatus;
   roomId: string;
@@ -124,9 +122,9 @@ export default function AdminKeysPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">กุญแจ</h1>
+        <h1 className="text-2xl font-semibold">Key</h1>
         <p className="text-sm text-muted-foreground">
-          จัดการกุญแจ (1 ห้อง = 1 กุญแจ)
+          ManageKey (1 Room = 1 Key)
         </p>
       </div>
 
@@ -138,7 +136,7 @@ export default function AdminKeysPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">เพิ่มกุญแจ</CardTitle>
+          <CardTitle className="text-base">AddKey</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2">
           <Input
@@ -199,7 +197,7 @@ export default function AdminKeysPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">รายการกุญแจ</CardTitle>
+          <CardTitle className="text-base">ListKey</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -250,7 +248,7 @@ export default function AdminKeysPage() {
               {keys.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-sm text-muted-foreground">
-                    ยังไม่มีข้อมูลกุญแจ
+                    Key
                   </TableCell>
                 </TableRow>
               )}

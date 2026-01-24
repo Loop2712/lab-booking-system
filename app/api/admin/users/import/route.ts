@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import bcrypt from "bcrypt";
 import * as XLSX from "xlsx";
 
 export const runtime = "nodejs";
@@ -334,7 +335,7 @@ export async function POST(req: Request) {
             major: p.major ? p.major : undefined,
             studentType: p.studentType ? (p.studentType as any) : undefined,
             isActive: p.isActive === "0" ? false : true,
-            passwordHash: null, // ให้ระบบ set hash ตอน login ครั้งแรก
+            passwordHash: await bcrypt.hash(p.studentId, 10), // นักศึกษา: รหัสผ่านเริ่มต้น = studentId
           },
           update: {
             role: "STUDENT",
@@ -345,6 +346,7 @@ export async function POST(req: Request) {
             major: p.major ? p.major : null,
             studentType: p.studentType ? (p.studentType as any) : null,
             isActive: p.isActive === "0" ? false : true,
+            passwordHash: await bcrypt.hash(p.studentId, 10),
           },
         })
       )

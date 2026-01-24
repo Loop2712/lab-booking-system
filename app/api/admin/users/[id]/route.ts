@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
+import bcrypt from "bcrypt";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 
@@ -69,6 +70,19 @@ export async function PATCH(
     }
     if (data.role === "TEACHER" || data.role === "ADMIN") {
       data.studentId = null;
+    }
+
+    // ✅ ถ้าแก้ studentId (หรือกำหนด role เป็น STUDENT) ให้ตั้งรหัสผ่านเริ่มต้น = studentId
+    // หมายเหตุ: ถ้ามีการส่ง passwordHash มาเอง จะเคารพค่าที่ส่งมา
+    if (!("passwordHash" in data)) {
+      const shouldSetByStudentId =
+        typeof data.studentId === "string" &&
+        data.studentId.length === 11 &&
+        (data.role === "STUDENT" || data.role === undefined);
+
+      if (shouldSetByStudentId) {
+        data.passwordHash = await bcrypt.hash(data.studentId, 10);
+      }
     }
 
     const user = await prisma.user.update({

@@ -4,8 +4,6 @@ import { requireRole } from "@/lib/auth/guard";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 
-export const runtime = "nodejs";
-
 export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
   // ต้องล็อกอินก่อน (ทุก role ใช้ได้)
   const session = await requireRole(["ADMIN", "TEACHER", "STUDENT"]);

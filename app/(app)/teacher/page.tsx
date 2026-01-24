@@ -4,8 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export const runtime = "nodejs";
-
 export default async function TeacherDashboard() {
   const pendingRequests = await prisma.reservation.count({
     where: { status: "PENDING" },
@@ -22,8 +20,8 @@ export default async function TeacherDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">แดชบอร์ดอาจารย์</h1>
-        <p className="text-sm text-muted-foreground">สรุปคำขอจอง และงานที่ต้องทำใน โต๊ะยืมคืน</p>
+        <h1 className="text-2xl font-semibold">Teacher</h1>
+        <p className="text-sm text-muted-foreground">ภาพรวมการจองและการยืม-คืนกุญแจ</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -37,7 +35,7 @@ export default async function TeacherDashboard() {
 
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">รอรับกุญแจ</CardTitle>
+            <CardTitle className="text-sm">Key</CardTitle>
             <Badge variant="secondary">APPROVED</Badge>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{pendingCheckin}</CardContent>
@@ -45,7 +43,7 @@ export default async function TeacherDashboard() {
 
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">กำลังยืม</CardTitle>
+            <CardTitle className="text-sm">Borrow</CardTitle>
             <Badge variant="secondary">CHECKED_IN</Badge>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{activeLoans}</CardContent>
@@ -54,13 +52,13 @@ export default async function TeacherDashboard() {
 
       <div className="flex flex-wrap gap-2">
         <Button asChild>
-          <Link href="/teacher/requests">ไปหน้าอนุมัติคำขอ</Link>
+          <Link href="/teacher/requests">คำขอจอง</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/teacher/loans">ไปหน้า โต๊ะยืมคืน</Link>
+          <Link href="/teacher/loans">ยืม-คืนกุญแจ</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/teacher/qr">QR Token ของฉัน</Link>
+          <Link href="/teacher/qr">QR / Token ของฉัน</Link>
         </Button>
       </div>
     </div>

@@ -3,14 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { dashboardHref } from "./dashboardHref";
 
-export const runtime = "nodejs";
-
-function dashboardHref(role?: string) {
-  if (role === "ADMIN") return "/admin";
-  if (role === "TEACHER") return "/teacher";
-  return "/student";
-}
 
 export default async function PublicHomePage() {
   const session = await getServerSession(authOptions);
@@ -32,21 +26,21 @@ export default async function PublicHomePage() {
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold">Lab Key Booking System</h1>
           <p className="text-muted-foreground">
-            ระบบยืม–คืนกุญแจห้องปฏิบัติการคอมพิวเตอร์
+            Borrow–ReturnKeyRoom
           </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>เช็คห้องว่างวันนี้</CardTitle>
+              <CardTitle>Room</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                ดูสถานะห้องแบบเรียลไทม์ (ไม่ต้องล็อกอิน)
+                สถานะห้อง (วันนี้)
               </p>
               <Button asChild className="w-full">
-                <Link href="/rooms-today">เปิด Rooms Today</Link>
+                <Link href="/rooms-today">ดูสถานะห้องวันนี้</Link>
               </Button>
             </CardContent>
           </Card>

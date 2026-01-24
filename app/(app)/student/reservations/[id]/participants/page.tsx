@@ -1,4 +1,5 @@
 "use client";
+import type { P } from "./types";
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
@@ -7,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-type P = { id: string; userId: string; name: string; studentId: string | null };
+ userId: string; name: string; studentId: string | null };
 
 export default function ParticipantsPage() {
   const params = useParams<{ id: string }>();
@@ -79,14 +80,14 @@ export default function ParticipantsPage() {
   return (
     <div className="space-y-5 max-w-3xl">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">ผู้ร่วมในการยืม (Ad-hoc)</h1>
+        <h1 className="text-2xl font-semibold">Borrow (Ad-hoc)</h1>
         <p className="text-sm text-muted-foreground">
-          ผู้ที่อยู่ในรายการนี้สามารถนำ QR token มายืม/คืนกุญแจแทนได้ (รวมผู้จองสูงสุด 5 คน)
+          เพิ่มผู้ร่วมใช้สำหรับการจองนี้ (ให้ผู้ร่วมใช้สแกน QR/Token ตอนรับ-คืนกุญแจได้)
         </p>
       </div>
 
       <div className="flex items-center gap-2">
-        <Badge variant="secondary">รวมตอนนี้: {total}/5</Badge>
+        <Badge variant="secondary">ผู้ร่วมใช้: {total}/5</Badge>
       </div>
 
       {error && (
@@ -96,7 +97,7 @@ export default function ParticipantsPage() {
       )}
 
       <div className="rounded-2xl border p-4 space-y-3">
-        <div className="text-sm font-medium">เพิ่มผู้ร่วมด้วยรหัสนักศึกษา</div>
+        <div className="text-sm font-medium">AddCodeStudent</div>
         <div className="flex gap-2">
           <Input
             value={studentId}
@@ -109,7 +110,7 @@ export default function ParticipantsPage() {
           </Button>
         </div>
         <div className="text-xs text-muted-foreground">
-          จำกัด participants ได้สูงสุด 4 คน (เพราะผู้จองนับเป็น 1 คน รวม = 5)
+          สามารถเพิ่มผู้ร่วมใช้ได้สูงสุด 4 คน (รวมผู้จองเป็น 5 คน)
         </div>
       </div>
 
@@ -117,16 +118,16 @@ export default function ParticipantsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ชื่อ</TableHead>
-              <TableHead>รหัสนักศึกษา</TableHead>
-              <TableHead className="text-right">การทำงาน</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>CodeStudent</TableHead>
+              <TableHead className="text-right">จัดการ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} className="text-sm text-muted-foreground">
-                  ยังไม่มีผู้ร่วม
+                  ยังไม่มีผู้ร่วมใช้
                 </TableCell>
               </TableRow>
             ) : (
@@ -136,7 +137,7 @@ export default function ParticipantsPage() {
                   <TableCell className="font-mono text-sm">{p.studentId ?? "-"}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="outline" size="sm" onClick={() => remove(p.id)} disabled={busy}>
-                      ลบ
+                      Remove
                     </Button>
                   </TableCell>
                 </TableRow>

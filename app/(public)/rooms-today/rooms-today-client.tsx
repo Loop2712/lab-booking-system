@@ -157,7 +157,7 @@ export default function RoomsTodayClient() {
             <CardTitle className="text-sm">กำลังโหลด...</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            กำลังดึงข้อมูลห้องและการจองของวันนี้
+            RoomBooking
           </CardContent>
         </Card>
       ) : null}
@@ -199,7 +199,7 @@ export default function RoomsTodayClient() {
                         <div className="font-mono">#{b.reservationId}</div>
                       </div>
                     ) : (
-                      <div className="text-xs text-muted-foreground">ไม่มีการจองในช่วงนี้</div>
+                      <div className="text-xs text-muted-foreground">Booking</div>
                     )}
                   </div>
                 );

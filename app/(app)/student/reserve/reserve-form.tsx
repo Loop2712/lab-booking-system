@@ -79,7 +79,7 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
   return (
     <form onSubmit={onSubmit} className="max-w-lg space-y-5">
       <div className="space-y-2">
-        <Label>ห้อง</Label>
+        <Label>Room</Label>
         <Select value={roomId} onValueChange={setRoomId}>
           <SelectTrigger>
             <SelectValue placeholder="เลือกห้อง" />
@@ -100,7 +100,7 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
       </div>
 
       <div className="space-y-2">
-        <Label>ช่วงเวลา (ไม่เกิน 4 ชั่วโมง)</Label>
+        <Label>ช่วงเวลา (รอบละ 4 ชั่วโมง)</Label>
         <Select value={slotId} onValueChange={setSlotId}>
           <SelectTrigger>
             <SelectValue placeholder="เลือกช่วงเวลา" />

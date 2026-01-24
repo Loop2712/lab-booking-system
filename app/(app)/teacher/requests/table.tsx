@@ -80,22 +80,22 @@ export default function TeacherRequestsTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ผู้ขอ</TableHead>
+              <TableHead>ผู้ขอจอง</TableHead>
               <TableHead>ห้อง</TableHead>
               <TableHead>วันที่</TableHead>
               <TableHead>ช่วงเวลา</TableHead>
               <TableHead>ประเภท</TableHead>
               <TableHead>หมายเหตุ</TableHead>
               <TableHead>สถานะ</TableHead>
-              <TableHead className="text-right">การทำงาน</TableHead>
-            </TableRow>
+              <TableHead className="text-right">จัดการ</TableHead>
+</TableRow>
           </TableHeader>
 
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-sm text-muted-foreground">
-                  ไม่มีคำขอที่รออนุมัติ
+                  ไม่พบคำขอรออนุมัติ
                 </TableCell>
               </TableRow>
             ) : (
@@ -113,7 +113,7 @@ export default function TeacherRequestsTable() {
                   <TableCell>
                     <div className="font-medium">{r.room.code} • {r.room.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      {r.room.roomNumber} ชั้น {r.room.floor}
+                      {`ห้อง ${r.room.roomNumber} • ชั้น ${r.room.floor}` }
                     </div>
                   </TableCell>
 
@@ -125,7 +125,7 @@ export default function TeacherRequestsTable() {
                     {r.note ? (
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="link" size="sm">ดู</Button>
+                          <Button variant="link" size="sm">ดูหมายเหตุ</Button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>

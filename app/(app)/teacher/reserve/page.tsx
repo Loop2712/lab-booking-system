@@ -1,8 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import ReserveForm from "@/app/(app)/student/reserve/reserve-form";
 
-export const runtime = "nodejs";
-
 export default async function TeacherReservePage() {
   const rooms = await prisma.room.findMany({
     where: { isActive: true },
@@ -12,9 +10,9 @@ export default async function TeacherReservePage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Teacher • จองห้อง (Ad-hoc)</h1>
+      <h1 className="text-2xl font-semibold">Teacher • BookingRoom (Ad-hoc)</h1>
       <p className="text-sm text-muted-foreground">
-        เลือกห้อง วันที่ และช่วงเวลา (ครั้งละไม่เกิน 4 ชั่วโมง) • สำหรับอาจารย์ระบบจะอนุมัติให้อัตโนมัติ
+        จองห้องแบบจองเอง (AD_HOC) โดยเลือกช่วงเวลา 4 ชั่วโมง • อาจารย์จะได้รับการอนุมัติทันที
       </p>
 
       <ReserveForm rooms={rooms} />

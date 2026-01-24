@@ -1,0 +1,2 @@
+type UIEvent = {
+    title: string;

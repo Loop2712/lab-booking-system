@@ -1,4 +1,6 @@
 "use client";
+import { ymd } from "@/lib/date/ymd";
+import { plusDaysStr } from "./plusDaysStr";
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,17 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-function ymd(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${dd}`;
-}
-function plusDaysStr(n: number) {
-  const d = new Date();
-  d.setDate(d.getDate() + n);
-  return ymd(d);
-}
 
 export default function AdminReportsPage() {
   const [loading, setLoading] = useState(false);

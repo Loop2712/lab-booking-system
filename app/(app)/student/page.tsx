@@ -6,8 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export const runtime = "nodejs";
-
 export default async function StudentDashboard() {
   const session = await getServerSession(authOptions);
   const uid = (session as any)?.uid as string;
@@ -31,14 +29,14 @@ export default async function StudentDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">แดชบอร์ดนักศึกษา</h1>
-        <p className="text-sm text-muted-foreground">สรุปรายการจองของคุณ และทางลัดที่ใช้บ่อย</p>
+        <h1 className="text-2xl font-semibold">Student</h1>
+        <p className="text-sm text-muted-foreground">ภาพรวมรายการจองของคุณ</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">ทั้งหมด</CardTitle>
+            <CardTitle className="text-sm">รายการทั้งหมด</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{total}</CardContent>
         </Card>
@@ -53,7 +51,7 @@ export default async function StudentDashboard() {
 
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">อนุมัติแล้ว</CardTitle>
+            <CardTitle className="text-sm">รายการทั้งหมด</CardTitle>
             <Badge variant="secondary">APPROVED</Badge>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{approved}</CardContent>
@@ -61,7 +59,7 @@ export default async function StudentDashboard() {
 
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">กำลังยืม</CardTitle>
+            <CardTitle className="text-sm">ยืมกุญแจแล้ว</CardTitle>
             <Badge variant="secondary">CHECKED_IN</Badge>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{checkedIn}</CardContent>
@@ -71,7 +69,7 @@ export default async function StudentDashboard() {
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">เสร็จสิ้น</CardTitle>
+            <CardTitle className="text-sm">อนุมัติแล้ว</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-between">
             <div className="text-2xl font-semibold">{completed}</div>
@@ -81,7 +79,7 @@ export default async function StudentDashboard() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">ถูกปฏิเสธ / ยกเลิก</CardTitle>
+            <CardTitle className="text-sm">ปฏิเสธ / ยกเลิก</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-between">
             <div className="text-2xl font-semibold">{rejected + cancelled}</div>
@@ -95,13 +93,13 @@ export default async function StudentDashboard() {
 
       <div className="flex flex-wrap gap-2">
         <Button asChild>
-          <Link href="/student/reserve">จองห้อง</Link>
+          <Link href="/student/reserve">BookingRoom</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/student/reservations">รายการจองของฉัน</Link>
+          <Link href="/student/reservations">ListBooking</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/student/check">QR Token ของฉัน</Link>
+          <Link href="/student/check">QR / Token ของฉัน</Link>
         </Button>
       </div>
     </div>

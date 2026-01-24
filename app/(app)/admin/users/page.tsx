@@ -1,4 +1,6 @@
 "use client";
+import type { Gender, Role, StudentType, UserRow } from "./types";
+import { toYmd } from "./toYmd";
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -10,12 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { url } from "inspector/promises";
 
-type Role = "ADMIN" | "TEACHER" | "STUDENT";
-type Gender = "MALE" | "FEMALE" | "OTHER";
-type StudentType = "REGULAR" | "SPECIAL";
 
-type UserRow = {
-  id: string;
   role: Role;
   firstName: string;
   lastName: string;
@@ -29,14 +26,6 @@ type UserRow = {
   createdAt: string;
 };
 
-function toYmd(dateIso: string) {
-  // birthDate เก็บ DateTime ใน DB -> แสดงเป็น YYYY-MM-DD
-  const d = new Date(dateIso);
-  const yyyy = d.getUTCFullYear();
-  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const dd = String(d.getUTCDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
 
 export default function AdminUsersPage() {
   const [items, setItems] = useState<UserRow[]>([]);
@@ -80,7 +69,6 @@ export default function AdminUsersPage() {
         }
 
 
-
       if (dryRun) {
         setImportPreview(data);
         setImportMsg(`ตรวจสอบผ่าน: ทั้งหมด ${data.total} แถว | จะสร้างใหม่ ${data.wouldCreate} | จะอัปเดต ${data.wouldUpdate}`);
@@ -97,7 +85,6 @@ export default function AdminUsersPage() {
       setImportBusy(false);
     }
   }
-
 
 
   // Create form
@@ -240,8 +227,8 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">ผู้ใช้</h1>
-        <p className="text-sm text-muted-foreground">จัดการผู้ใช้งานในระบบ (Admin)</p>
+        <h1 className="text-2xl font-semibold">User</h1>
+        <p className="text-sm text-muted-foreground">ManageUser (Admin)</p>
       </div>
 
       {error && (
@@ -267,8 +254,8 @@ export default function AdminUsersPage() {
               <SelectValue placeholder="สถานะ" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1">Active เท่านั้น</SelectItem>
-              <SelectItem value="0">Inactive เท่านั้น</SelectItem>
+              <SelectItem value="1">ใช้งาน</SelectItem>
+              <SelectItem value="0">ปิดใช้งาน</SelectItem>
               <SelectItem value="all">ทั้งหมด</SelectItem>
             </SelectContent>
           </Select>
@@ -284,7 +271,7 @@ export default function AdminUsersPage() {
       {/* Create */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">สร้างผู้ใช้ใหม่</CardTitle>
+          <CardTitle className="text-base">User</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2">
           <Select value={role} onValueChange={(v) => setRole(v as Role)}>
@@ -342,12 +329,12 @@ export default function AdminUsersPage() {
 
             <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Import นักศึกษา (CSV)</CardTitle>
+          <CardTitle>Import Student (CSV)</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="text-sm text-muted-foreground">
-            ต้องมีคอลัมน์: <span className="font-mono">studentId, firstName, lastName, birthDate</span>
-            {" "} (birthDate รองรับ <span className="font-mono">YYYY-MM-DD</span> หรือ <span className="font-mono">YYYYMMDD</span>)
+            รูปแบบไฟล์ CSV: <span className="font-mono">studentId, firstName, lastName, birthDate</span>
+            {" "} (birthDate รองรับ <span className="font-mono">YYYY-MM-DD</span> หรือ <span className="font-mono">YYYYMMDD</span> | รหัสผ่านเริ่มต้นนักศึกษา = <span className="font-mono">studentId</span>)
           </div>
 
           <Input
@@ -375,7 +362,7 @@ export default function AdminUsersPage() {
               {importBusy ? "กำลังนำเข้า..." : "นำเข้า (Upsert)"}
             </Button>
             <Button asChild variant="outline">
-              <a href="/api/admin/users/template?format=xlsx">ดาวน์โหลด Template (XLSX)</a>
+              <a href="/api/admin/users/template?format=xlsx">ดาวน์โหลดเทมเพลต (XLSX)</a>
             </Button>
           </div>
 
@@ -388,7 +375,7 @@ export default function AdminUsersPage() {
 
           {importPreview?.sample?.length ? (
             <div className="pt-2">
-              <div className="text-sm font-semibold mb-2">ตัวอย่าง 10 แถวแรก (หลัง parse)</div>
+              <div className="text-sm font-semibold mb-2">ตัวอย่าง 10 แถวแรก (ผลการอ่านไฟล์)</div>
               <div className="overflow-auto border rounded-md">
                 <pre className="text-xs p-3">{JSON.stringify(importPreview.sample, null, 2)}</pre>
               </div>
@@ -400,7 +387,7 @@ export default function AdminUsersPage() {
       {/* List */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-2">
-          <CardTitle className="text-base">รายการผู้ใช้</CardTitle>
+          <CardTitle className="text-base">ListUser</CardTitle>
           <Badge variant="secondary">{items.length} users</Badge>
         </CardHeader>
 
@@ -409,8 +396,8 @@ export default function AdminUsersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Role</TableHead>
-                <TableHead>ชื่อ</TableHead>
-                <TableHead>ตัวระบุ</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>รหัสนักศึกษา/อีเมล</TableHead>
                 <TableHead>BirthDate</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -452,7 +439,7 @@ export default function AdminUsersPage() {
                       onClick={() => deactivateUser(u.id)}
                       disabled={busy || !u.isActive}
                     >
-                      ปิดบัญชี
+                      ปิดใช้งาน
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -461,7 +448,7 @@ export default function AdminUsersPage() {
               {items.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-sm text-muted-foreground">
-                    ไม่มีข้อมูล
+                    ไม่พบผู้ใช้
                   </TableCell>
                 </TableRow>
               )}

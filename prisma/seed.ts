@@ -13,78 +13,48 @@ async function main() {
   console.log("🌱 Seeding database...");
 
   /* ================= USERS ================= */
-const adminPass = "19900101";
-const teacherPass = "19850515";
+  const adminHash = await bcrypt.hash("19900101", 10);
+  const teacherHash = await bcrypt.hash("19850515", 10);
+  const studentHash = await bcrypt.hash("65000000001", 10);
 
-const studentId = "65000000001";
-const studentPass = studentId;
+  await prisma.user.upsert({
+    where: { email: "admin@lab.local" },
+    update: {},
+    create: {
+      role: "ADMIN",
+      email: "admin@lab.local",
+      firstName: "Admin",
+      lastName: "System",
+      birthDate: new Date("2004-02-20"), 
+      passwordHash: adminHash,
+    },
+  });
 
-const adminHash = await bcrypt.hash(adminPass, 10);
-const teacherHash = await bcrypt.hash(teacherPass, 10);
-const studentHash = await bcrypt.hash(studentPass, 10);
+  await prisma.user.upsert({
+    where: { email: "teacher@lab.local" },
+    update: {},
+    create: {
+      role: "TEACHER",
+      email: "teacher@lab.local",
+      firstName: "Teacher",
+      lastName: "One",
+      birthDate: new Date("2004-02-20"),
+      passwordHash: teacherHash,
+    },
+  });
 
-await prisma.user.upsert({
-  where: { email: "admin@lab.local" },
-  update: {
-    role: "ADMIN",
-    firstName: "Admin",
-    lastName: "System",
-    birthDate: new Date("1990-01-01"),
-    passwordHash: adminHash,
-    isActive: true,
-  },
-  create: {
-    role: "ADMIN",
-    email: "admin@lab.local",
-    firstName: "Admin",
-    lastName: "System",
-    birthDate: new Date("1990-01-01"),
-    passwordHash: adminHash,
-    isActive: true,
-  },
-});
-
-await prisma.user.upsert({
-  where: { email: "teacher@lab.local" },
-  update: {
-    role: "TEACHER",
-    firstName: "Teacher",
-    lastName: "One",
-    birthDate: new Date("1985-05-15"),
-    passwordHash: teacherHash,
-    isActive: true,
-  },
-  create: {
-    role: "TEACHER",
-    email: "teacher@lab.local",
-    firstName: "Teacher",
-    lastName: "One",
-    birthDate: new Date("1985-05-15"),
-    passwordHash: teacherHash,
-    isActive: true,
-  },
-});
-
-await prisma.user.upsert({
-  where: { studentId },
-  update: {
-    role: "STUDENT",
-    firstName: "Student",
-    lastName: "One",
-    birthDate: new Date("2004-02-20"),
-    passwordHash: studentHash, // ✅ hash(studentId)
-    isActive: true,
-  },
-  create: {
-    role: "STUDENT",
-    studentId,
-    firstName: "Student",
-    lastName: "One",
-    birthDate: new Date("2004-02-20"),
-    passwordHash: studentHash, // ✅ hash(studentId)
-    isActive: true,
-  },
-});
+  await prisma.user.upsert({
+    where: { studentId: "65000000001" },
+    update: {},
+    create: {
+      role: "STUDENT",
+      studentId: "65000000001",
+      firstName: "Student",
+      lastName: "One",
+      birthDate: new Date("2004-02-20"),
+      passwordHash: studentHash,
+    },
+  });
 
   console.log("✅ Users seeded");
 

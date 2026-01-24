@@ -7,19 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 
-type Room = {
-  id: string;
-  roomNumber: string;
-  floor: number;
-  computerCount: number;
-  code: string;
-  name: string;
-  isActive: boolean;
-  _count?: { keys: number };
-};
+import type { Room } from "./types";
+import { loadRooms } from "./loadRooms";
+import { createRoom } from "./createRoom";
+import { toggleRoomActive } from "./toggleRoomActive";
 
-export default function Adminห้องPage() {
-  const [rooms, setห้อง] = useState<Room[]>([]);
+export default function AdminRoomsPage() {
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -32,62 +26,13 @@ export default function Adminห้องPage() {
     isActive: true,
   });
 
-  async function load() {
-    setError(null);
-    const res = await fetch("/api/admin/rooms", { cache: "no-store" });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok || !json?.ok) {
-      setError(json?.message || "โหลดห้องไม่สำเร็จ");
-      return;
-    }
-    setห้อง(json.rooms ?? []);
-  }
+  const load = async () => {
+    await loadRooms({ setError, setRooms });
+  };
 
   useEffect(() => {
     load();
   }, []);
-
-  async function createRoom() {
-    setError(null);
-    setBusy(true);
-    const res = await fetch("/api/admin/rooms", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        floor: Number(form.floor),
-        computerCount: Number(form.computerCount),
-      }),
-    });
-    const json = await res.json().catch(() => ({}));
-    setBusy(false);
-
-    if (!res.ok || !json?.ok) {
-      setError(json?.message || "เพิ่มห้องไม่สำเร็จ");
-      return;
-    }
-
-    setForm({ roomNumber: "", floor: "1", computerCount: "0", code: "", name: "", isActive: true });
-    await load();
-  }
-
-  async function toggleActive(room: Room) {
-    setError(null);
-    setBusy(true);
-    const res = await fetch(`/api/admin/rooms/${room.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isActive: !room.isActive }),
-    });
-    const json = await res.json().catch(() => ({}));
-    setBusy(false);
-
-    if (!res.ok || !json?.ok) {
-      setError(json?.message || "อัปเดตไม่สำเร็จ");
-      return;
-    }
-    await load();
-  }
 
   return (
     <div className="space-y-6">
@@ -124,7 +69,19 @@ export default function Adminห้องPage() {
           </div>
 
           <div className="sm:col-span-2">
-            <Button onClick={createRoom} disabled={busy}>
+            <Button
+              onClick={() =>
+                createRoom({
+                  form,
+                  setBusy,
+                  setError,
+                  resetForm: () =>
+                    setForm({ roomNumber: "", floor: "1", computerCount: "0", code: "", name: "", isActive: true }),
+                  refresh: load,
+                })
+              }
+              disabled={busy}
+            >
               {busy ? "กำลังบันทึก..." : "เพิ่มห้อง"}
             </Button>
             <Button variant="outline" className="ml-2" onClick={load} disabled={busy}>
@@ -162,7 +119,14 @@ export default function Adminห้องPage() {
                   <TableCell>{r._count?.keys ?? 0}</TableCell>
                   <TableCell className="text-right">
                     <Switch checked={r.isActive} 
-                    onCheckedChange={() => toggleActive(r)} 
+                    onCheckedChange={() =>
+                      toggleRoomActive({
+                        room: r,
+                        setBusy,
+                        setError,
+                        refresh: load,
+                      })
+                    }
                     disabled={busy} /> 
                   </TableCell>
                 </TableRow>

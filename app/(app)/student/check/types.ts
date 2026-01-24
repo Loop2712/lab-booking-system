@@ -1,0 +1,2 @@
+type CalendarPayload = {
+  ok: boolean;

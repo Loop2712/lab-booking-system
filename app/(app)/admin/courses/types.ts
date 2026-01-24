@@ -1,0 +1,1 @@
+type Course = { id: string;

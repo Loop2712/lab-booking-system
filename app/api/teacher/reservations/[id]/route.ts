@@ -3,17 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 import { z } from "zod";
-import { generateRawToken , hashToken } from "@/lib/security/tokens";
 
 export const runtime = "nodejs";
 
 const bodySchema = z.object({
   action: z.enum(["APPROVE", "REJECT"]),
 });
-
-const raw = generateRawToken();
-const tokenHash = hashToken(raw);
-
 
 export async function PATCH(
   req: Request,
@@ -22,20 +17,23 @@ export async function PATCH(
   const { id } = await params;
 
   const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  const approverId = (session as any)?.uid as string | undefined;
+  const role = (session as any)?.role;
+  const approverId = (session as any)?.id as string | undefined;
 
-  if (role !== "TEACHER" || !approverId) {
+  if (role !== "TEACHER") {
+    return NextResponse.json({ ok: false, message: "FORBIDDEN" }, { status: 403 });
+  }
+  if (!approverId) {
     return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
   }
 
-  const body = bodySchema.parse(await req.json());
+  const json = await req.json().catch(() => null);
+  const parsed = bodySchema.safeParse(json);
+  if (!parsed.success) {
+    return NextResponse.json({ ok: false, message: "INVALID_BODY" }, { status: 400 });
+  }
 
-  const found = await prisma.reservation.findUnique({
-    where: { id },
-    select: { id: true, status: true },
-  });
-
+  const found = await prisma.reservation.findUnique({ where: { id } });
   if (!found) {
     return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
   }
@@ -47,13 +45,12 @@ export async function PATCH(
     );
   }
 
-  const nextStatus = body.action === "APPROVE" ? "APPROVED" : "REJECTED";
+  const nextStatus = parsed.data.action === "APPROVE" ? "APPROVED" : "REJECTED";
 
   await prisma.reservation.update({
     where: { id },
     data: { status: nextStatus, approverId },
   });
+
   return NextResponse.json({ ok: true });
-
-
-  }
+}

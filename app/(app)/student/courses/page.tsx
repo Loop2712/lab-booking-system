@@ -14,17 +14,14 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
-type SectionItem = {
-  id: string;
-  dayOfWeek: string;
-  startTime: string;
-  endTime: string;
-  course: { code: string; name: string };
-  room: { code: string; name: string; roomNumber?: string | null };
-  teacher: { firstName: string; lastName: string; email?: string | null };
-};
+import type { SectionItem } from "./types";
+import { loadMyEnrollments } from "./loadMyEnrollments";
+import { loadSections } from "./loadSections";
+import { labelSection } from "./labelSection";
+import { addEnrollment } from "./addEnrollment";
+import { removeEnrollment } from "./removeEnrollment";
 
-export default function StudentรายวิชาPage() {
+export default function StudentCoursesPage() {
   const [open, setOpen] = useState(false);
 
   const [sections, setSections] = useState<SectionItem[]>([]);
@@ -32,59 +29,15 @@ export default function StudentรายวิชาPage() {
 
   const [myEnrollments, setMyEnrollments] = useState<any[]>([]);
 
-  async function loadMy() {
-    const r = await fetch("/api/student/enrollments");
-    const j = await r.json();
-    setMyEnrollments(j.items ?? []);
-  }
-
-  async function loadSections() {
-    const r = await fetch("/api/student/sections");
-    const j = await r.json();
-    setSections(j.items ?? []);
-  }
-
   useEffect(() => {
-    loadMy();
-    loadSections();
+    loadMyEnrollments({ setMyEnrollments });
+    loadSections({ setSections });
   }, []);
 
   const selected = useMemo(
     () => sections.find((s) => s.id === selectedSectionId),
     [sections, selectedSectionId]
   );
-
-  function label(s: SectionItem) {
-    const teacher = `${s.teacher.firstName} ${s.teacher.lastName}`;
-    const room = `${s.room.code}${s.room.roomNumber ? ` (${s.room.roomNumber})` : ""}`;
-    return `${s.course.code} — ${s.course.name} | ${s.dayOfWeek} ${s.startTime}-${s.endTime} | ${room} | ${teacher}`;
-  }
-
-  async function add() {
-    if (!selectedSectionId) return;
-
-    const r = await fetch("/api/student/enrollments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sectionId: selectedSectionId }),
-    });
-    const j = await r.json();
-    if (!j.ok) return alert(j.message ?? "ERROR");
-
-    setSelectedSectionId("");
-    await loadMy();
-  }
-
-  async function remove(sectionId: string) {
-    const r = await fetch("/api/student/enrollments", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sectionId }),
-    });
-    const j = await r.json();
-    if (!j.ok) return alert(j.message ?? "ERROR");
-    await loadMy();
-  }
 
   return (
     <div className="space-y-6">
@@ -97,7 +50,7 @@ export default function StudentรายวิชาPage() {
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" className="justify-start md:w-[520px]">
-                {selected ? label(selected) : "ค้นหา/เลือก Section..."}
+                {selected ? labelSection(selected) : "ค้นหา/เลือก Section..."}
               </Button>
             </PopoverTrigger>
 
@@ -110,14 +63,14 @@ export default function StudentรายวิชาPage() {
                     {sections.map((s) => (
                       <CommandItem
                         key={s.id}
-                        value={label(s)}
+                        value={labelSection(s)}
                         onSelect={() => {
                           setSelectedSectionId(s.id);
                           setOpen(false);
                         }}
                       >
                         <div className="flex flex-col">
-                          <div className="text-sm">{label(s)}</div>
+                          <div className="text-sm">{labelSection(s)}</div>
                           <div className="text-xs text-muted-foreground break-all">id: {s.id}</div>
                         </div>
                       </CommandItem>
@@ -128,11 +81,26 @@ export default function StudentรายวิชาPage() {
             </PopoverContent>
           </Popover>
 
-          <Button onClick={add} disabled={!selectedSectionId}>
+          <Button
+            onClick={() =>
+              addEnrollment({
+                selectedSectionId,
+                setSelectedSectionId,
+                refreshMyEnrollments: () => loadMyEnrollments({ setMyEnrollments }),
+              })
+            }
+            disabled={!selectedSectionId}
+          >
             Add
           </Button>
 
-          <Button variant="secondary" onClick={() => { loadMy(); loadSections(); }}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              loadMyEnrollments({ setMyEnrollments });
+              loadSections({ setSections });
+            }}
+          >
             Refresh
           </Button>
         </CardContent>
@@ -155,14 +123,20 @@ export default function StudentรายวิชาPage() {
                 </div>
                 <div className="text-xs text-muted-foreground break-all">sectionId: {e.sectionId}</div>
               </div>
-              <Button variant="destructive" onClick={() => remove(e.sectionId)}>
+              <Button
+                variant="destructive"
+                onClick={() =>
+                  removeEnrollment({
+                    sectionId: e.sectionId,
+                    refreshMyEnrollments: () => loadMyEnrollments({ setMyEnrollments }),
+                  })
+                }
+              >
                 Remove
               </Button>
             </div>
           ))}
-          {myEnrollments.length === 0 && (
-            <div className="text-sm text-muted-foreground">ยังไม่ได้เพิ่มรายวิชา</div>
-          )}
+          {myEnrollments.length === 0 && <div className="text-sm text-muted-foreground">ยังไม่ได้เพิ่มรายวิชา</div>}
         </CardContent>
       </Card>
     </div>

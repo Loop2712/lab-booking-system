@@ -1,57 +1,26 @@
 "use client";
+import type { UIEvent } from "./types";
+import { ymd } from "@/lib/date/ymd";
+import { addDays } from "@/lib/date/addDays";
+import { startOfWeek } from "@/lib/date/startOfWeek";
+import { toDayName } from "./toDayName";
+import { prettyDate } from "@/lib/date/prettyDate";
+import { chipClass } from "./chipClass";
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-type UIEvent = {
-  kind: "CLASS" | "IN_CLASS" | "AD_HOC";
   title: string;
   time: string;
   meta: string;
   raw?: any;
 };
 
-function ymd(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${dd}`;
-}
-function addDays(d: Date, n: number) {
-  const x = new Date(d);
-  x.setDate(x.getDate() + n);
-  return x;
-}
-function startOfWeek(d: Date) {
-  const x = new Date(d);
-  const day = x.getDay(); // 0 sun
-  const diff = (day === 0 ? -6 : 1) - day; // monday start
-  x.setDate(x.getDate() + diff);
-  x.setHours(0, 0, 0, 0);
-  return x;
-}
-function toDayName(jsDay: number) {
-  return ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][jsDay] ?? "MON";
-}
 
 // ✅ fix locale+timezone (ลด hydration mismatch)
-const fmt = new Intl.DateTimeFormat("en-GB", {
-  weekday: "short",
-  month: "short",
-  day: "numeric",
-  timeZone: "Asia/Bangkok",
-});
-function prettyDate(d: Date) {
-  return fmt.format(d);
-}
 
-function chipClass(kind: UIEvent["kind"]) {
-  if (kind === "CLASS") return "bg-blue-100 text-blue-700 border-blue-200";
-  if (kind === "IN_CLASS") return "bg-green-100 text-green-700 border-green-200";
-  return "bg-purple-100 text-purple-700 border-purple-200";
-}
 
 export default function StudentCalendarPage() {
   // ✅ hooks ต้องอยู่ “ใน component” เท่านั้น
@@ -243,7 +212,7 @@ export default function StudentCalendarPage() {
                   </button>
                 ))}
 
-                {items.length === 0 && <div className="text-sm text-muted-foreground">ไม่มีรายการ</div>}
+                {items.length === 0 && <div className="text-sm text-muted-foreground">List</div>}
               </CardContent>
             </Card>
           );

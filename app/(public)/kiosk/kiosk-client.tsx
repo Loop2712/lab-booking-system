@@ -188,7 +188,7 @@ export default function KioskClient() {
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">ตั้งค่าเครื่องสแกน (Scanner Key)</CardTitle>
+          <CardTitle className="text-base">ตั้งค่าคีย์สแกนเนอร์ (Scanner Key)</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-1">
@@ -203,7 +203,7 @@ export default function KioskClient() {
 
           <div className="flex gap-2">
             <Button onClick={saveKey} disabled={!scannerKey.trim()}>
-              บันทึกไว้ในเครื่องนี้
+              บันทึกคีย์
             </Button>
             <Button variant="outline" onClick={clearKey}>
               ล้างคีย์
@@ -211,7 +211,7 @@ export default function KioskClient() {
           </div>
 
           <div className="text-xs text-muted-foreground">
-            * ถ้าเครื่องนี้ไม่มีคีย์ที่ถูกต้อง จะใช้งาน API ยืม/คืนไม่ได้
+            * คีย์นี้ใช้เพื่อเรียกใช้งาน API สำหรับตู้ยืม-คืน (Kiosk)
           </div>
 
           {err ? (
@@ -224,7 +224,7 @@ export default function KioskClient() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">ทำรายการยืม/คืน</CardTitle>
+          <CardTitle className="text-base">ListBorrow/Return</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -235,14 +235,14 @@ export default function KioskClient() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CHECKIN">ยืมกุญแจ (Check-in)</SelectItem>
-                  <SelectItem value="RETURN">คืนกุญแจ (Check-out)</SelectItem>
+                  <SelectItem value="CHECKIN">BorrowKey (Check-in)</SelectItem>
+                  <SelectItem value="RETURN">ReturnKey (Check-out)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1">
-              <Label>เลือกห้อง</Label>
+              <Label>Room</Label>
               <Select
                 value={roomId}
                 onValueChange={(v) => {
@@ -266,7 +266,7 @@ export default function KioskClient() {
           </div>
 
           <div className="space-y-1">
-            <Label>สแกน QR / วาง Token</Label>
+            <Label>สแกน QR / กรอก Token</Label>
             <Input
               ref={tokenRef}
               value={token}
@@ -278,7 +278,7 @@ export default function KioskClient() {
               }}
             />
             <div className="text-xs text-muted-foreground">
-              * สแกนเสร็จแล้วกด Enter หรือกดปุ่ม “ค้นหา”
+              * กด Enter เพื่อค้นหา หรือกดปุ่ม “ค้นหา”
             </div>
           </div>
 
@@ -295,20 +295,20 @@ export default function KioskClient() {
               }}
               disabled={!ready}
             >
-              เคลียร์
+              ล้าง
             </Button>
           </div>
 
           {lookup?.ok ? (
             <div className="rounded-2xl border p-4 space-y-3">
               <div className="flex items-center justify-between gap-2">
-                <div className="font-semibold">ข้อมูลก่อนยืนยัน</div>
+                <div className="font-semibold">Confirm</div>
                 <Badge variant="secondary">{lookup.mode}</Badge>
               </div>
 
               <div className="text-sm space-y-1">
                 <div>
-                  <span className="text-muted-foreground">ผู้ใช้: </span>
+                  <span className="text-muted-foreground">User: </span>
                   <span className="font-medium">
                     {lookup.user.firstName} {lookup.user.lastName}
                   </span>
@@ -318,19 +318,19 @@ export default function KioskClient() {
                 </div>
 
                 <div>
-                  <span className="text-muted-foreground">ห้อง: </span>
+                  <span className="text-muted-foreground">Room: </span>
                   <span className="font-medium">
                     {lookup.room.code} • {lookup.room.roomNumber} • ชั้น {lookup.room.floor}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-muted-foreground">รายการจอง: </span>
+                  <span className="text-muted-foreground">ListBooking: </span>
                   <span className="font-mono text-xs">{lookup.reservation.id}</span>
                 </div>
 
                 <div>
-                  <span className="text-muted-foreground">เวลา: </span>
+                  <span className="text-muted-foreground">วันที่: </span>
                   <span className="font-medium">
                     {lookup.reservation.slot} ({formatTime(lookup.reservation.startAt)} -{" "}
                     {formatTime(lookup.reservation.endAt)})
@@ -338,7 +338,7 @@ export default function KioskClient() {
                 </div>
 
                 <div>
-                  <span className="text-muted-foreground">สถานะ: </span>
+                  <span className="text-muted-foreground">Status: </span>
                   <Badge variant="outline">{lookup.reservation.status}</Badge>
                   <span className="text-muted-foreground"> • </span>
                   <Badge variant="secondary">{lookup.reservation.type}</Badge>
@@ -350,7 +350,7 @@ export default function KioskClient() {
               </Button>
 
               <div className="text-xs text-muted-foreground">
-                * กดแล้วยืนยันสำเร็จ ระบบจะเคลียร์ช่อง token ให้พร้อมสแกนคนถัดไป
+                * ตรวจสอบข้อมูลให้ถูกต้องก่อนกดยืนยันทำรายการ
               </div>
             </div>
           ) : lookup && !lookup.ok ? (

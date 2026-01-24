@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findUnique({
       where: { id: uid },
-      select: { id: true, passwordHash: true, birthDate: true },
+      select: { id: true, role: true, studentId: true, passwordHash: true, birthDate: true },
     });
 
     if (!user) {
@@ -43,12 +43,18 @@ export async function POST(req: Request) {
     if (user.passwordHash) {
       currentOk = await bcrypt.compare(body.currentPassword, user.passwordHash);
     } else {
-      // fallback เฉพาะช่วง migrate: เทียบวันเกิด YYYYMMDD
-      const yyyy = user.birthDate.getUTCFullYear();
-      const mm = String(user.birthDate.getUTCMonth() + 1).padStart(2, "0");
-      const dd = String(user.birthDate.getUTCDate()).padStart(2, "0");
-      const yyyymmdd = `${yyyy}${mm}${dd}`;
-      currentOk = body.currentPassword === yyyymmdd;
+      // fallback เฉพาะช่วง migrate
+      // - STUDENT: รหัสผ่านเริ่มต้น = studentId
+      // - STAFF: รหัสผ่านเริ่มต้น = วันเกิด YYYYMMDD
+      if (user.role === "STUDENT" && user.studentId) {
+        currentOk = body.currentPassword === user.studentId;
+      } else {
+        const yyyy = user.birthDate.getUTCFullYear();
+        const mm = String(user.birthDate.getUTCMonth() + 1).padStart(2, "0");
+        const dd = String(user.birthDate.getUTCDate()).padStart(2, "0");
+        const yyyymmdd = `${yyyy}${mm}${dd}`;
+        currentOk = body.currentPassword === yyyymmdd;
+      }
     }
 
     if (!currentOk) {

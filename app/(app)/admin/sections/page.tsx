@@ -1,4 +1,6 @@
 "use client";
+import type { Course, Room, Section, User } from "./types";
+import { todayStr } from "./todayStr";
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,12 +15,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type Course = { id: string; code: string; name: string };
-type Room = { id: string; code: string; name: string; roomNumber?: string | null };
-type User = { id: string; firstName: string; lastName: string; email?: string | null; role?: string };
+ code: string; name: string };
+ code: string; name: string; roomNumber?: string | null };
+ firstName: string; lastName: string; email?: string | null; role?: string };
 
-type Section = {
-  id: string;
   dayOfWeek: string;
   startTime: string;
   endTime: string;
@@ -31,15 +31,6 @@ type Section = {
   _count: { enrollments: number; reservations: number };
 };
 
-const DOW = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
-
-function todayStr() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${dd}`;
-}
 
 export default function AdminSectionsPage() {
   const [sections, setSections] = useState<Section[]>([]);
@@ -81,8 +72,8 @@ export default function AdminSectionsPage() {
     setCourses(b.items ?? []);
     setRooms(c.rooms ?? []);
 
-    const allผู้ใช้: User[] = d.users ?? [];
-    setTeachers(allผู้ใช้.filter((u) => u.role === "TEACHER"));
+    const allUser: User[] = d.users ?? [];
+    setTeachers(allUser.filter((u) => u.role === "TEACHER"));
   }
 
   useEffect(() => {
@@ -104,7 +95,7 @@ export default function AdminSectionsPage() {
 
   const canCreate = useMemo(() => !!courseId && !!teacherId && !!roomId, [courseId, teacherId, roomId]);
 
-  const filteredกลุ่มเรียน = useMemo(() => {
+  const filtered = useMemo(() => {
     return sections.filter((s) => {
       if (fTerm && (s.term ?? "") !== fTerm) return false;
       if (fYear && String(s.year ?? "") !== fYear) return false;
@@ -190,7 +181,7 @@ export default function AdminSectionsPage() {
       {/* Create Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Create Section (ตารางสอนรายสัปดาห์)</CardTitle>
+          <CardTitle>สร้าง Section</CardTitle>
         </CardHeader>
 
         <CardContent className="grid gap-4 md:grid-cols-2">
@@ -297,7 +288,7 @@ export default function AdminSectionsPage() {
           </div>
 
           <div className="md:col-span-2 text-sm text-muted-foreground">
-            หมายเหตุ: ถ้าไม่มีข้อมูลใน dropdown ให้ไปสร้างข้อมูลก่อนที่ /admin/courses /admin/rooms /admin/users
+            หมายเหตุ: หากตัวเลือกว่าง ให้ไปเพิ่มข้อมูลที่ /admin/courses, /admin/rooms และ /admin/users ก่อน
           </div>
         </CardContent>
       </Card>
@@ -305,15 +296,15 @@ export default function AdminSectionsPage() {
       {/* Range */}
       <Card>
         <CardHeader>
-          <CardTitle>สร้าง/ลบ/สร้างใหม่ (ตามช่วงวันที่)</CardTitle>
+          <CardTitle>สร้าง/ลบตารางเรียน (IN_CLASS)</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-2 items-end">
           <div className="space-y-2">
-            <div className="text-sm">วันที่เริ่มต้น (YYYY-MM-DD)</div>
+            <div className="text-sm">วันที่เริ่ม (YYYY-MM-DD)</div>
             <Input value={from} onChange={(e) => setFrom(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <div className="text-sm">วันที่สิ้นสุด (YYYY-MM-DD)</div>
+            <div className="text-sm">วันที่เริ่ม (YYYY-MM-DD)</div>
             <Input value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
         </CardContent>
@@ -322,7 +313,7 @@ export default function AdminSectionsPage() {
       {/* กลุ่มเรียน list */}
       <Card>
         <CardHeader>
-          <CardTitle>กลุ่มเรียน</CardTitle>
+          <CardTitle>รายการ Section</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-3">
@@ -364,7 +355,7 @@ export default function AdminSectionsPage() {
           </div>
 
           {/* List */}
-          {filteredกลุ่มเรียน.map((s) => (
+          {filtered.map((s) => (
             <div key={s.id} className="border rounded-md p-3 space-y-1">
               <div className="font-medium">
                 {s.course.code} {s.course.name}
@@ -376,21 +367,21 @@ export default function AdminSectionsPage() {
               </div>
 
               <div className="text-sm text-muted-foreground">
-                จำนวนนักศึกษาในกลุ่ม: {s._count.enrollments} | จำนวนรายการที่สร้างแล้ว: {s._count.reservations}
+                Student: {s._count.enrollments} | List: {s._count.reservations}
               </div>
 
               <div className="flex flex-wrap gap-2 pt-2">
-                <Button variant="secondary" onClick={() => generate(s.id)}>สร้างรายการ (ช่วงวันที่)</Button>
-                <Button variant="outline" onClick={() => deleteGenerated(s.id)}>ลบรายการที่สร้าง (ช่วงวันที่)</Button>
-                <Button variant="destructive" onClick={() => regenerate(s.id)}>สร้างใหม่ (ลบแล้วสร้าง)</Button>
+                <Button variant="secondary" onClick={() => generate(s.id)}>สร้างตารางเรียน</Button>
+                <Button variant="outline" onClick={() => deleteGenerated(s.id)}>ลบตารางเรียน</Button>
+                <Button variant="destructive" onClick={() => regenerate(s.id)}>สร้างใหม่</Button>
               </div>
 
               <div className="text-xs text-muted-foreground break-all">id: {s.id}</div>
             </div>
           ))}
 
-          {filteredกลุ่มเรียน.length === 0 && (
-            <div className="text-sm text-muted-foreground">ไม่พบ section ตามเงื่อนไข</div>
+          {filtered.length === 0 && (
+            <div className="text-sm text-muted-foreground">ยังไม่มีข้อมูล Section</div>
           )}
         </CardContent>
       </Card>

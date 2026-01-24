@@ -1,4 +1,7 @@
 "use client";
+import type { CalendarPayload } from "./types";
+import { ymdBangkok } from "./ymdBangkok";
+import { addDaysYmd } from "./addDaysYmd";
 
 import { useEffect, useMemo, useState } from "react";
 import MyQrToken from "@/components/qr/MyQrToken";
@@ -6,30 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-type CalendarPayload = {
-  ok: boolean;
   events: any[];
 };
 
-function ymdBangkok(d = new Date()) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Bangkok",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(d);
-
-  const y = parts.find((p) => p.type === "year")?.value ?? "1970";
-  const m = parts.find((p) => p.type === "month")?.value ?? "01";
-  const dd = parts.find((p) => p.type === "day")?.value ?? "01";
-  return `${y}-${m}-${dd}`;
-}
-
-function addDaysYmd(ymd: string, days: number) {
-  const d = new Date(`${ymd}T00:00:00.000+07:00`);
-  d.setDate(d.getDate() + days);
-  return ymdBangkok(d);
-}
 
 export default function StudentCheckPage() {
   const [events, setEvents] = useState<any[]>([]);
@@ -72,7 +54,7 @@ export default function StudentCheckPage() {
       <div>
         <h1 className="text-2xl font-semibold">Check-in / Check-out</h1>
         <p className="text-sm text-muted-foreground">
-          แสดง QR TOKEN ให้เจ้าหน้าที่/อาจารย์สแกนเพื่อทำรายการ Check-in / Check-out
+          แสดง QR/Token ของคุณสำหรับให้เจ้าหน้าที่/อาจารย์ใช้ทำรายการเช็คอิน/เช็คเอาท์
         </p>
       </div>
 
@@ -80,7 +62,7 @@ export default function StudentCheckPage() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">รายการของวันนี้ ({today})</CardTitle>
+          <CardTitle className="text-base">List ({today})</CardTitle>
           <Button variant="outline" onClick={load}>
             รีเฟรช
           </Button>
@@ -90,7 +72,7 @@ export default function StudentCheckPage() {
           {loading ? <div className="text-sm text-muted-foreground">กำลังโหลด...</div> : null}
 
           {!loading && !events.length ? (
-            <div className="text-sm text-muted-foreground">วันนี้ยังไม่มีรายการ</div>
+            <div className="text-sm text-muted-foreground">List</div>
           ) : null}
 
           {events.map((e, idx) => {
