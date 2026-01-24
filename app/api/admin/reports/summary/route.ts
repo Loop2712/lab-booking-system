@@ -40,7 +40,7 @@ export async function GET(req: Request) {
     by: ["roomId"],
     where,
     _count: { _all: true },
-    orderBy: { _count: { _all: "desc" } },
+    orderBy: { _count: { roomId: "desc" } },
   });
 
   const roomMap = await prisma.room.findMany({
@@ -66,7 +66,7 @@ export async function GET(req: Request) {
     by: ["requesterId"],
     where,
     _count: { _all: true },
-    orderBy: { _count: { _all: "desc" } },
+    orderBy: { _count: { requesterId: "desc" } },
     take: 10,
   });
 

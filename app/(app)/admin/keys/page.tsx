@@ -14,13 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
- code: string; name: string; isActive: boolean };
-  keyCode: string;
-  status: KeyStatus;
-  roomId: string;
-  room?: Room;
-};
-
 export default function AdminKeysPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [keys, setKeys] = useState<KeyRow[]>([]);

@@ -15,21 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
- code: string; name: string };
- code: string; name: string; roomNumber?: string | null };
- firstName: string; lastName: string; email?: string | null; role?: string };
-
-  dayOfWeek: string;
-  startTime: string;
-  endTime: string;
-  term?: string | null;
-  year?: number | null;
-  isActive: boolean;
-  course: Course;
-  room: Room;
-  teacher: User;
-  _count: { enrollments: number; reservations: number };
-};
+const DOW = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
 
 
 export default function AdminSectionsPage() {

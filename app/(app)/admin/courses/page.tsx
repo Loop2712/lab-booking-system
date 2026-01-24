@@ -6,8 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
- code: string; name: string };
-
 export default function AdminCoursesPage() {
   const [items, setItems] = useState<Course[]>([]);
   const [code, setCode] = useState("");

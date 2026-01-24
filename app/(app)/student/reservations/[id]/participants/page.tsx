@@ -8,8 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
- userId: string; name: string; studentId: string | null };
-
 export default function ParticipantsPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
