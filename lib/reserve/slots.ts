@@ -14,3 +14,21 @@ export const TIME_SLOTS: TimeSlot[] = [
 export function findSlot(slotId: string) {
   return TIME_SLOTS.find((s) => s.id === slotId) ?? null;
 }
+
+export function getSlotIndex(slotId: string) {
+  return TIME_SLOTS.findIndex((s) => s.id === slotId);
+}
+
+export function getNextSlotId(slotId: string) {
+  const idx = getSlotIndex(slotId);
+  if (idx < 0 || idx >= TIME_SLOTS.length - 1) return null;
+  return TIME_SLOTS[idx + 1]?.id ?? null;
+}
+
+export function areConsecutiveSlots(slotIds: string[]) {
+  if (slotIds.length <= 1) return true;
+  const indexes = slotIds.map(getSlotIndex);
+  if (indexes.some((idx) => idx < 0)) return false;
+  const sorted = [...indexes].sort((a, b) => a - b);
+  return sorted.every((idx, i) => (i === 0 ? true : idx === sorted[i - 1] + 1));
+}

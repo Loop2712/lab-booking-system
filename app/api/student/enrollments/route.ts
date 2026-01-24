@@ -20,6 +20,9 @@ export async function GET() {
   const guard = requireApiRole(session, ["STUDENT"], { requireUid: true });
   if (!guard.ok) return guard.response;
   const uid = guard.uid;
+  if (!uid) {
+    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  }
 
   const items = await prisma.enrollment.findMany({
     where: { studentId: uid },
@@ -43,6 +46,9 @@ export async function POST(req: Request) {
   const guard = requireApiRole(session, ["STUDENT"], { requireUid: true });
   if (!guard.ok) return guard.response;
   const uid = guard.uid;
+  if (!uid) {
+    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  }
 
   const body = addSchema.parse(await req.json());
 
@@ -61,6 +67,9 @@ export async function DELETE(req: Request) {
   const guard = requireApiRole(session, ["STUDENT"], { requireUid: true });
   if (!guard.ok) return guard.response;
   const uid = guard.uid;
+  if (!uid) {
+    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  }
 
   const body = delSchema.parse(await req.json());
 

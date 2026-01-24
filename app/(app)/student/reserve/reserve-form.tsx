@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TIME_SLOTS } from "@/lib/reserve/slots";
+import { TIME_SLOTS, getNextSlotId } from "@/lib/reserve/slots";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,13 +26,17 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
   const [roomId, setRoomId] = useState("");
   const [date, setDate] = useState("");
   const [slotId, setSlotId] = useState("");
+  const [extendSlot, setExtendSlot] = useState(false);
   const [note, setNote] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const canSubmit = roomId && date && slotId;
+  const nextSlotId = slotId ? getNextSlotId(slotId) : null;
+  const shouldUseNextSlot = extendSlot && !!nextSlotId;
+  const slotIds = shouldUseNextSlot ? [slotId, nextSlotId] : slotId ? [slotId] : [];
+  const canSubmit = roomId && date && slotIds.length > 0;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,12 +48,23 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
       return;
     }
 
+    if (extendSlot && !nextSlotId) {
+      setError("ช่วงเวลานี้ไม่สามารถต่อเนื่องได้");
+      return;
+    }
+
     setLoading(true);
 
     const res = await fetch("/api/reservations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ roomId, date, slotId, note: note.trim() || undefined }),
+      body: JSON.stringify({
+        roomId,
+        date,
+        slotId: slotIds[0],
+        slotIds,
+        note: note.trim() || undefined,
+      }),
     });
 
     const json = await res.json().catch(() => ({}));
@@ -63,16 +78,23 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
           ? "จองได้เฉพาะวันนี้ถึง 30 วันล่วงหน้า"
           : json?.message === "INVALID_SLOT"
           ? "ช่วงเวลาไม่ถูกต้อง"
+          : json?.message === "TOO_MANY_SLOTS"
+          ? "จองได้สูงสุด 2 รอบต่อเนื่องเท่านั้น"
+          : json?.message === "SLOT_NOT_CONSECUTIVE"
+          ? "ต้องเลือกช่วงเวลาที่ต่อเนื่องกันเท่านั้น"
           : "จองไม่สำเร็จ กรุณาลองใหม่";
 
       setError(msg);
       return;
     }
 
-    setSuccess("จองสำเร็จ! รายการของคุณอยู่ในสถานะรออนุมัติ (PENDING)");
+    setSuccess(
+      `จองสำเร็จ! (${slotIds.length} รอบ) รายการของคุณอยู่ในสถานะรออนุมัติ (PENDING)`
+    );
     setRoomId("");
     setDate("");
     setSlotId("");
+    setExtendSlot(false);
     setNote("");
   }
 
@@ -113,6 +135,25 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
             ))}
           </SelectContent>
         </Select>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={extendSlot}
+            onChange={(e) => setExtendSlot(e.target.checked)}
+            disabled={!slotId || !nextSlotId}
+          />
+          จองต่อเนื่อง 2 รอบอัตโนมัติ (รวม 8 ชั่วโมง)
+        </label>
+        {extendSlot && !nextSlotId ? (
+          <div className="text-xs text-destructive">
+            ช่วงเวลานี้ไม่มีรอบถัดไปให้จองต่อเนื่อง
+          </div>
+        ) : null}
+        {shouldUseNextSlot ? (
+          <div className="text-xs text-muted-foreground">
+            รอบถัดไปที่ถูกเลือกอัตโนมัติ: <span className="font-mono">{nextSlotId}</span>
+          </div>
+        ) : null}
       </div>
 
       <div className="space-y-2">

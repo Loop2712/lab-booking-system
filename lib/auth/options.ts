@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import { z } from "zod";
 
 import { prisma } from "@/lib/db/prisma";
-import type { User } from "@prisma/client";
+import type { Role } from "@/app/generated/prisma/enums";
 import { loginRatelimit } from "@/lib/security/ratelimit";
 
 function toYYYYMMDD(d: Date) {
@@ -14,8 +14,6 @@ function toYYYYMMDD(d: Date) {
   const dd = String(d.getDate()).padStart(2, "0");
   return `${yyyy}${mm}${dd}`;
 }
-
-type Role = User["role"];
 
 type SessionWithUser = Session & {
   uid?: string;
@@ -26,6 +24,13 @@ type SessionWithUser = Session & {
 
 type TokenPayload = JWT & {
   role?: Role;
+  studentId?: string | null;
+  email?: string | null;
+};
+
+type AuthUser = {
+  id: string;
+  role: Role;
   studentId?: string | null;
   email?: string | null;
 };
@@ -188,7 +193,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        const currentUser = user as User & { studentId?: string | null };
+        const currentUser = user as AuthUser;
         token.role = currentUser.role;
         token.studentId = currentUser.studentId ?? null;
         token.email = currentUser.email ?? null;
