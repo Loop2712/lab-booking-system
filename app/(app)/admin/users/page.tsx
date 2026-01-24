@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import Link from "next/link";
 
 
 export default function AdminUsersPage() {
@@ -347,7 +348,7 @@ export default function AdminUsersPage() {
               {importBusy ? "กำลังนำเข้า..." : "นำเข้า (Upsert)"}
             </Button>
             <Button asChild variant="outline">
-              <a href="/api/admin/users/template?format=xlsx">ดาวน์โหลดเทมเพลต (XLSX)</a>
+              <Link href="/api/admin/users/template?format=xlsx">ดาวน์โหลดเทมเพลต (XLSX)</Link>
             </Button>
           </div>
 

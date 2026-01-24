@@ -81,9 +81,6 @@ function excelSerialToUtcDate(serial: number) {
 }
 
 // -------------------- validation --------------------
-const genderEnum = z.enum(["MALE", "FEMALE", "OTHER"]);
-const studentTypeEnum = z.enum(["REGULAR", "SPECIAL"]);
-
 const rowSchema = z.object({
   studentId: z
     .string()

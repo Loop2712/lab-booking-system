@@ -1,7 +1,7 @@
 "use client";
 import type { P } from "./types";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ export default function ParticipantsPage() {
 
   const total = useMemo(() => 1 + items.length, [items.length]); // + requester
 
-  async function load() {
+  const load = useCallback(async () => {
     setError(null);
     const res = await fetch(`/api/reservations/${id}/participants`, { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
@@ -28,9 +28,11 @@ export default function ParticipantsPage() {
       return;
     }
     setItems(json.participants ?? []);
-  }
+  }, [id]);
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   async function add() {
     setError(null);

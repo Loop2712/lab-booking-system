@@ -1,8 +1,6 @@
 import AppShell from "@/components/app-shell/AppShell";
 import { adminNav, studentNav, teacherNav } from "@/components/app-shell/nav";
 import { requireRole } from "@/lib/auth/guard";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
 
 export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
   // ต้องล็อกอินก่อน (ทุก role ใช้ได้)

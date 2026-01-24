@@ -1,9 +1,11 @@
-import type { NextAuthOptions } from "next-auth";
+import type { NextAuthOptions, Session } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 
 import { prisma } from "@/lib/db/prisma";
+import type { User } from "@prisma/client";
 import { loginRatelimit } from "@/lib/security/ratelimit";
 
 function toYYYYMMDD(d: Date) {
@@ -13,7 +15,20 @@ function toYYYYMMDD(d: Date) {
   return `${yyyy}${mm}${dd}`;
 }
 
-type Role = "ADMIN" | "TEACHER" | "STUDENT";
+type Role = User["role"];
+
+type SessionWithUser = Session & {
+  uid?: string;
+  role?: Role;
+  studentId?: string | null;
+  user?: Session["user"] & { id?: string };
+};
+
+type TokenPayload = JWT & {
+  role?: Role;
+  studentId?: string | null;
+  email?: string | null;
+};
 
 const studentCreds = z.object({
   studentId: z.string().regex(/^\d{11}$/),
@@ -49,10 +64,9 @@ export const authOptions: NextAuthOptions = {
             (req?.headers?.["x-real-ip"] as string | undefined) ||
             "unknown";
 
-          const rl = await (loginRatelimit as any).limit(ip);
-          if (rl && rl.success === false) return null;
+          const rl = await loginRatelimit.limit(ip);
+          if (rl.success === false) return null;
         } catch (e) {
-          // eslint-disable-next-line no-console
           console.warn("[auth] ratelimit skipped:", e);
         }
 
@@ -103,13 +117,14 @@ export const authOptions: NextAuthOptions = {
             if (!ok2) return null;
           }
 
-          return {
+          const sessionUser = {
             id: user.id,
             role: user.role as Role,
             studentId: user.studentId,
             email: user.email,
             name: `${user.firstName} ${user.lastName}`,
-          } as any;
+          };
+          return sessionUser;
         }
 
         // ===== STAFF (Teacher/Admin) =====
@@ -155,13 +170,14 @@ export const authOptions: NextAuthOptions = {
             });
           }
 
-          return {
+          const sessionUser = {
             id: user.id,
             role: user.role as Role,
             studentId: user.studentId,
             email: user.email,
             name: `${user.firstName} ${user.lastName}`,
-          } as any;
+          };
+          return sessionUser;
         }
 
         return null;
@@ -172,21 +188,27 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role;
-        token.studentId = (user as any).studentId ?? null;
-        token.email = (user as any).email ?? null;
+        const currentUser = user as User & { studentId?: string | null };
+        token.role = currentUser.role;
+        token.studentId = currentUser.studentId ?? null;
+        token.email = currentUser.email ?? null;
+        token.sub = currentUser.id;
       }
-      return token;
+      return token as TokenPayload;
     },
 
     async session({ session, token }) {
-      (session as any).role = token.role;
-      (session as any).studentId = token.studentId;
+      const currentSession = session as SessionWithUser;
+      const currentToken = token as TokenPayload;
+      currentSession.role = currentToken.role;
+      currentSession.studentId = currentToken.studentId;
 
-      if (session?.user) {
-        (session.user as any).email = (token as any).email ?? session.user.email;
+      const sessionUser = currentSession.user;
+      if (sessionUser) {
+        sessionUser.email = currentToken.email ?? sessionUser.email;
+        currentSession.uid = currentToken.sub ?? sessionUser.id;
       }
-      return session;
+      return currentSession;
     },
   },
 

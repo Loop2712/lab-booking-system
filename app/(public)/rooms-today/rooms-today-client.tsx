@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -72,7 +72,7 @@ export default function RoomsTodayClient() {
 
   const [q, setQ] = useState("");
 
-  async function load() {
+  const load = useCallback(async () => {
     try {
       setError(null);
       const res = await fetch("/api/rooms/today", { cache: "no-store" });
@@ -89,14 +89,13 @@ export default function RoomsTodayClient() {
       setError(e?.message || "ERROR");
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     load();
     const t = setInterval(load, 10_000); // ✅ realtime แบบ polling
     return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [load]);
 
   const rooms = useMemo(() => {
     if (!data?.rooms) return [];
