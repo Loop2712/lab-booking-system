@@ -15,8 +15,9 @@ const bodySchema = z.object({
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  const guard = requireApiRole(session, ["TEACHER", "ADMIN"]);
+  const guard = requireApiRole(session, ["TEACHER", "ADMIN"], { requireUid: true });
   if (!guard.ok) return guard.response;
+  const handledById = guard.uid;
 
   const body = bodySchema.parse(await req.json());
 
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
 
       await tx.loan.update({
         where: { id: resv.loan.id },
-        data: { checkedOutAt: new Date(), returnedById },
+        data: { checkedOutAt: new Date(), returnedById, handledById },
       });
 
       await tx.key.update({ where: { id: resv.loan.keyId }, data: { status: "AVAILABLE" } });

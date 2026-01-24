@@ -121,7 +121,11 @@ export async function POST(req: Request) {
         return {
           type: "AD_HOC" as const,
 <<<<<<< ours
+<<<<<<< ours
           status: isTeacher || isAdmin ? "APPROVED" : "PENDING",
+=======
+          status,
+>>>>>>> theirs
 =======
           status,
 >>>>>>> theirs
