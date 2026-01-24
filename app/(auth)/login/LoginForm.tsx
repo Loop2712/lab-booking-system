@@ -169,11 +169,11 @@ export default function LoginForm({
 
             {studentMismatch ? (
               <p className="text-xs text-destructive">
-                รหัสผ่านไม่ตรงกับรหัสนักศึกษา กรุณาตรวจสอบอีกครั้ง
+                รหัสผ่านไม่ตรง กรุณาตรวจสอบอีกครั้ง
               </p>
             ) : (
               <p className="text-xs text-muted-foreground">
-                นักศึกษา: รหัสผ่านเริ่มต้นคือ “รหัสนักศึกษา” (กรอกเพื่อยืนยัน)
+                นักศึกษา: รหัสนักศึกษา
               </p>
             )}
           </div>
