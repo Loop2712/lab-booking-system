@@ -87,7 +87,7 @@ export async function POST(req: Request) {
         data: {
           reservationId: resv.id,
           keyId: key.id,
-          checkedOutAt: new Date(), // (ตามของเดิมในโปรเจค)
+          checkedInAt: new Date(), // (ตามของเดิมในโปรเจค)
           borrowerId,
         },
       });

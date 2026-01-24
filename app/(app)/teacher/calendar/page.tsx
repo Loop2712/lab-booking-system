@@ -15,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DialogDescription } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-// ✅ fix locale+timezone ลด hydration mismatch
 
 export default function TeacherCalendarPage() {
     const [mounted, setMounted] = useState(false);

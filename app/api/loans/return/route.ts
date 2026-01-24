@@ -64,7 +64,7 @@ export async function POST(req: Request) {
 
       await tx.loan.update({
         where: { id: resv.loan.id },
-        data: { checkedInAt: new Date(), returnedById },
+        data: { checkedOutAt: new Date(), returnedById },
       });
 
       await tx.key.update({ where: { id: resv.loan.keyId }, data: { status: "AVAILABLE" } });

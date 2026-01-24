@@ -18,7 +18,7 @@ export async function PATCH(
 
   const session = await getServerSession(authOptions);
   const role = (session as any)?.role;
-  const approverId = (session as any)?.id as string | undefined;
+  const approverId = (session as any)?.uid as string | undefined;
 
   if (role !== "TEACHER") {
     return NextResponse.json({ ok: false, message: "FORBIDDEN" }, { status: 403 });

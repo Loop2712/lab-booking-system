@@ -90,7 +90,7 @@ export async function POST(req: Request) {
         data: {
           reservationId: resv.id,
           keyId: key.id,
-          checkedOutAt: new Date(),
+          checkedInAt: new Date(),
           borrowerId,
         },
       });
