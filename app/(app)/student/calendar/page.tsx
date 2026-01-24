@@ -3,9 +3,10 @@ import type { UIEvent } from "./types";
 import { ymd } from "@/lib/date/ymd";
 import { addDays } from "@/lib/date/addDays";
 import { startOfWeek } from "@/lib/date/startOfWeek";
-import { toDayName } from "./toDayName";
+import { toDayName } from "@/lib/date/toDayName";
 import { prettyDate } from "@/lib/date/prettyDate";
 import { chipClass } from "./chipClass";
+import { fetchStudentCalendar } from "@/lib/services/student-calendar";
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,19 +52,13 @@ export default function StudentCalendarPage() {
 
     setLoading(true);
     try {
-      const r = await fetch(`/api/student/calendar?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
-      const text = await r.text();
-      const j = text ? JSON.parse(text) : null;
-
-      if (!r.ok) {
-        console.log("calendar failed:", r.status, j);
-        alert(j?.message ?? `HTTP ${r.status}`);
-        return;
-      }
-
-      setSections(j.sections ?? []);
-      setAdhoc(j.reservations?.adhoc ?? []);
-      setInClass(j.reservations?.inClass ?? []);
+      const data = await fetchStudentCalendar(from, to);
+      setSections(data.sections ?? []);
+      setAdhoc(data.reservations?.adhoc ?? []);
+      setInClass(data.reservations?.inClass ?? []);
+    } catch (error: any) {
+      console.log("calendar failed:", error);
+      alert(error?.message ?? "Load failed");
     } finally {
       setLoading(false);
     }

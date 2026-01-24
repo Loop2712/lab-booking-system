@@ -2,13 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
+import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
 
 export const runtime = "nodejs";
-
-function isStudent(role?: string) {
-  return role === "STUDENT";
-}
 
 const addSchema = z.object({
   sectionId: z.string().min(1),
@@ -20,10 +17,9 @@ const delSchema = z.object({
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  const uid = (session as any)?.uid as string | undefined;
-
-  if (!isStudent(role) || !uid) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  const guard = requireApiRole(session, ["STUDENT"], { requireUid: true });
+  if (!guard.ok) return guard.response;
+  const uid = guard.uid;
 
   const items = await prisma.enrollment.findMany({
     where: { studentId: uid },
@@ -44,10 +40,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  const uid = (session as any)?.uid as string | undefined;
-
-  if (!isStudent(role) || !uid) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  const guard = requireApiRole(session, ["STUDENT"], { requireUid: true });
+  if (!guard.ok) return guard.response;
+  const uid = guard.uid;
 
   const body = addSchema.parse(await req.json());
 
@@ -63,10 +58,9 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  const uid = (session as any)?.uid as string | undefined;
-
-  if (!isStudent(role) || !uid) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  const guard = requireApiRole(session, ["STUDENT"], { requireUid: true });
+  if (!guard.ok) return guard.response;
+  const uid = guard.uid;
 
   const body = delSchema.parse(await req.json());
 

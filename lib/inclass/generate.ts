@@ -1,11 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-
-type DayName = "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
-
-function toDayName(jsDay: number): DayName {
-  // JS: 0=Sun ... 6=Sat
-  return (["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][jsDay] as DayName) ?? "MON";
-}
+import { toDayName } from "@/lib/date/toDayName";
 
 function startOfDay(d: Date) {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0));

@@ -4,6 +4,7 @@ import { ymd } from "@/lib/date/ymd";
 import { addDays } from "@/lib/date/addDays";
 import { startOfWeek } from "@/lib/date/startOfWeek";
 import { prettyDate } from "@/lib/date/prettyDate";
+import { createTeacherReservation, fetchRooms, fetchTeacherCalendar } from "@/lib/services/teacher-calendar";
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,9 +37,12 @@ export default function TeacherCalendarPage() {
 
     useEffect(() => {
         (async () => {
-            const r = await fetch("/api/rooms");
-            const j = await r.json();
-            if (r.ok && j.ok) setRooms(j.rooms ?? []);
+            try {
+                const loadedRooms = await fetchRooms();
+                setRooms(loadedRooms);
+            } catch (error) {
+                console.log("rooms failed:", error);
+            }
         })();
     }, []);
 
@@ -67,17 +71,11 @@ export default function TeacherCalendarPage() {
 
         setLoading(true);
         try {
-            const r = await fetch(`/api/teacher/calendar?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
-            const text = await r.text();
-            const j = text ? JSON.parse(text) : null;
-
-            if (!r.ok) {
-                console.log("teacher calendar failed:", r.status, j);
-                alert(j?.message ?? `HTTP ${r.status}`);
-                return;
-            }
-
-            setInClass(j.reservations?.inClass ?? []);
+            const data = await fetchTeacherCalendar(from, to);
+            setInClass(data.reservations?.inClass ?? []);
+        } catch (error: any) {
+            console.log("teacher calendar failed:", error);
+            alert(error?.message ?? "Load failed");
         } finally {
             setLoading(false);
         }
@@ -115,10 +113,7 @@ export default function TeacherCalendarPage() {
     }
     function toYMD(d?: Date) {
         if (!d) return "";
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const dd = String(d.getDate()).padStart(2, "0");
-        return `${y}-${m}-${dd}`;
+        return ymd(d);
     }
 
     return (
@@ -260,7 +255,7 @@ export default function TeacherCalendarPage() {
                                             variant="outline"
                                             className="w-full justify-start text-left font-normal"
                                         >
-                                            {date ? toYMD(date) : "เลือกวันที่"}
+                                            {date ? ymd(date) : "เลือกวันที่"}
                                         </Button>
                                     </PopoverTrigger>
 
@@ -282,9 +277,9 @@ export default function TeacherCalendarPage() {
                             <Select value={slotId} onValueChange={setSlotId}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="08:00-12:00">08:00 - 12:00</SelectItem>
-                                    <SelectItem value="12:00-16:00">12:00 - 16:00</SelectItem>
-                                    <SelectItem value="16:00-20:00">16:00 - 20:00</SelectItem>
+                                        <SelectItem value="08:00-12:00">08:00 - 12:00</SelectItem>
+                                        <SelectItem value="12:00-16:00">12:00 - 16:00</SelectItem>
+                                        <SelectItem value="16:00-20:00">16:00 - 20:00</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -303,22 +298,12 @@ export default function TeacherCalendarPage() {
                                     setCreateErr(null);
                                     setCreateBusy(true);
                                     try {
-                                        const res = await fetch("/api/reservations", {
-                                            method: "POST",
-                                            headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({
-                                                roomId,
-                                                date: toYMD(date),
-                                                slotId,
-                                                note,
-                                            }),
-
+                                        await createTeacherReservation({
+                                            roomId,
+                                            date: toYMD(date),
+                                            slotId,
+                                            note,
                                         });
-                                        const j = await res.json();
-                                        if (!res.ok || !j.ok) {
-                                            setCreateErr(j?.message ?? "สร้างการจองไม่สำเร็จ");
-                                            return;
-                                        }
                                         setOpenCreate(false);
                                         // reload calendar ของหน้า teacher
                                         await load();

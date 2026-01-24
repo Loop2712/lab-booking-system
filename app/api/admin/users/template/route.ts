@@ -1,16 +1,10 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
+import { requireApiRole } from "@/lib/auth/api-guard";
 import * as XLSX from "xlsx";
 
 export const runtime = "nodejs";
-
-function assertAdmin(session: any) {
-  if (!session || session.role !== "ADMIN") {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  return null;
-}
 
 const HEADERS = [
   "studentId",
@@ -87,8 +81,8 @@ function makeXlsxBuffer() {
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
-  const denied = assertAdmin(session);
-  if (denied) return denied;
+  const guard = requireApiRole(session, ["ADMIN"]);
+  if (!guard.ok) return guard.response;
 
   const url = new URL(req.url);
   const format = (url.searchParams.get("format") || "csv").toLowerCase();

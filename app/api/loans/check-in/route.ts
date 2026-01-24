@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
+import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
 import { verifyUserQrToken } from "@/lib/security/user-qr";
 
@@ -12,17 +13,10 @@ const bodySchema = z.object({
   userToken: z.string().min(10),
 });
 
-function canUse(role?: string) {
-  return role === "TEACHER" || role === "ADMIN";
-}
-
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-
-  if (!canUse(role)) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
+  const guard = requireApiRole(session, ["TEACHER", "ADMIN"]);
+  if (!guard.ok) return guard.response;
 
   const body = bodySchema.parse(await req.json());
 

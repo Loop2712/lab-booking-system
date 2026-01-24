@@ -2,16 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
+import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
 
 export const runtime = "nodejs";
-
-function assertAdmin(session: any) {
-  if (!session || session.role !== "ADMIN") {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  return null;
-}
 
 const createRoomSchema = z.object({
   roomNumber: z.string().min(1),
@@ -24,8 +18,8 @@ const createRoomSchema = z.object({
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const denied = assertAdmin(session as any);
-  if (denied) return denied;
+  const guard = requireApiRole(session, ["ADMIN"]);
+  if (!guard.ok) return guard.response;
 
   const rooms = await prisma.room.findMany({
     orderBy: [{ floor: "asc" }, { roomNumber: "asc" }],
@@ -37,8 +31,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  const denied = assertAdmin(session as any);
-  if (denied) return denied;
+  const guard = requireApiRole(session, ["ADMIN"]);
+  if (!guard.ok) return guard.response;
 
   const body = createRoomSchema.parse(await req.json());
 

@@ -1,21 +1,15 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
+import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
 
 export const runtime = "nodejs";
 
-function canUse(role?: string) {
-  return role === "TEACHER" || role === "ADMIN";
-}
-
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-
-  if (!canUse(role)) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
+  const guard = requireApiRole(session, ["TEACHER", "ADMIN"]);
+  if (!guard.ok) return guard.response;
 
   // 1) รอรับกุญแจ: ครูอนุมัติแล้ว แต่ยังไม่ CHECKED_IN
   const pendingCheckin = await prisma.reservation.findMany({
