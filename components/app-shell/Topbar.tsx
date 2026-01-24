@@ -1,7 +1,15 @@
 "use client";
 
 import { signOut } from "next-auth/react";
-import { Menu } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle,
+  KeyRound,
+  LayoutDashboard,
+  Menu,
+  Settings,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -10,6 +18,15 @@ import type { NavItem } from "./nav";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+
+const iconMap = {
+  dashboard: LayoutDashboard,
+  key: KeyRound,
+  calendar: Calendar,
+  users: Users,
+  settings: Settings,
+  approve: CheckCircle,
+} as const;
 
 export default function Topbar({
   nav,
@@ -39,7 +56,7 @@ export default function Topbar({
             <nav className="p-2 space-y-1">
               {nav.map((item) => {
                 const active = pathname === item.href || pathname.startsWith(item.href + "/");
-                const Icon = item.icon;
+                const Icon = iconMap[item.icon] ?? LayoutDashboard;
                 return (
                   <Link
                     key={item.href}

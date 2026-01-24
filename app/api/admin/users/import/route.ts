@@ -321,8 +321,15 @@ export async function POST(req: Request) {
       });
     }
 
+    const hashedRows = await Promise.all(
+      parsed.map(async (p) => ({
+        p,
+        passwordHash: await bcrypt.hash(p.studentId, 10),
+      }))
+    );
+
     await prisma.$transaction(
-      parsed.map((p) =>
+      hashedRows.map(({ p, passwordHash }) =>
         prisma.user.upsert({
           where: { studentId: p.studentId },
           create: {
@@ -335,7 +342,7 @@ export async function POST(req: Request) {
             major: p.major ? p.major : undefined,
             studentType: p.studentType ? (p.studentType as any) : undefined,
             isActive: p.isActive === "0" ? false : true,
-            passwordHash: await bcrypt.hash(p.studentId, 10), // นักศึกษา: รหัสผ่านเริ่มต้น = studentId
+            passwordHash, // นักศึกษา: รหัสผ่านเริ่มต้น = studentId
           },
           update: {
             role: "STUDENT",
@@ -346,7 +353,7 @@ export async function POST(req: Request) {
             major: p.major ? p.major : null,
             studentType: p.studentType ? (p.studentType as any) : null,
             isActive: p.isActive === "0" ? false : true,
-            passwordHash: await bcrypt.hash(p.studentId, 10),
+            passwordHash,
           },
         })
       )

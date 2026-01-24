@@ -1,8 +1,20 @@
-type Role = "ADMIN" | "TEACHER" | "STUDENT";
+export type Role = "ADMIN" | "TEACHER" | "STUDENT";
 
-type Gender = "MALE" | "FEMALE" | "OTHER";
+export type Gender = "MALE" | "FEMALE" | "OTHER";
 
-type StudentType = "REGULAR" | "SPECIAL";
+export type StudentType = "REGULAR" | "SPECIAL";
 
-type UserRow = {
+export type UserRow = {
   id: string;
+  role: Role;
+  firstName: string;
+  lastName: string;
+  birthDate: string;
+  gender: Gender | null;
+  major: string | null;
+  studentType: StudentType | null;
+  studentId: string | null;
+  email: string | null;
+  isActive: boolean;
+  createdAt: string;
+};

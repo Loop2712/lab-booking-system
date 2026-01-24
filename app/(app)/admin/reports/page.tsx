@@ -15,7 +15,7 @@ export default function AdminReportsPage() {
   const [from, setFrom] = useState(ymd(new Date()));
   const [to, setTo] = useState(plusDaysStr(30));
 
-  const [rooms, c] = useState<any[]>([]);
+  const [rooms, setRooms] = useState<any[]>([]);
   const [roomId, setRoomId] = useState("ALL");
   const [type, setType] = useState("ALL");
   const [status, setStatus] = useState("ALL");

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
@@ -23,7 +23,7 @@ const patchSchema = z.object({
 });
 
 export async function PATCH(
-  req: Request,
+  req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
   const { id } = await ctx.params;
@@ -44,15 +44,16 @@ export async function PATCH(
 
 
 export async function DELETE(
-  _req: Request,
-  { params }: { params: { id: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   const denied = assertAdmin(session as any);
   if (denied) return denied;
 
   try {
-    await prisma.room.delete({ where: { id: params.id } });
+    await prisma.room.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     return NextResponse.json(

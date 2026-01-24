@@ -10,21 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { url } from "inspector/promises";
-
-
-  role: Role;
-  firstName: string;
-  lastName: string;
-  birthDate: string; // ISO
-  gender: Gender | null;
-  major: string | null;
-  studentType: StudentType | null;
-  studentId: string | null;
-  email: string | null;
-  isActive: boolean;
-  createdAt: string;
-};
 
 
 export default function AdminUsersPage() {

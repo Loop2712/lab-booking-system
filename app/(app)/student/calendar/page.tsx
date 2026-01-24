@@ -11,14 +11,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-  title: string;
-  time: string;
-  meta: string;
-  raw?: any;
-};
-
-
 // ✅ fix locale+timezone (ลด hydration mismatch)
 
 
