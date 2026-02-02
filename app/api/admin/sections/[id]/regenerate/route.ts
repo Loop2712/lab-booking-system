@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth/options";
 import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
 import { generateInClassReservations } from "@/lib/inclass/generate";
+import { addDaysYmd, isYmdBetweenInclusive, todayYmdBkk } from "@/lib/date/index";
 
 export const runtime = "nodejs";
 
@@ -25,6 +26,17 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   if (!guard.ok) return guard.response;
 
   const body = bodySchema.parse(await req.json());
+  const minYmd = todayYmdBkk();
+  const maxYmd = addDaysYmd(minYmd, 30);
+  if (
+    !isYmdBetweenInclusive(body.from, minYmd, maxYmd) ||
+    !isYmdBetweenInclusive(body.to, minYmd, maxYmd)
+  ) {
+    return NextResponse.json(
+      { ok: false, message: "DATE_OUT_OF_RANGE", min: minYmd, max: maxYmd },
+      { status: 400 }
+    );
+  }
   const fromDate = startOfDayUTC(body.from);
   const toDate = startOfDayUTC(body.to);
 

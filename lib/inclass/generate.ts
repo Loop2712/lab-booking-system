@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { toDayName } from "@/lib/date/toDayName";
+import { findSlot } from "@/lib/reserve/slots";
 
 function startOfDay(d: Date) {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0));
@@ -37,6 +38,11 @@ export async function generateInClassReservations(args: {
     return { ok: false as const, message: "SECTION_NOT_FOUND" };
   }
 
+  const slotId = `${section.startTime}-${section.endTime}`;
+  if (!findSlot(slotId)) {
+    return { ok: false as const, message: "INVALID_TIME_SLOT" };
+  }
+
   const fromDate = startOfDay(new Date(`${args.from}T00:00:00Z`));
   const toDate = startOfDay(new Date(`${args.to}T00:00:00Z`));
 
@@ -44,7 +50,7 @@ export async function generateInClassReservations(args: {
     return { ok: false as const, message: "BAD_RANGE" };
   }
 
-  const slot = `${section.startTime}-${section.endTime}`;
+  const slot = slotId;
 
   const data: any[] = [];
   for (let d = fromDate; d <= toDate; d = addDays(d, 1)) {

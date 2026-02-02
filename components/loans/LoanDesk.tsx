@@ -18,7 +18,12 @@ type ReservationRow = {
   room: { code: string; name: string; roomNumber: string; floor: number };
   requester: { firstName: string; lastName: string; studentId?: string | null; email?: string | null };
   approver?: { firstName?: string | null; lastName?: string | null; email?: string | null } | null;
-  loan?: { id: string; createdAt: string; updatedAt: string } | null;
+  loan?: {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    borrower?: { firstName: string; lastName: string; studentId?: string | null; email?: string | null } | null;
+  } | null;
 };
 
 function ymd(iso: string) {
@@ -233,12 +238,14 @@ async function checkIn(reservationId: string) {
                   </TableCell>
                 </TableRow>
               ) : (
-                activeRows.map((r) => (
+                activeRows.map((r) => {
+                  const borrower = r.loan?.borrower ?? r.requester;
+                  return (
                   <TableRow key={r.id}>
                     <TableCell>
-                      <div className="font-medium">{r.requester.firstName} {r.requester.lastName}</div>
+                      <div className="font-medium">{borrower.firstName} {borrower.lastName}</div>
                       <div className="text-xs text-muted-foreground">
-                        {r.requester.studentId ?? r.requester.email ?? "-"}
+                        {borrower.studentId ?? borrower.email ?? "-"}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -261,7 +268,8 @@ async function checkIn(reservationId: string) {
                       </Button>
                     </TableCell>
                   </TableRow>
-                ))
+                  );
+                })
               )}
             </TableBody>
           </Table>

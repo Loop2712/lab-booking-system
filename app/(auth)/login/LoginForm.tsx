@@ -31,7 +31,7 @@ export default function LoginForm({
   // staff
   const [email, setEmail] = useState("");
 
-  // shared password input (student: 11 digits studentId, staff: YYYYMMDD)
+  // shared password input (student: configurable, staff: YYYYMMDD)
   const [password, setPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
@@ -45,22 +45,15 @@ export default function LoginForm({
 
   const canSubmit = useMemo(() => {
     if (isStudent) {
-      const idOk = studentId.trim().length === 11;
-      const passOk = password.trim().length === 11;
-      const match = studentId.trim() === password.trim(); // policy: pass = studentId
-      return idOk && passOk && match;
+      const idOk = /^\d{11}$/.test(studentId.trim());
+      const passOk = password.trim().length >= 8;
+      return idOk && passOk;
     }
 
     const emailOk = email.trim().length > 3;
     const passOk = /^\d{8}$/.test(password); // YYYYMMDD
     return emailOk && passOk;
   }, [isStudent, studentId, email, password]);
-
-  const studentMismatch =
-    isStudent &&
-    studentId.trim().length > 0 &&
-    password.trim().length > 0 &&
-    studentId.trim() !== password.trim();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -144,17 +137,14 @@ export default function LoginForm({
           </div>
 
           <div className="space-y-2">
-            <Label>รหัสผ่าน (รหัสนักศึกษา)</Label>
+            <Label>รหัสผ่าน</Label>
             <div className="relative">
               <Input
                 value={password}
-                onChange={(e) =>
-                  setPassword(e.target.value.replace(/\D/g, "").slice(0, 11))
-                }
-                inputMode="numeric"
-                maxLength={11}
+                onChange={(e) => setPassword(e.target.value)}
+                minLength={8}
                 type={showPassword ? "text" : "password"}
-                placeholder="กรอกรหัสนักศึกษาอีกครั้ง"
+                placeholder="อย่างน้อย 8 ตัวอักษร"
                 className="pr-10"
               />
               <button
@@ -167,15 +157,9 @@ export default function LoginForm({
               </button>
             </div>
 
-            {studentMismatch ? (
-              <p className="text-xs text-destructive">
-                รหัสผ่านไม่ตรง กรุณาตรวจสอบอีกครั้ง
-              </p>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                นักศึกษา: รหัสนักศึกษา
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground">
+              ค่าเริ่มต้นคือรหัสนักศึกษา สามารถเปลี่ยนได้ในเมนูตั้งค่า
+            </p>
           </div>
         </>
       ) : (

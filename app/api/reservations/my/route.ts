@@ -10,7 +10,7 @@ export async function GET() {
   const requesterId = (session as any)?.uid as string | undefined;
   const role = (session as any)?.role as string | undefined;
 
-  if (!requesterId || role !== "STUDENT") {
+  if (!requesterId || !["STUDENT", "TEACHER", "ADMIN"].includes(role || "")) {
     return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
   }
 

@@ -102,8 +102,10 @@ export default function MyReservationsTable() {
 
     if (!res.ok || !json?.ok) {
       const msg =
-        json?.message === "CANNOT_CANCEL_NON_PENDING"
-          ? "ยกเลิกได้เฉพาะรายการที่ยังเป็น PENDING"
+        json?.message === "CANNOT_CANCEL_STATUS"
+          ? "ยกเลิกได้เฉพาะรายการที่ยังเป็น PENDING หรือ APPROVED"
+          : json?.message === "CANCEL_TOO_LATE"
+          ? "ยกเลิกไม่ได้ เนื่องจากใกล้เวลาเริ่มใช้งานแล้ว"
           : "ยกเลิกไม่สำเร็จ กรุณาลองใหม่";
       setError(msg);
       return;
@@ -255,7 +257,7 @@ export default function MyReservationsTable() {
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={r.status !== "PENDING" || busyId === r.id}
+                        disabled={!["PENDING", "APPROVED"].includes(r.status) || busyId === r.id}
                         onClick={() => cancel(r.id)}
                       >
                         {busyId === r.id ? "กำลังยกเลิก..." : "ยกเลิก"}

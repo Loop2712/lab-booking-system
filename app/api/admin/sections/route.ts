@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
+import { findSlot } from "@/lib/reserve/slots";
 
 export const runtime = "nodejs";
 
@@ -43,6 +44,13 @@ export async function POST(req: Request) {
   if (!guard.ok) return guard.response;
 
   const body = createSchema.parse(await req.json());
+  const slotId = `${body.startTime}-${body.endTime}`;
+  if (!findSlot(slotId)) {
+    return NextResponse.json(
+      { ok: false, message: "INVALID_TIME_SLOT" },
+      { status: 400 }
+    );
+  }
 
   const created = await prisma.section.create({
     data: {

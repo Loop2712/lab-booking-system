@@ -120,15 +120,7 @@ export async function POST(req: Request) {
         const { startAt, endAt } = slotToTime(slot, date);
         return {
           type: "AD_HOC" as const,
-<<<<<<< ours
-<<<<<<< ours
-          status: isTeacher || isAdmin ? "APPROVED" : "PENDING",
-=======
           status,
->>>>>>> theirs
-=======
-          status,
->>>>>>> theirs
           approverId: isTeacher || isAdmin ? uid : null,
           requesterId: uid,
           roomId,

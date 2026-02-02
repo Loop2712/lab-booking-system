@@ -37,7 +37,7 @@ type AuthUser = {
 
 const studentCreds = z.object({
   studentId: z.string().regex(/^\d{11}$/),
-  password: z.string().regex(/^\d{11}$/),
+  password: z.string().min(8),
 });
 
 const staffCreds = z.object({
@@ -87,9 +87,6 @@ export const authOptions: NextAuthOptions = {
           });
           if (!c.success) return null;
 
-          // policy: student password must equal studentId
-          if (c.data.password !== c.data.studentId) return null;
-
           const user = await prisma.user.findFirst({
             where: {
               role: "STUDENT",
@@ -99,27 +96,17 @@ export const authOptions: NextAuthOptions = {
           });
           if (!user) return null;
 
-          let passwordHash = user.passwordHash ?? null;
-
-          // migrate old records (or fresh seed) to the new rule: hash(studentId)
-          if (!passwordHash) {
-            passwordHash = await bcrypt.hash(c.data.studentId, 10);
+          if (user.passwordHash) {
+            const ok = await bcrypt.compare(c.data.password, user.passwordHash);
+            if (!ok) return null;
+          } else {
+            // legacy default: password = studentId
+            if (c.data.password !== c.data.studentId) return null;
+            const passwordHash = await bcrypt.hash(c.data.password, 10);
             await prisma.user.update({
               where: { id: user.id },
               data: { passwordHash },
             });
-          }
-
-          const ok = await bcrypt.compare(c.data.password, passwordHash);
-          if (!ok) {
-            // If data was seeded with an older rule (e.g. birthDate), migrate to the new rule.
-            const newHash = await bcrypt.hash(c.data.studentId, 10);
-            await prisma.user.update({
-              where: { id: user.id },
-              data: { passwordHash: newHash },
-            });
-            const ok2 = await bcrypt.compare(c.data.password, newHash);
-            if (!ok2) return null;
           }
 
           const sessionUser = {

@@ -15,6 +15,7 @@ export type NavItem = {
 export const adminNav: NavItem[] = [
   { title: "แดชบอร์ด", href: "/admin", icon: "dashboard" },
   { title: "ห้องที่ใช้งานวันนี้", href: "/rooms-today", icon: "calendar" },
+  { title: "รายการจองของฉัน", href: "/admin/reservations", icon: "calendar" },
   { title: "จัดการห้อง", href: "/admin/rooms", icon: "calendar" },
   { title: "จัดการกุญแจ", href: "/admin/keys", icon: "key" },
   { title: "จัดการผู้ใช้", href: "/admin/users", icon: "users" },
@@ -28,6 +29,7 @@ export const adminNav: NavItem[] = [
 export const teacherNav: NavItem[] = [
   { title: "แดชบอร์ด", href: "/teacher", icon: "dashboard" },
   { title: "ห้องที่ใช้งานวันนี้", href: "/rooms-today", icon: "calendar" },
+  { title: "รายการจองของฉัน", href: "/teacher/reservations", icon: "calendar" },
   { title: "จองนอกตาราง", href: "/teacher/reserve", icon: "calendar" },
   { title: "อนุมัติคำขอ", href: "/teacher/requests", icon: "approve" },
   { title: "ตารางสอน", href: "/teacher/schedule", icon: "calendar" },

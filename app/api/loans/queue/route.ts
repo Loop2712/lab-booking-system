@@ -49,7 +49,14 @@ export async function GET() {
       note: true,
       room: { select: { code: true, name: true, roomNumber: true, floor: true } },
       requester: { select: { firstName: true, lastName: true, studentId: true, email: true } },
-      loan: { select: { id: true, createdAt: true, updatedAt: true } },
+      loan: {
+        select: {
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          borrower: { select: { firstName: true, lastName: true, studentId: true, email: true } },
+        },
+      },
     },
   });
 

@@ -57,6 +57,7 @@ export async function POST(req: Request) {
           status: true,
           requesterId: true,
           roomId: true,
+          startAt: true,
           loan: { select: { id: true } },
           participants: { select: { userId: true } },
         },
@@ -66,6 +67,16 @@ export async function POST(req: Request) {
       if (resv.status !== "APPROVED")
         return { ok: false as const, status: 400, message: "INVALID_STATUS" };
       if (resv.loan?.id) return { ok: false as const, status: 400, message: "ALREADY_HAS_LOAN" };
+
+      const now = new Date();
+      const lateLimit = new Date(resv.startAt.getTime() + 30 * 60 * 1000);
+      if (now > lateLimit) {
+        await tx.reservation.update({
+          where: { id: resv.id },
+          data: { status: "NO_SHOW" },
+        });
+        return { ok: false as const, status: 400, message: "LATE_CHECKIN_NO_SHOW" };
+      }
 
       // 3) Ownership/permission check (เหมือนเดิม)
       // - Student: ต้องเป็น requester หรือ participant

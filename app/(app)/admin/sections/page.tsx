@@ -1,6 +1,7 @@
 "use client";
 import type { Course, Room, Section, User } from "./types";
 import { todayStr } from "./todayStr";
+import { TIME_SLOTS } from "@/lib/reserve/slots";
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,8 +31,7 @@ export default function AdminSectionsPage() {
   const [roomId, setRoomId] = useState<string>("");
 
   const [dayOfWeek, setDayOfWeek] = useState<(typeof DOW)[number]>("MON");
-  const [startTime, setStartTime] = useState("08:00");
-  const [endTime, setEndTime] = useState("12:00");
+  const [slotId, setSlotId] = useState(TIME_SLOTS[0]?.id ?? "08:00-12:00");
   const [term, setTerm] = useState("");
   const [year, setYear] = useState<string>("");
 
@@ -101,6 +101,12 @@ export default function AdminSectionsPage() {
   async function create() {
     if (!canCreate) return;
 
+    const slot = TIME_SLOTS.find((s) => s.id === slotId);
+    if (!slot) {
+      alert("ช่วงเวลาไม่ถูกต้อง");
+      return;
+    }
+
     const r = await fetch("/api/admin/sections", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -109,8 +115,8 @@ export default function AdminSectionsPage() {
         teacherId,
         roomId,
         dayOfWeek,
-        startTime,
-        endTime,
+        startTime: slot.start,
+        endTime: slot.end,
         term: term || undefined,
         year: year ? Number(year) : undefined,
       }),
@@ -242,15 +248,21 @@ export default function AdminSectionsPage() {
             </Select>
           </div>
 
-          {/* Time */}
+          {/* Time Slot */}
           <div className="space-y-2">
-            <div className="text-sm">Start time</div>
-            <Input value={startTime} onChange={(e) => setStartTime(e.target.value)} placeholder="08:00" />
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-sm">End time</div>
-            <Input value={endTime} onChange={(e) => setEndTime(e.target.value)} placeholder="12:00" />
+            <div className="text-sm">Time slot (4 hours)</div>
+            <Select value={slotId} onValueChange={setSlotId}>
+              <SelectTrigger>
+                <SelectValue placeholder="เลือกช่วงเวลา" />
+              </SelectTrigger>
+              <SelectContent>
+                {TIME_SLOTS.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Term / Year */}
