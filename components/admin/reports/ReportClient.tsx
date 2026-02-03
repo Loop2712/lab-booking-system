@@ -29,6 +29,7 @@ type RoomOption = {
   floor: number;
   code: string;
   name: string;
+  isActive?: boolean;
 };
 
 type KeyOption = {
@@ -206,6 +207,11 @@ export default function ReportClient() {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+
+  const activeRooms = useMemo(
+    () => rooms.filter((room) => room.isActive !== false),
+    [rooms]
+  );
 
   const totalPages = useMemo(() => {
     return Math.max(1, Math.ceil(totalCount / filters.pageSize));
@@ -466,7 +472,7 @@ export default function ReportClient() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">All</SelectItem>
-                {rooms.map((room) => (
+                {activeRooms.map((room) => (
                   <SelectItem key={room.id} value={room.id}>
                     {room.roomNumber} / Floor {room.floor}
                   </SelectItem>

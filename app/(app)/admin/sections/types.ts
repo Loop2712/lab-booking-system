@@ -9,6 +9,7 @@ export type Room = {
   code: string;
   name: string;
   roomNumber?: string | null;
+  isActive?: boolean;
 };
 
 export type User = {
@@ -17,6 +18,7 @@ export type User = {
   lastName: string;
   email?: string | null;
   role?: string;
+  isActive?: boolean;
 };
 
 export type Section = {

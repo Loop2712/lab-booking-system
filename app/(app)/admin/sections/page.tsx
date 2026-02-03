@@ -82,6 +82,9 @@ export default function AdminSectionsPage() {
   const [fTeacher, setFTeacher] = useState<string>("ALL");
   const [fRoom, setFRoom] = useState<string>("ALL");
 
+  const activeRooms = useMemo(() => rooms.filter((r) => r.isActive !== false), [rooms]);
+  const activeTeachers = useMemo(() => teachers.filter((t) => t.isActive !== false), [teachers]);
+
   // range (used by generate range / delete / regenerate)
   const [from, setFrom] = useState(() => todayYmdBkk());
   const [to, setTo] = useState(() => todayYmdBkk());
@@ -101,7 +104,7 @@ export default function AdminSectionsPage() {
     setRooms(c.rooms ?? []);
 
     const allUser: User[] = d.users ?? [];
-    setTeachers(allUser.filter((u) => u.role === "TEACHER"));
+    setTeachers(allUser.filter((u) => u.role === "TEACHER" && u.isActive !== false));
   }
 
   useEffect(() => {
@@ -114,12 +117,12 @@ export default function AdminSectionsPage() {
   }, [courses, courseId]);
 
   useEffect(() => {
-    if (!roomId && rooms.length) setRoomId(rooms[0].id);
-  }, [rooms, roomId]);
+    if (!roomId && activeRooms.length) setRoomId(activeRooms[0].id);
+  }, [activeRooms, roomId]);
 
   useEffect(() => {
-    if (!teacherId && teachers.length) setTeacherId(teachers[0].id);
-  }, [teachers, teacherId]);
+    if (!teacherId && activeTeachers.length) setTeacherId(activeTeachers[0].id);
+  }, [activeTeachers, teacherId]);
 
   const canCreate = useMemo(
     () => !!courseId && !!teacherId && !!roomId && !!startTime && !!endTime,
@@ -197,43 +200,6 @@ export default function AdminSectionsPage() {
     setOpenCreate(false);
   }
 
-  async function generate(sectionId: string) {
-    const r = await fetch(`/api/admin/sections/${sectionId}/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to }),
-    });
-    const j = await r.json();
-    if (!j.ok) return alert(j.message ?? "ERROR");
-    alert(`สร้างรายการสำเร็จ: ${j.created} รายการ`);
-    await load();
-  }
-
-  async function deleteGenerated(sectionId: string) {
-    if (!confirm(`ลบรายการจองแบบเรียนในชั้น (IN_CLASS) ในช่วง ${from} ถึง ${to} ใช่ไหม?`)) return;
-    const r = await fetch(
-      `/api/admin/sections/${sectionId}/generated?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
-      { method: "DELETE" }
-    );
-    const j = await r.json();
-    if (!j.ok) return alert(j.message ?? "ERROR");
-    alert(`ลบรายการสำเร็จ: ${j.deleted} รายการ`);
-    await load();
-  }
-
-  async function regenerate(sectionId: string) {
-    if (!confirm(`สร้างใหม่ในช่วง ${from} ถึง ${to} ใช่ไหม? (ระบบจะลบของเดิมแล้วสร้างใหม่)`)) return;
-    const r = await fetch(`/api/admin/sections/${sectionId}/regenerate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to }),
-    });
-    const j = await r.json();
-    if (!j.ok) return alert(j.message ?? "ERROR");
-    alert(`สร้างใหม่สำเร็จ: ลบ ${j.deleted} รายการ | สร้าง ${j.created} รายการ`);
-    await load();
-  }
-
   const courseLabel = (c: Course) => `${c.code} — ${c.name}`;
   const roomLabel = (r: Room) => `${r.code}${r.roomNumber ? ` (${r.roomNumber})` : ""} — ${r.name}`;
   const teacherLabel = (t: User) => `${t.firstName} ${t.lastName}${t.email ? ` (${t.email})` : ""}`;
@@ -241,8 +207,10 @@ export default function AdminSectionsPage() {
   function openEditDialog(section: Section) {
     setEditId(section.id);
     setEditCourseId(section.course.id);
-    setEditTeacherId(section.teacher.id);
-    setEditRoomId(section.room.id);
+    const teacherIdValue = activeTeachers.some((t) => t.id === section.teacher.id) ? section.teacher.id : "";
+    const roomIdValue = activeRooms.some((r) => r.id === section.room.id) ? section.room.id : "";
+    setEditTeacherId(teacherIdValue);
+    setEditRoomId(roomIdValue);
     setEditDayOfWeek(section.dayOfWeek as any);
     setEditStartTime(section.startTime);
     setEditEndTime(section.endTime);
@@ -500,7 +468,7 @@ export default function AdminSectionsPage() {
                     <SelectValue placeholder="เลือกอาจารย์" />
                   </SelectTrigger>
                   <SelectContent>
-                    {teachers.map((t) => (
+                    {activeTeachers.map((t) => (
                       <SelectItem key={t.id} value={t.id}>
                         {teacherLabel(t)}
                       </SelectItem>
@@ -518,7 +486,7 @@ export default function AdminSectionsPage() {
                     <SelectValue placeholder="เลือกห้อง" />
                   </SelectTrigger>
                   <SelectContent>
-                    {rooms.map((r) => (
+                    {activeRooms.map((r) => (
                       <SelectItem key={r.id} value={r.id}>
                         {roomLabel(r)}
                       </SelectItem>
@@ -627,7 +595,7 @@ export default function AdminSectionsPage() {
                     <SelectValue placeholder="เลือกอาจารย์" />
                   </SelectTrigger>
                   <SelectContent>
-                    {teachers.map((t) => (
+                    {activeTeachers.map((t) => (
                       <SelectItem key={t.id} value={t.id}>
                         {teacherLabel(t)}
                       </SelectItem>
@@ -643,7 +611,7 @@ export default function AdminSectionsPage() {
                     <SelectValue placeholder="เลือกห้อง" />
                   </SelectTrigger>
                   <SelectContent>
-                    {rooms.map((r) => (
+                    {activeRooms.map((r) => (
                       <SelectItem key={r.id} value={r.id}>
                         {roomLabel(r)}
                       </SelectItem>
@@ -709,130 +677,47 @@ export default function AdminSectionsPage() {
         </Dialog>
       </div>
 
-      {/* Range */}
+      {/* Bulk tools */}
       <Card>
         <CardHeader>
-          <CardTitle>สร้าง/ลบตารางเรียน (IN_CLASS)</CardTitle>
+          <CardTitle>จัดการหลายรายการ</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex flex-wrap gap-2 items-end">
-            <div className="space-y-2">
-              <div className="text-sm">วันที่เริ่ม (YYYY-MM-DD)</div>
-              <Input
-                type="date"
-                value={from}
-                min={minRangeYmd}
-                max={maxRangeYmd}
-                onChange={(e) => setFrom(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="text-sm">วันที่สิ้นสุด (YYYY-MM-DD)</div>
-              <Input
-                type="date"
-                value={to}
-                min={minRangeYmd}
-                max={maxRangeYmd}
-                onChange={(e) => setTo(e.target.value)}
-              />
-            </div>
-            <div className="text-xs text-muted-foreground pb-1">
-              ช่วงวันที่ที่อนุญาต: {minRangeYmd} ถึง {maxRangeYmd}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="secondary"
-              disabled={selectedSections.length === 0 || bulkScheduleLoading !== null}
-              onClick={() => applyBulkSchedule("generate")}
-            >
-              {bulkScheduleLoading === "generate" ? "กำลังสร้าง..." : "สร้างตารางเรียนที่เลือก"}
-            </Button>
-            <Button
-              variant="outline"
-              disabled={selectedSections.length === 0 || bulkScheduleLoading !== null}
-              onClick={() => applyBulkSchedule("delete")}
-            >
-              {bulkScheduleLoading === "delete" ? "กำลังลบ..." : "ลบตารางเรียนที่เลือก"}
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={selectedSections.length === 0 || bulkScheduleLoading !== null}
-              onClick={() => applyBulkSchedule("regenerate")}
-            >
-              {bulkScheduleLoading === "regenerate" ? "กำลังสร้างใหม่..." : "สร้างใหม่ที่เลือก"}
-            </Button>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            เลือก Section จากรายการด้านล่างเพื่อสร้าง/ลบหลายวิชาพร้อมกัน
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* กลุ่มเรียน list */}
-      <Card>
-        <CardHeader>
-          <CardTitle>รายการ Section</CardTitle>
-        </CardHeader>
-
         <CardContent className="space-y-4">
-          {/* Search / Filter */}
-          <div className="grid gap-2 md:grid-cols-5">
-            <Input placeholder="Search (code/name/room/teacher)..." value={q} onChange={(e) => setQ(e.target.value)} />
-
-            <Input placeholder="Term (เช่น 1/2)" value={fTerm} onChange={(e) => setFTerm(e.target.value)} />
-
-            <Input placeholder="Year (เช่น 2025)" value={fYear} onChange={(e) => setFYear(e.target.value)} />
-
-            <Select value={fTeacher} onValueChange={setFTeacher}>
-              <SelectTrigger>
-                <SelectValue placeholder="Teacher" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All teachers</SelectItem>
-                {teachers.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.firstName} {t.lastName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={fRoom} onValueChange={setFRoom}>
-              <SelectTrigger>
-                <SelectValue placeholder="Room" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All rooms</SelectItem>
-                {rooms.map((r) => (
-                  <SelectItem key={r.id} value={r.id}>
-                    {r.code} — {r.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-sm text-muted-foreground">
+              เลือกแล้ว {selectedIds.length} รายการ
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setSelectedIds([])}
+                disabled={selectedIds.length === 0}
+              >
+                ล้างการเลือก
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={selectedSections.length !== 1}
+                onClick={() => {
+                  if (selectedSections.length === 1) {
+                    openEditDialog(selectedSections[0]);
+                  }
+                }}
+              >
+                แก้ไขรายการที่เลือก
+              </Button>
+            </div>
           </div>
 
-          <div className="rounded-lg border bg-muted/20 p-3 space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-sm font-semibold">แก้ไขหลายรายการ</div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                เลือกแล้ว {selectedIds.length} รายการ
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedIds([])}
-                  disabled={selectedIds.length === 0}
-                >
-                  ล้างการเลือก
-                </Button>
-              </div>
-            </div>
+          <div className="space-y-2">
+            <div className="text-sm font-medium">แก้ไขหลายรายการ</div>
             <div className="grid gap-2 md:grid-cols-5">
               <Input
-                placeholder="แก้เทอม (ว่าง = ไม่เปลี่ยน)"
+                placeholder="เทอม (ว่าง = ไม่เปลี่ยน)"
                 value={bulkTerm}
                 onChange={(e) => setBulkTerm(e.target.value)}
                 disabled={bulkClearTerm}
@@ -867,8 +752,110 @@ export default function AdminSectionsPage() {
               </Button>
             </div>
             <div className="text-xs text-muted-foreground">
-              จะปรับเฉพาะเทอมหรือเวลา (เริ่ม-สิ้นสุด) ให้รายการที่เลือกเท่านั้น
+              ปรับเฉพาะเทอม/เวลาให้รายการที่เลือก
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="text-sm font-medium">สร้าง/ลบตารางเรียน (IN_CLASS)</div>
+            <div className="grid gap-2 md:grid-cols-3">
+              <div className="space-y-1">
+                <div className="text-sm">วันที่เริ่ม</div>
+                <Input
+                  type="date"
+                  value={from}
+                  min={minRangeYmd}
+                  max={maxRangeYmd}
+                  onChange={(e) => setFrom(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm">วันที่สิ้นสุด</div>
+                <Input
+                  type="date"
+                  value={to}
+                  min={minRangeYmd}
+                  max={maxRangeYmd}
+                  onChange={(e) => setTo(e.target.value)}
+                />
+              </div>
+              <div className="text-xs text-muted-foreground self-end">
+                ช่วงวันที่ที่อนุญาต: {minRangeYmd} ถึง {maxRangeYmd}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
+                disabled={selectedSections.length === 0 || bulkScheduleLoading !== null}
+                onClick={() => applyBulkSchedule("generate")}
+              >
+                {bulkScheduleLoading === "generate" ? "กำลังสร้าง..." : "สร้างตารางเรียนที่เลือก"}
+              </Button>
+              <Button
+                variant="outline"
+                disabled={selectedSections.length === 0 || bulkScheduleLoading !== null}
+                onClick={() => applyBulkSchedule("delete")}
+              >
+                {bulkScheduleLoading === "delete" ? "กำลังลบ..." : "ลบตารางเรียนที่เลือก"}
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={selectedSections.length === 0 || bulkScheduleLoading !== null}
+                onClick={() => applyBulkSchedule("regenerate")}
+              >
+                {bulkScheduleLoading === "regenerate" ? "กำลังสร้างใหม่..." : "สร้างใหม่ที่เลือก"}
+              </Button>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              เลือก Section จากตารางด้านล่างก่อนใช้งาน
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* กลุ่มเรียน list */}
+      <Card>
+        <CardHeader>
+          <CardTitle>รายการ Section</CardTitle>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {/* Search / Filter */}
+          <div className="grid gap-2 md:grid-cols-5">
+            <Input placeholder="Search (code/name/room/teacher)..." value={q} onChange={(e) => setQ(e.target.value)} />
+
+            <Input placeholder="Term (เช่น 1/2)" value={fTerm} onChange={(e) => setFTerm(e.target.value)} />
+
+            <Input placeholder="Year (เช่น 2025)" value={fYear} onChange={(e) => setFYear(e.target.value)} />
+
+            <Select value={fTeacher} onValueChange={setFTeacher}>
+              <SelectTrigger>
+                <SelectValue placeholder="Teacher" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All teachers</SelectItem>
+                {activeTeachers.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.firstName} {t.lastName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={fRoom} onValueChange={setFRoom}>
+              <SelectTrigger>
+                <SelectValue placeholder="Room" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All rooms</SelectItem>
+                {activeRooms.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>
+                    {r.code} — {r.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="rounded-lg border bg-white">
@@ -888,8 +875,7 @@ export default function AdminSectionsPage() {
                   <TableHead>ห้อง</TableHead>
                   <TableHead>อาจารย์</TableHead>
                   <TableHead>เทอม/ปี</TableHead>
-                  <TableHead>นักศึกษา/จอง</TableHead>
-                  <TableHead className="min-w-[240px]">แอคชั่น</TableHead>
+                  <TableHead>นักศึกษา (สูงสุด 40)</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -918,29 +904,13 @@ export default function AdminSectionsPage() {
                         {s.term ?? "-"} / {s.year ?? "-"}
                       </TableCell>
                       <TableCell>
-                        {s._count.enrollments} / {s._count.reservations}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-2">
-                          <Button size="sm" variant="outline" onClick={() => openEditDialog(s)}>
-                            แก้ไข
-                          </Button>
-                          <Button size="sm" variant="secondary" onClick={() => generate(s.id)}>
-                            สร้างตารางเรียน
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => deleteGenerated(s.id)}>
-                            ลบตารางเรียน
-                          </Button>
-                          <Button size="sm" variant="destructive" onClick={() => regenerate(s.id)}>
-                            สร้างใหม่
-                          </Button>
-                        </div>
+                        {s._count.enrollments}/40
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center text-sm text-muted-foreground">
                       ยังไม่มีข้อมูล Section
                     </TableCell>
                   </TableRow>
@@ -953,3 +923,4 @@ export default function AdminSectionsPage() {
     </div>
   );
 }
+

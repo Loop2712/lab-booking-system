@@ -32,7 +32,7 @@ export default async function PublicHomePage() {
                 alt="Computer Lab Key Booking System"
                 width={1536}
                 height={1024}
-                className="h-10 w-auto"
+                className="h-14 w-auto md:h-16"
                 priority
               />
             </div>

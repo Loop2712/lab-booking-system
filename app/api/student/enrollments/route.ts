@@ -7,6 +7,8 @@ import { prisma } from "@/lib/db/prisma";
 
 export const runtime = "nodejs";
 
+const MAX_SECTION_ENROLLMENTS = 40;
+
 const addSchema = z.object({
   sectionId: z.string().min(1),
 });
@@ -61,6 +63,16 @@ export async function POST(req: Request) {
   }
   if (!section.isActive) {
     return NextResponse.json({ ok: false, message: "SECTION_INACTIVE" }, { status: 400 });
+  }
+
+  const currentCount = await prisma.enrollment.count({
+    where: { sectionId: body.sectionId },
+  });
+  if (currentCount >= MAX_SECTION_ENROLLMENTS) {
+    return NextResponse.json(
+      { ok: false, message: "SECTION_FULL", detail: { max: MAX_SECTION_ENROLLMENTS } },
+      { status: 400 }
+    );
   }
 
   const created = await prisma.enrollment.create({

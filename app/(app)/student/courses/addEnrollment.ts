@@ -17,7 +17,12 @@ export async function addEnrollment({
     body: JSON.stringify({ sectionId: selectedSectionId }),
   });
   const j = await r.json();
-  if (!j.ok) return alert(j.message ?? "ERROR");
+  if (!j.ok) {
+    if (j.message === "SECTION_FULL") {
+      return alert("เต็มแล้ว (สูงสุด 40 คน)");
+    }
+    return alert(j.message ?? "ERROR");
+  }
 
   setSelectedSectionId("");
   await refreshMyEnrollments();
