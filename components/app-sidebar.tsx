@@ -47,7 +47,7 @@ export function AppSidebar({ nav, user, brand, ...props }: AppSidebarProps) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <Link href={brand?.href ?? "#"} className="flex items-center gap-2">
+              <Link href={brand?.href ?? "#"} className="flex items-center">
                 <Image
                   src="/logo.png"
                   alt={brand?.title ?? "Lab Booking"}
@@ -56,9 +56,6 @@ export function AppSidebar({ nav, user, brand, ...props }: AppSidebarProps) {
                   className="h-12 w-auto"
                   priority
                 />
-                <span className="text-base font-semibold">
-                  {brand?.title ?? "Lab Booking"}
-                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

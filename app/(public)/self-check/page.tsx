@@ -4,20 +4,19 @@ import { getServerSession } from "next-auth";
 import { Kanit } from "next/font/google";
 import { authOptions } from "@/lib/auth/options";
 import { Button } from "@/components/ui/button";
-import RoomsTodayClient from "./rooms-today/rooms-today-client";
-import { dashboardHref } from "./dashboardHref";
+import { dashboardHref } from "../dashboardHref";
+import SelfCheckClient from "./self-check-client";
 
 const kanit = Kanit({
   subsets: ["latin", "thai"],
   weight: ["300", "400", "600", "700"],
 });
 
-export default async function PublicHomePage() {
+export default async function SelfCheckPage() {
   const session = await getServerSession(authOptions);
   const role = (session as any)?.role as string | undefined;
 
   const isLoggedIn = !!session;
-
   const buttonHref = isLoggedIn ? dashboardHref(role) : "/login";
   const buttonText = isLoggedIn ? "ไปที่แดชบอร์ด" : "LOGIN";
 
@@ -53,15 +52,15 @@ export default async function PublicHomePage() {
 
         <main className="mx-auto w-full max-w-6xl px-6 py-10">
           <div className="space-y-3">
-            <h1 className="text-2xl font-semibold text-[#6ABE75]">สถานะห้องวันนี้</h1>
+            <h1 className="text-2xl font-semibold text-[#6ABE75]">ยืม-คืนกุญแจ</h1>
             <div className="h-1 w-72 rounded-full bg-[#6ABE75]/60" />
             <p className="text-sm text-black/70">
-              แสดงตารางห้องเรียนและการจองทั้งแบบตารางเรียนและจองนอกตารางเรียน พร้อมสถานะการใช้งาน
+              บริการยืม-คืนกุญแจผ่าน Kiosk สำหรับจุดบริการที่กำหนดเท่านั้น ต้องมี Kiosk Token จากผู้ดูแลระบบ
             </p>
           </div>
 
           <div className="mt-6">
-            <RoomsTodayClient />
+            <SelfCheckClient />
           </div>
         </main>
 

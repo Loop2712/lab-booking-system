@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { NavItem, IconKey } from "./nav";
@@ -34,7 +35,14 @@ export default function Sidebar({
   return (
     <aside className="hidden md:flex md:w-64 md:flex-col border-r bg-background">
       <div className="h-14 flex items-center px-4 border-b">
-        <span className="font-semibold">{headerTitle}</span>
+        <Image
+          src="@/../public/logo.png"
+          alt="Logo"
+          width={1536}
+          height={1024}
+          className="h-10 w-auto"
+          priority
+        />
       </div>
 
       <nav className="p-2 space-y-1">

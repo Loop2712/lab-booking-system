@@ -12,7 +12,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const gate = requireScannerKey(req);
+  const gate = await requireScannerKey(req);
   if (!gate.ok) return gate.res;
 
   const body = bodySchema.safeParse(await req.json().catch(() => null));

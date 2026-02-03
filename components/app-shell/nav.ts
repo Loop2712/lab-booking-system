@@ -21,7 +21,7 @@ export const adminNav: NavItem[] = [
   { title: "จัดการกุญแจ", href: "/admin/keys", icon: "key" },
   { title: "จัดการผู้ใช้", href: "/admin/users", icon: "users" },
   { title: "รับกุญแจ / คืนกุญแจ", href: "/admin/check", icon: "key" },
-  { title: "เช็คอินเอง (นักศึกษา)", href: "/admin/self-check", icon: "key" },
+  { title: "Kiosk Token", href: "/admin/self-check", icon: "key" },
   { title: "จัดการรายวิชา", href: "/admin/courses", icon: "key" },
   { title: "จัดการกลุ่มเรียน", href: "/admin/sections", icon: "key" },
 

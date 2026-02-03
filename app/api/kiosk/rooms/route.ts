@@ -5,7 +5,7 @@ import { requireScannerKey } from "../_util";
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
-  const gate = requireScannerKey(req);
+  const gate = await requireScannerKey(req);
   if (!gate.ok) return gate.res;
 
   const rooms = await prisma.room.findMany({
