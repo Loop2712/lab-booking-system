@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -45,29 +44,28 @@ type Payload = {
   rooms: RoomRow[];
 };
 
-const FINISHED_STATUSES: Booking["status"][] = ["COMPLETED", "NO_SHOW", "CANCELLED", "REJECTED"];
+const START_HOUR = 7;
+const END_HOUR = 21; // exclusive
+const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
 
-type RoomState = "available" | "in_use" | "late_pickup" | "pending";
-
-function getRoomState(booking: Booking | null): RoomState {
-  if (!booking || FINISHED_STATUSES.includes(booking.status)) return "available";
-  if (booking.status === "CHECKED_IN") return "in_use";
-  if (booking.status === "PENDING") return "pending";
-  return "late_pickup";
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
 }
 
-function roomStateLabel(state: RoomState) {
-  if (state === "in_use") return "กำลังใช้งาน";
-  if (state === "late_pickup") return "ถึงเวลา/ยังไม่มารับกุญแจ";
-  if (state === "pending") return "รออนุมัติ";
-  return "ว่าง";
+function minutesOfDay(iso: string) {
+  const d = new Date(iso);
+  return d.getHours() * 60 + d.getMinutes();
 }
 
-function roomStateClass(state: RoomState) {
-  if (state === "available") return "border-emerald-700 bg-emerald-700 text-white";
-  if (state === "in_use") return "border-rose-700 bg-rose-700 text-white";
-  if (state === "late_pickup") return "border-amber-700 bg-amber-700 text-white";
-  return "border-slate-700 bg-slate-700 text-white";
+function bookingColor(booking: Booking) {
+  return booking.type === "IN_CLASS"
+    ? "bg-emerald-600/90 text-white"
+    : "bg-rose-600/90 text-white";
+}
+
+function bookingLabel(booking: Booking) {
+  if (booking.courseLabel) return booking.courseLabel;
+  return booking.type === "AD_HOC" ? "จองนอกตาราง" : "-";
 }
 
 export default function AdminRoomsStatusTable() {
@@ -76,8 +74,6 @@ export default function AdminRoomsStatusTable() {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-
-  const now = lastUpdated ?? new Date();
 
   const load = useCallback(async () => {
     try {
@@ -114,33 +110,6 @@ export default function AdminRoomsStatusTable() {
     });
   }, [data, q]);
 
-  const slotLabelById = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const slot of data?.slots ?? []) map.set(slot.id, slot.label);
-    return map;
-  }, [data?.slots]);
-
-  function getActiveBooking(room: RoomRow, nowDate: Date) {
-    const bookings = room.slots
-      .map((s) => s.booking)
-      .filter((b): b is Booking => !!b && !FINISHED_STATUSES.includes(b.status));
-    const checkedIn = bookings.find((b) => b.status === "CHECKED_IN");
-    if (checkedIn) {
-      const slotLabel = slotLabelById.get(checkedIn.slot) ?? checkedIn.slot;
-      return { booking: checkedIn, slotLabel };
-    }
-
-    const inWindow = bookings.find((b) => {
-      const start = new Date(b.startAt);
-      const end = new Date(b.endAt);
-      return nowDate >= start && nowDate <= end;
-    });
-
-    if (!inWindow) return null;
-    const slotLabel = slotLabelById.get(inWindow.slot) ?? inWindow.slot;
-    return { booking: inWindow, slotLabel };
-  }
-
   return (
     <Card>
       <CardHeader className="gap-3">
@@ -162,6 +131,16 @@ export default function AdminRoomsStatusTable() {
                   ) : null}
                 </>
               ) : null}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <span className="h-3 w-3 rounded-sm bg-emerald-600/90" />
+                ตารางเรียน
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="h-3 w-3 rounded-sm bg-rose-600/90" />
+                จองนอกตาราง
+              </div>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -195,10 +174,11 @@ export default function AdminRoomsStatusTable() {
             <TableHeader className="bg-muted/40">
               <TableRow>
                 <TableHead className="min-w-[220px]">ห้อง</TableHead>
-                <TableHead className="min-w-[200px]">ผู้ยืม</TableHead>
-                <TableHead className="min-w-[140px] text-center">ช่วงเวลา</TableHead>
-                <TableHead className="min-w-[220px]">วิชา</TableHead>
-                <TableHead className="min-w-[160px] text-center">สถานะ</TableHead>
+                {HOURS.map((h) => (
+                  <TableHead key={h} className="min-w-[90px] text-center">
+                    {pad2(h)}:00
+                  </TableHead>
+                ))}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -214,38 +194,61 @@ export default function AdminRoomsStatusTable() {
                       </div>
                     </TableCell>
                     {(() => {
-                      const active = getActiveBooking(room, now);
-                      const booking = active?.booking ?? null;
-                      const state = getRoomState(booking);
-                      const borrower =
-                        booking && booking.status === "CHECKED_IN"
-                          ? booking.borrowerLabel ?? booking.requesterLabel ?? "-"
-                          : "-";
-                      const course =
-                        booking && booking.status === "CHECKED_IN"
-                          ? booking.courseLabel ?? (booking.type === "AD_HOC" ? "จองทั่วไป" : "-")
-                          : "-";
+                      const rawBookings = room.slots
+                        .map((s) => s.booking)
+                        .filter((b): b is Booking => !!b);
 
-                      return (
-                        <>
-                          <TableCell className="text-sm">{borrower}</TableCell>
-                          <TableCell className="text-center text-sm text-muted-foreground">
-                            {active?.slotLabel ?? "-"}
-                          </TableCell>
-                          <TableCell className="text-sm">{course}</TableCell>
-                          <TableCell className="text-center">
-                            <Badge variant="default" className={cn("justify-center", roomStateClass(state))}>
-                              {roomStateLabel(state)}
-                            </Badge>
-                          </TableCell>
-                        </>
-                      );
+                      const seen = new Set<string>();
+                      const bookings = rawBookings.filter((b) => {
+                        if (seen.has(b.reservationId)) return false;
+                        seen.add(b.reservationId);
+                        return true;
+                      });
+
+                      const ranges = bookings.map((b) => ({
+                        booking: b,
+                        startMin: minutesOfDay(b.startAt),
+                        endMin: minutesOfDay(b.endAt),
+                      }));
+
+                      const cells: { booking: Booking | null; isStart: boolean }[] = [];
+
+                      for (const h of HOURS) {
+                        const cellStart = h * 60;
+                        const cellEnd = (h + 1) * 60;
+                        const hit = ranges.find(
+                          (r) => r.startMin < cellEnd && r.endMin > cellStart
+                        );
+                        const booking = hit?.booking ?? null;
+                        const prev = cells[cells.length - 1]?.booking ?? null;
+                        const isStart = booking ? !prev || prev.reservationId !== booking.reservationId : false;
+                        cells.push({ booking, isStart });
+                      }
+
+                      return cells.map((cell, idx) => (
+                        <TableCell key={idx} className="p-0">
+                          {cell.booking ? (
+                            <div className={cn("h-16 px-2 py-1 text-[11px] leading-tight", bookingColor(cell.booking))}>
+                              {cell.isStart ? (
+                                <>
+                                  <div className="font-medium truncate">{bookingLabel(cell.booking)}</div>
+                                  {cell.booking.borrowerLabel ? (
+                                    <div className="truncate">{cell.booking.borrowerLabel}</div>
+                                  ) : null}
+                                </>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <div className="h-16 px-2 py-1 text-[11px] text-muted-foreground" />
+                          )}
+                        </TableCell>
+                      ));
                     })()}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={HOURS.length + 1} className="text-center text-sm text-muted-foreground">
                     ไม่พบข้อมูลห้อง
                   </TableCell>
                 </TableRow>
