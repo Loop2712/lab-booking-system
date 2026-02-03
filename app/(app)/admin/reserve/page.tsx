@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
-import ReserveForm from "@/app/(app)/student/reserve/reserve-form";
+import ReserveDialog from "@/app/(app)/student/reserve/reserve-dialog";
+import RoomAvailability from "@/app/(app)/student/reserve/room-availability";
 
 export default async function AdminReservePage() {
   const rooms = await prisma.room.findMany({
@@ -9,13 +10,18 @@ export default async function AdminReservePage() {
   });
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Admin • BookingRoom (Ad-hoc)</h1>
-      <p className="text-sm text-muted-foreground">
-        จองห้องแบบจองเอง (AD_HOC) โดยเลือกช่วงเวลา 4 ชั่วโมง • แอดมินจะได้รับการอนุมัติทันที
-      </p>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold">Admin • BookingRoom (Ad-hoc)</h1>
+          <p className="text-sm text-muted-foreground">
+            จองห้องแบบจองเอง (AD_HOC) โดยเลือกเวลาเริ่มต้น-สิ้นสุด • แอดมินจะได้รับการอนุมัติทันที
+          </p>
+        </div>
+        <ReserveDialog rooms={rooms} label="จองห้อง" />
+      </div>
 
-      <ReserveForm rooms={rooms} />
+      <RoomAvailability rooms={rooms} />
     </div>
   );
 }

@@ -19,9 +19,15 @@ export async function POST(req: Request) {
   if (!guard.ok) return guard.response;
   const handledById = guard.uid;
 
-  const body = bodySchema.parse(await req.json());
+  const body = bodySchema.safeParse(await req.json().catch(() => null));
+  if (!body.success) {
+    return NextResponse.json(
+      { ok: false, message: "BAD_BODY", detail: body.error.flatten() },
+      { status: 400 }
+    );
+  }
 
-  const vt = verifyUserQrToken(body.userToken);
+  const vt = verifyUserQrToken(body.data.userToken);
   if (!vt.ok) {
     return NextResponse.json({ ok: false, message: "BAD_QR_TOKEN", reason: vt.reason }, { status: 400 });
   }
@@ -30,14 +36,14 @@ export async function POST(req: Request) {
   try {
     const result = await prisma.$transaction(async (tx) => {
       const resv = await tx.reservation.findUnique({
-        where: { id: body.reservationId },
+        where: { id: body.data.reservationId },
         select: {
           id: true,
           status: true,
           type: true,
           requesterId: true,
           sectionId: true,
-          loan: { select: { id: true, keyId: true } },
+          loan: { select: { id: true, keyId: true, borrowerId: true } },
         },
       });
 
@@ -48,11 +54,16 @@ export async function POST(req: Request) {
       // ✅ ตรวจสิทธิ์คนคืน (แนะนำให้ใช้ rule เดียวกับคนยืม)
       if (resv.type === "IN_CLASS") {
         if (!resv.sectionId) return { ok: false as const, status: 400, message: "MISSING_SECTION" };
-        const enrolled = await tx.enrollment.findFirst({
-          where: { sectionId: resv.sectionId, studentId: returnedById },
-          select: { id: true },
-        });
-        if (!enrolled) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
+        if (resv.loan?.borrowerId !== returnedById) {
+          const enrolled = await tx.enrollment.findFirst({
+            where: { sectionId: resv.sectionId, studentId: returnedById },
+            select: { id: true },
+          });
+          if (!enrolled) {
+            const enrollCount = await tx.enrollment.count({ where: { sectionId: resv.sectionId } });
+            if (enrollCount > 0) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
+          }
+        }
       } else {
         if (returnedById !== resv.requesterId) {
           const p = await tx.reservationParticipant.findFirst({

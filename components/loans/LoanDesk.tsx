@@ -60,59 +60,61 @@ export default function LoanDesk({ title }: { title: string }) {
 
   useEffect(() => { load(); }, []);
 
-async function checkIn(reservationId: string) {
-    setBusyId(reservationId);
-    setError(null);
-
-    const res = await fetch("/api/loans/check-in", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reservationId, userToken: scanToken.trim() }),
-    });
-
-    const json = await res.json().catch(() => ({}));
-    setBusyId(null);
-
+  async function checkIn(reservationId: string) {
     const token = scanToken.trim();
-
     if (token.length < 10) {
       setError("กรุณาสแกน/วาง QR Token ก่อน");
       return;
     }
 
+    setBusyId(reservationId);
+    setError(null);
+
+    const res = await fetch("/api/loans/check-in", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reservationId, userToken: token }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+    setBusyId(null);
+
     if (!res.ok || !json?.ok) {
-        setError(
+      setError(
         json?.message
-            ? `เช็คอินไม่สำเร็จ: ${json.message}`
-            : `เช็คอินไม่สำเร็จ (${res.status})`
-        );
-        return;
+          ? `เช็คอินไม่สำเร็จ: ${json.message}`
+          : `เช็คอินไม่สำเร็จ (${res.status})`
+      );
+      return;
     }
 
     await load();
-    }
-
+  }
 
   async function returnKey(reservationId: string) {
+    const token = scanToken.trim();
+    if (token.length < 10) {
+      setError("กรุณาสแกน/วาง QR Token ก่อน");
+      return;
+    }
+
     setBusyId(reservationId);
     setError(null);
     const res = await fetch("/api/loans/return", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reservationId, userToken: scanToken.trim() }),
+      body: JSON.stringify({ reservationId, userToken: token }),
     });
-
-    const token = scanToken.trim();
-    if (token.length < 10) {
-      setError("กรุณาสแกน/วาง QR Token ก่อน");
-      return;
-    }
 
     const json = await res.json().catch(() => ({}));
     setBusyId(null);
 
     if (!res.ok || !json?.ok) {
-      setError("คืนกุญแจไม่สำเร็จ");
+      setError(
+        json?.message
+          ? `คืนกุญแจไม่สำเร็จ: ${json.message}`
+          : `คืนกุญแจไม่สำเร็จ (${res.status})`
+      );
       return;
     }
     await load();

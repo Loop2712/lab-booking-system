@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { TIME_SLOTS, getNextSlotId } from "@/lib/reserve/slots";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
-type RoomItem = {
+export type RoomItem = {
   id: string;
   code: string;
   name: string;
@@ -25,18 +24,15 @@ type RoomItem = {
 export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
   const [roomId, setRoomId] = useState("");
   const [date, setDate] = useState("");
-  const [slotId, setSlotId] = useState("");
-  const [extendSlot, setExtendSlot] = useState(false);
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [note, setNote] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const nextSlotId = slotId ? getNextSlotId(slotId) : null;
-  const shouldUseNextSlot = extendSlot && !!nextSlotId;
-  const slotIds = shouldUseNextSlot ? [slotId, nextSlotId] : slotId ? [slotId] : [];
-  const canSubmit = roomId && date && slotIds.length > 0;
+  const canSubmit = roomId && date && startTime && endTime;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -48,8 +44,15 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
       return;
     }
 
-    if (extendSlot && !nextSlotId) {
-      setError("ช่วงเวลานี้ไม่สามารถต่อเนื่องได้");
+    if (!startTime || !endTime) {
+      setError("กรุณาเลือกเวลาเริ่มต้นและเวลาสิ้นสุด");
+      return;
+    }
+
+    const startMin = toMinutes(startTime);
+    const endMin = toMinutes(endTime);
+    if (endMin <= startMin) {
+      setError("เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น");
       return;
     }
 
@@ -61,8 +64,8 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
       body: JSON.stringify({
         roomId,
         date,
-        slotId: slotIds[0],
-        slotIds,
+        startTime,
+        endTime,
         note: note.trim() || undefined,
       }),
     });
@@ -82,6 +85,12 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
           ? "จองได้สูงสุด 2 รอบต่อเนื่องเท่านั้น"
           : json?.message === "SLOT_NOT_CONSECUTIVE"
           ? "ต้องเลือกช่วงเวลาที่ต่อเนื่องกันเท่านั้น"
+          : json?.message === "INVALID_TIME_FORMAT"
+          ? "รูปแบบเวลาไม่ถูกต้อง"
+          : json?.message === "INVALID_TIME_RANGE"
+          ? "ช่วงเวลาไม่ถูกต้อง"
+          : json?.message === "CONFLICT_WITH_CLASS_SCHEDULE"
+          ? "ช่วงเวลานี้ทับกับตารางเรียนของห้องนี้ กรุณาเลือกเวลาอื่น"
           : "จองไม่สำเร็จ กรุณาลองใหม่";
 
       setError(msg);
@@ -89,12 +98,12 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
     }
 
     setSuccess(
-      `จองสำเร็จ! (${slotIds.length} รอบ) รายการของคุณอยู่ในสถานะรออนุมัติ (PENDING)`
+      `จองสำเร็จ! ${startTime} - ${endTime} รายการของคุณอยู่ในสถานะรออนุมัติ (PENDING)`
     );
     setRoomId("");
     setDate("");
-    setSlotId("");
-    setExtendSlot(false);
+    setStartTime("");
+    setEndTime("");
     setNote("");
   }
 
@@ -122,38 +131,13 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
       </div>
 
       <div className="space-y-2">
-        <Label>ช่วงเวลา (รอบละ 4 ชั่วโมง)</Label>
-        <Select value={slotId} onValueChange={setSlotId}>
-          <SelectTrigger>
-            <SelectValue placeholder="เลือกช่วงเวลา" />
-          </SelectTrigger>
-          <SelectContent>
-            {TIME_SLOTS.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={extendSlot}
-            onChange={(e) => setExtendSlot(e.target.checked)}
-            disabled={!slotId || !nextSlotId}
-          />
-          จองต่อเนื่อง 2 รอบอัตโนมัติ (รวม 8 ชั่วโมง)
-        </label>
-        {extendSlot && !nextSlotId ? (
-          <div className="text-xs text-destructive">
-            ช่วงเวลานี้ไม่มีรอบถัดไปให้จองต่อเนื่อง
-          </div>
-        ) : null}
-        {shouldUseNextSlot ? (
-          <div className="text-xs text-muted-foreground">
-            รอบถัดไปที่ถูกเลือกอัตโนมัติ: <span className="font-mono">{nextSlotId}</span>
-          </div>
-        ) : null}
+        <Label>เวลาเริ่มต้น</Label>
+        <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+      </div>
+
+      <div className="space-y-2">
+        <Label>เวลาสิ้นสุด</Label>
+        <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
       </div>
 
       <div className="space-y-2">
@@ -180,4 +164,9 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
       </Button>
     </form>
   );
+}
+
+function toMinutes(value: string) {
+  const [h, m] = value.split(":").map((n) => Number(n));
+  return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
 }

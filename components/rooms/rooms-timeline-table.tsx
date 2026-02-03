@@ -18,6 +18,7 @@ export type TimelineBooking = {
   requesterLabel?: string | null;
   borrowerLabel?: string | null;
   courseLabel?: string | null;
+  note?: string | null;
   startAt: string;
   endAt: string;
 };

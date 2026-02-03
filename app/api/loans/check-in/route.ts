@@ -19,9 +19,15 @@ export async function POST(req: Request) {
   if (!guard.ok) return guard.response;
   const handledById = guard.uid;
 
-  const body = bodySchema.parse(await req.json());
+  const body = bodySchema.safeParse(await req.json().catch(() => null));
+  if (!body.success) {
+    return NextResponse.json(
+      { ok: false, message: "BAD_BODY", detail: body.error.flatten() },
+      { status: 400 }
+    );
+  }
 
-  const vt = verifyUserQrToken(body.userToken);
+  const vt = verifyUserQrToken(body.data.userToken);
   if (!vt.ok) {
     return NextResponse.json({ ok: false, message: "BAD_QR_TOKEN", reason: vt.reason }, { status: 400 });
   }
@@ -30,7 +36,7 @@ export async function POST(req: Request) {
   try {
     const result = await prisma.$transaction(async (tx) => {
       const resv = await tx.reservation.findUnique({
-        where: { id: body.reservationId },
+        where: { id: body.data.reservationId },
         select: {
           id: true,
           status: true,

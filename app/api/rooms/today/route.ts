@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
-import { TIME_SLOTS } from "@/lib/reserve/slots";
 import { addDays } from "@/lib/date/addDays";
 import { getBangkokYMD, startOfBangkokDay } from "@/lib/date/bangkok";
 
@@ -43,6 +42,7 @@ export async function GET(req: Request) {
         status: true,
         startAt: true,
         endAt: true,
+        note: true,
         requester: {
           select: { firstName: true, lastName: true, role: true },
         },
@@ -59,11 +59,11 @@ export async function GET(req: Request) {
       },
     });
 
-    const booked: Record<string, Record<string, any>> = {};
+    const booked: Record<string, any[]> = {};
     for (const r of reservations) {
-      if (!booked[r.roomId]) booked[r.roomId] = {};
+      if (!booked[r.roomId]) booked[r.roomId] = [];
 
-      booked[r.roomId][r.slot] = {
+      booked[r.roomId].push({
         reservationId: r.id,
         slot: r.slot,
         type: r.type,
@@ -76,22 +76,24 @@ export async function GET(req: Request) {
         courseLabel: isAuthed && r.section?.course
           ? `${r.section.course.code} ${r.section.course.name}`
           : null,
+        note: isAuthed ? r.note ?? null : null,
         startAt: r.startAt,
         endAt: r.endAt,
-      };
+      });
     }
 
     return NextResponse.json({
       ok: true,
       public: !isAuthed,
       date: ymd,
-      slots: TIME_SLOTS,
       rooms: rooms.map((room) => ({
         ...room,
-        slots: TIME_SLOTS.map((s) => ({
-          slotId: s.id,
-          label: s.label,
-          booking: booked?.[room.id]?.[s.id] ?? null,
+        slots: (booked?.[room.id] ?? [])
+          .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
+          .map((booking) => ({
+          slotId: booking.reservationId,
+          label: booking.slot,
+          booking,
         })),
       })),
     });

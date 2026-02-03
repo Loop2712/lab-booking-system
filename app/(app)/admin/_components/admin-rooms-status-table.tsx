@@ -19,32 +19,25 @@ type RoomStatusRow = TimelineRoomRow & {
   activeBooking: TimelineBooking | null;
 };
 
-function getActiveBooking(room: TimelineRoomRow, nowMs: number) {
+function getActiveBooking(room: TimelineRoomRow) {
   const seen = new Set<string>();
   for (const slot of room.slots) {
     const booking = slot.booking;
     if (!booking) continue;
     if (seen.has(booking.reservationId)) continue;
     seen.add(booking.reservationId);
-    const start = new Date(booking.startAt).getTime();
-    const end = new Date(booking.endAt).getTime();
-    if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
-    if (start <= nowMs && nowMs < end) return booking;
+    if (booking.status === "CHECKED_IN") return booking;
   }
   return null;
 }
 
-function formatTime(iso: string) {
-  const date = new Date(iso);
-  if (!Number.isFinite(date.getTime())) return "-";
-  return date.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
-}
-
 function formatUsage(booking: TimelineBooking | null) {
-  if (!booking) return "-";
-  const reason =
-    booking.type === "IN_CLASS" ? booking.courseLabel || "ตารางเรียน" : "จองนอกตาราง";
-  return `${reason} • ${formatTime(booking.startAt)} - ${formatTime(booking.endAt)}`;
+  if (!booking) return "";
+  if (booking.type === "IN_CLASS") {
+    return booking.courseLabel || "ตารางเรียน";
+  }
+  const note = (booking.note ?? "").trim();
+  return note || "";
 }
 
 export default function AdminRoomsStatusTable() {
@@ -82,7 +75,6 @@ export default function AdminRoomsStatusTable() {
   const rooms = useMemo<RoomStatusRow[]>(() => {
     if (!data?.rooms) return [];
     const kw = q.trim().toLowerCase();
-    const nowMs = Date.now();
     return data.rooms
       .filter((r) => {
         if (!kw) return true;
@@ -91,7 +83,7 @@ export default function AdminRoomsStatusTable() {
       })
       .map((room) => ({
         ...room,
-        activeBooking: getActiveBooking(room, nowMs),
+        activeBooking: getActiveBooking(room),
       }));
   }, [data, q]);
 
