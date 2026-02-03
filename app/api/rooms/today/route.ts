@@ -8,7 +8,7 @@ import { getBangkokYMD, startOfBangkokDay } from "@/lib/date/bangkok";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     const role = (session as any)?.role as string | undefined;
@@ -16,7 +16,10 @@ export async function GET() {
     // ✅ publicAllowed: ถ้าไม่ login ก็ยังดูได้ แต่จะ "ซ่อนชื่อผู้จอง"
     const isAuthed = !!session && !!role;
 
-    const ymd = getBangkokYMD(new Date());
+    const url = new URL(req.url);
+    const dateParam = url.searchParams.get("date");
+    const isValidYmd = typeof dateParam === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateParam);
+    const ymd = isValidYmd ? dateParam : getBangkokYMD(new Date());
     const dayStart = startOfBangkokDay(ymd);
     const dayEnd = addDays(dayStart, 1);
 

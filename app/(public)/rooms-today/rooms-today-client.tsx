@@ -1,14 +1,27 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import RoomsTimelineTable, { TimelineRoomRow } from "@/components/rooms/rooms-timeline-table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-type Slot = { id: string; label: string; start: string; end: string };
-
-type Booking = {
+type RangeItem = {
   reservationId: string;
   slot: string;
   type: "IN_CLASS" | "AD_HOC";
@@ -20,56 +33,18 @@ type Booking = {
     | "NO_SHOW"
     | "CHECKED_IN"
     | "COMPLETED";
-  requesterLabel: string;
+  requesterLabel?: string | null;
+  borrowerLabel?: string | null;
+  courseLabel?: string | null;
   startAt: string;
   endAt: string;
-};
-
-type RoomRow = {
-  id: string;
-  code: string;
-  name: string;
-  roomNumber: string;
-  floor: number;
-  slots: { slotId: string; label: string; booking: Booking | null }[];
 };
 
 type Payload = {
   ok: boolean;
   date: string;
-  slots: Slot[];
-  rooms: RoomRow[];
+  rooms: TimelineRoomRow[];
 };
-
-const FINISHED_STATUSES: Booking["status"][] = ["COMPLETED", "NO_SHOW", "CANCELLED", "REJECTED"];
-
-type SlotState = "available" | "in_use" | "late_pickup";
-
-function getSlotState(booking: Booking | null, now: Date): SlotState {
-  if (!booking || FINISHED_STATUSES.includes(booking.status)) return "available";
-  if (booking.status === "CHECKED_IN") return "in_use";
-
-  const start = new Date(booking.startAt);
-  const end = new Date(booking.endAt);
-  const inWindow = now >= start && now <= end;
-  if (inWindow) return "late_pickup";
-  return "available";
-}
-
-function slotStateLabel(state: SlotState, booking: Booking | null) {
-  if (state === "available") {
-    if (booking && !FINISHED_STATUSES.includes(booking.status)) return "จองแล้ว";
-    return "ว่าง";
-  }
-  if (state === "in_use") return "กำลังใช้งาน";
-  return "ถึงเวลา/ยังไม่มารับกุญแจ";
-}
-
-function slotStateClass(state: SlotState) {
-  if (state === "in_use") return "bg-rose-100 border-rose-200 text-rose-900";
-  if (state === "late_pickup") return "bg-amber-100 border-amber-200 text-amber-900";
-  return "bg-emerald-100 border-emerald-200 text-emerald-900";
-}
 
 export default function RoomsTodayClient() {
   const [data, setData] = useState<Payload | null>(null);
@@ -78,12 +53,23 @@ export default function RoomsTodayClient() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const [q, setQ] = useState("");
-  const now = lastUpdated ?? new Date();
+  const [selectedDate, setSelectedDate] = useState<string>(() => ymdBangkok());
+  const [rangeOpen, setRangeOpen] = useState(false);
+  const [rangeRoomId, setRangeRoomId] = useState<string>("");
+  const [rangeFrom, setRangeFrom] = useState<string>(() => ymdBangkok());
+  const [rangeTo, setRangeTo] = useState<string>(() => ymdBangkok());
+  const [rangeError, setRangeError] = useState<string | null>(null);
+  const [rangeLoading, setRangeLoading] = useState<boolean>(false);
+  const [rangeRoomLabel, setRangeRoomLabel] = useState<string | null>(null);
+  const [rangeItems, setRangeItems] = useState<RangeItem[]>([]);
+
+  const todayYmd = useMemo(() => ymdBangkok(), []);
 
   const load = useCallback(async () => {
     try {
       setError(null);
-      const res = await fetch("/api/rooms/today", { cache: "no-store" });
+      const qs = selectedDate ? `?date=${encodeURIComponent(selectedDate)}` : "";
+      const res = await fetch(`/api/rooms/today${qs}`, { cache: "no-store" });
       const json = (await res.json().catch(() => ({}))) as Payload;
       if (!res.ok || !json?.ok) {
         setError((json as any)?.message || "โหลดข้อมูลไม่สำเร็จ");
@@ -97,13 +83,14 @@ export default function RoomsTodayClient() {
       setError(e?.message || "ERROR");
       setLoading(false);
     }
-  }, []);
+  }, [selectedDate]);
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 10_000); // ✅ realtime แบบ polling
+    if (selectedDate !== todayYmd) return;
+    const t = setInterval(load, 10_000); // ✅ realtime แบบ polling (เฉพาะวันปัจจุบัน)
     return () => clearInterval(t);
-  }, [load]);
+  }, [load, selectedDate, todayYmd]);
 
   const rooms = useMemo(() => {
     if (!data?.rooms) return [];
@@ -115,16 +102,78 @@ export default function RoomsTodayClient() {
     });
   }, [data, q]);
 
+  function runRangeSearch() {
+    setRangeError(null);
+    if (!rangeRoomId) {
+      setRangeError("กรุณาเลือกห้อง");
+      return;
+    }
+    if (!rangeFrom || !rangeTo) {
+      setRangeError("กรุณาเลือกช่วงวันที่");
+      return;
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(rangeFrom) || !/^\d{4}-\d{2}-\d{2}$/.test(rangeTo)) {
+      setRangeError("รูปแบบวันที่ไม่ถูกต้อง");
+      return;
+    }
+    if (rangeTo < rangeFrom) {
+      setRangeError("วันที่สิ้นสุดต้องไม่ก่อนวันเริ่มต้น");
+      return;
+    }
+    setRangeLoading(true);
+    setRangeItems([]);
+    const qs = new URLSearchParams({
+      roomId: rangeRoomId,
+      from: rangeFrom,
+      to: rangeTo,
+    });
+    fetch(`/api/rooms/range?${qs.toString()}`)
+      .then((r) => r.json())
+      .then((j) => {
+        if (!j?.ok) {
+          setRangeError(j?.message || "ค้นหาไม่สำเร็จ");
+          return;
+        }
+        setRangeItems(Array.isArray(j.items) ? j.items : []);
+        const label = j?.room
+          ? `${j.room.code} • ${j.room.roomNumber} • ชั้น ${j.room.floor}`
+          : null;
+        setRangeRoomLabel(label);
+      })
+      .catch((e) => {
+        setRangeError(e?.message || "ค้นหาไม่สำเร็จ");
+      })
+      .finally(() => setRangeLoading(false));
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="ค้นหาห้อง เช่น LAB-1, 401, ชั้น 4..."
             className="max-w-xs bg-white/90"
           />
+          <Input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-[170px] bg-white/90"
+          />
+          <Button variant="outline" onClick={() => setSelectedDate(addDaysYmd(selectedDate, -1))}>
+            ก่อนหน้า
+          </Button>
+          <Button variant="secondary" onClick={() => setSelectedDate(todayYmd)}>
+            วันนี้
+          </Button>
+          <Button variant="outline" onClick={() => setSelectedDate(addDaysYmd(selectedDate, 1))}>
+            ถัดไป
+          </Button>
+          <Button variant="outline" onClick={() => setRangeOpen(true)}>
+            ค้นหาแบบช่วงวันที่
+          </Button>
           <Button variant="outline" onClick={load}>
             รีเฟรช
           </Button>
@@ -148,6 +197,16 @@ export default function RoomsTodayClient() {
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-2 text-xs text-black/70">
+        <div className="flex items-center gap-1">
+          <span className="h-3 w-3 rounded-sm bg-emerald-600/90" />
+          ตารางเรียน
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="h-3 w-3 rounded-sm bg-rose-600/90" />
+          จองนอกตาราง
+        </div>
+      </div>
       {error ? (
         <Card>
           <CardHeader>
@@ -168,56 +227,155 @@ export default function RoomsTodayClient() {
         </Card>
       ) : null}
 
-      <div className="grid gap-4">
-        {rooms.map((room) => (
-          <div key={room.id} className="rounded-2xl border border-emerald-100 bg-white/90 p-4 shadow-sm">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <div className="text-base font-semibold text-[#6ABE75]">
-                  {room.code} • {room.name} • {room.roomNumber} (ชั้น {room.floor})
-                </div>
-                <div className="text-xs text-black/60">ตารางห้องเรียนและการจองวันนี้</div>
-              </div>
-              <div className="text-xs text-black/60">slots: {room.slots.length}</div>
+      <Dialog
+        open={rangeOpen}
+        onOpenChange={(open) => {
+          setRangeOpen(open);
+          if (!open) {
+            setRangeError(null);
+            setRangeItems([]);
+            setRangeRoomLabel(null);
+          } else {
+            setRangeFrom(selectedDate || ymdBangkok());
+            setRangeTo(selectedDate || ymdBangkok());
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ค้นหาแบบช่วงวันที่</DialogTitle>
+            <DialogDescription>
+              เลือกห้องและช่วงวันที่เพื่อดูรายละเอียดการใช้งาน
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <div className="text-sm">Room</div>
+              <Select value={rangeRoomId} onValueChange={setRangeRoomId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกห้อง" />
+                </SelectTrigger>
+                <SelectContent>
+                  {data?.rooms?.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.code} • {r.roomNumber} • ชั้น {r.floor}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {room.slots.map((s) => {
-                const b = s.booking;
-                const state = getSlotState(b, now);
-                return (
-                  <div
-                    key={s.slotId}
-                    className={cn(
-                      "rounded-xl border px-3 py-2 space-y-2 transition",
-                      slotStateClass(state)
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-2 text-xs font-semibold">
-                      <span>{s.label}</span>
-                      <span>{slotStateLabel(state, b)}</span>
-                    </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1">
+                <div className="text-sm">วันที่เริ่มต้น</div>
+                <Input
+                  type="date"
+                  value={rangeFrom}
+                  onChange={(e) => setRangeFrom(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm">วันที่สิ้นสุด</div>
+                <Input
+                  type="date"
+                  value={rangeTo}
+                  onChange={(e) => setRangeTo(e.target.value)}
+                />
+              </div>
+            </div>
 
-                    {b ? (
-                      <div className="text-xs text-black/80 space-y-1">
-                        <div className="font-semibold text-black">
-                          {b.type === "IN_CLASS" ? "ตารางเรียน" : "จองนอกตาราง"} • {b.requesterLabel}
+            {rangeError ? (
+              <div className="text-sm text-destructive">{rangeError}</div>
+            ) : null}
+
+            {rangeLoading ? (
+              <div className="text-sm text-muted-foreground">กำลังค้นหา...</div>
+            ) : rangeRoomLabel ? (
+              <div className="rounded-lg border p-3 space-y-2">
+                <div className="text-sm font-medium">
+                  ผลการค้นหา: {rangeRoomLabel} ({rangeFrom} ถึง {rangeTo})
+                </div>
+                {rangeItems.length ? (
+                  <div className="space-y-2">
+                    {rangeItems.map((b) => (
+                      <div key={b.reservationId} className="rounded-md border p-2 text-sm">
+                        <div className="font-medium">
+                          {b.courseLabel ?? (b.type === "AD_HOC" ? "จองนอกตาราง" : "ตารางเรียน")}
                         </div>
-                        <div className="font-mono">
-                          {new Date(b.startAt).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })} -{" "}
-                          {new Date(b.endAt).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}
+                        <div className="text-xs text-muted-foreground">
+                          {formatDate(b.startAt)} • {formatTimeRange(b.startAt, b.endAt)}
+                        </div>
+                        <div className="text-xs">
+                          ผู้ยืม: {b.borrowerLabel ?? "-"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          ผู้จอง: {b.requesterLabel ?? "-"}
                         </div>
                       </div>
-                    ) : (
-                      <div className="text-xs text-black/70">ไม่มีการจอง</div>
-                    )}
+                    ))}
                   </div>
-                );
-              })}
-            </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">ว่าง (ไม่มีการจองในช่วงเวลานี้)</div>
+                )}
+              </div>
+            ) : null}
           </div>
-        ))}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRangeOpen(false)}>
+              ปิด
+            </Button>
+            <Button onClick={runRangeSearch}>ค้นหา</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <div className="overflow-auto rounded-lg border bg-white/90">
+        <RoomsTimelineTable rooms={rooms} />
       </div>
     </div>
   );
 }
+
+function ymdBangkok(d: Date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Bangkok",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
+function addDaysYmd(ymd: string, days: number) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return ymdBangkok();
+  const [y, m, d] = ymd.split("-").map((v) => parseInt(v, 10));
+  const date = new Date(Date.UTC(y, (m || 1) - 1, d || 1));
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function formatDate(iso: string) {
+  try {
+    return new Date(iso).toLocaleDateString("th-TH", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  } catch {
+    return iso.slice(0, 10);
+  }
+}
+
+function formatTimeRange(startIso: string, endIso: string) {
+  try {
+    const s = new Date(startIso).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+    const e = new Date(endIso).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+    return `${s} - ${e}`;
+  } catch {
+    return `${startIso} - ${endIso}`;
+  }
+}
+
+
+

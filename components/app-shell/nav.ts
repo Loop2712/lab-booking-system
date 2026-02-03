@@ -14,7 +14,7 @@ export type NavItem = {
 
 export const adminNav: NavItem[] = [
   { title: "แดชบอร์ด", href: "/admin", icon: "dashboard" },
-  { title: "ห้องที่ใช้งานวันนี้", href: "/rooms-today", icon: "calendar" },
+  { title: "ห้องที่ใช้งานวันนี้", href: "/admin/rooms-today", icon: "calendar" },
   { title: "รายการจองของฉัน", href: "/admin/reservations", icon: "calendar" },
   { title: "จองนอกตาราง", href: "/admin/reserve", icon: "calendar" },
   { title: "จัดการห้อง", href: "/admin/rooms", icon: "calendar" },
@@ -30,7 +30,7 @@ export const adminNav: NavItem[] = [
 
 export const teacherNav: NavItem[] = [
   { title: "แดชบอร์ด", href: "/teacher", icon: "dashboard" },
-  { title: "ห้องที่ใช้งานวันนี้", href: "/rooms-today", icon: "calendar" },
+  { title: "ห้องที่ใช้งานวันนี้", href: "/teacher/rooms-today", icon: "calendar" },
   { title: "รายการจองของฉัน", href: "/teacher/reservations", icon: "calendar" },
   { title: "จองนอกตาราง", href: "/teacher/reserve", icon: "calendar" },
   { title: "อนุมัติคำขอ", href: "/teacher/requests", icon: "approve" },
@@ -42,7 +42,7 @@ export const teacherNav: NavItem[] = [
 
 export const studentNav: NavItem[] = [
   { title: "แดชบอร์ด", href: "/student", icon: "dashboard" },
-  { title: "ห้องที่ใช้งานวันนี้", href: "/rooms-today", icon: "calendar" },
+  { title: "ห้องที่ใช้งานวันนี้", href: "/student/rooms-today", icon: "calendar" },
   { title: "จองห้อง", href: "/student/reserve", icon: "calendar" },
   { title: "การจองของฉัน", href: "/student/reservations", icon: "calendar" },
   { title: "รับกุญแจ / คืนกุญแจ", href: "/student/check", icon: "key" },
