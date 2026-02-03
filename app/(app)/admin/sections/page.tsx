@@ -15,6 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const DOW = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
 
@@ -34,6 +42,7 @@ export default function AdminSectionsPage() {
   const [slotId, setSlotId] = useState(TIME_SLOTS[0]?.id ?? "08:00-12:00");
   const [term, setTerm] = useState("");
   const [year, setYear] = useState<string>("");
+  const [openCreate, setOpenCreate] = useState(false);
 
   // filters
   const [q, setQ] = useState("");
@@ -125,6 +134,7 @@ export default function AdminSectionsPage() {
     const j = await r.json();
     if (!j.ok) return alert(j.message ?? "ERROR");
     await load();
+    setOpenCreate(false);
   }
 
   async function generate(sectionId: string) {
@@ -170,126 +180,136 @@ export default function AdminSectionsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Create Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>สร้าง Section</CardTitle>
-        </CardHeader>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Sections</h1>
+          <p className="text-sm text-muted-foreground">สร้างและจัดการตารางเรียน</p>
+        </div>
+        <Dialog open={openCreate} onOpenChange={setOpenCreate}>
+          <DialogTrigger asChild>
+            <Button>สร้าง Section</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>สร้าง Section</DialogTitle>
+            </DialogHeader>
 
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          {/* Course */}
-          <div className="space-y-2">
-            <div className="text-sm">Course</div>
-            <Select value={courseId} onValueChange={setCourseId}>
-              <SelectTrigger>
-                <SelectValue placeholder="เลือกวิชา" />
-              </SelectTrigger>
-              <SelectContent>
-                {courses.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {courseLabel(c)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="text-xs text-muted-foreground break-all">id: {courseId || "-"}</div>
-          </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Course */}
+              <div className="space-y-2">
+                <div className="text-sm">Course</div>
+                <Select value={courseId} onValueChange={setCourseId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกวิชา" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {courses.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {courseLabel(c)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="text-xs text-muted-foreground break-all">id: {courseId || "-"}</div>
+              </div>
 
-          {/* Teacher */}
-          <div className="space-y-2">
-            <div className="text-sm">Teacher</div>
-            <Select value={teacherId} onValueChange={setTeacherId}>
-              <SelectTrigger>
-                <SelectValue placeholder="เลือกอาจารย์" />
-              </SelectTrigger>
-              <SelectContent>
-                {teachers.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {teacherLabel(t)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="text-xs text-muted-foreground break-all">id: {teacherId || "-"}</div>
-          </div>
+              {/* Teacher */}
+              <div className="space-y-2">
+                <div className="text-sm">Teacher</div>
+                <Select value={teacherId} onValueChange={setTeacherId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกอาจารย์" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teachers.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {teacherLabel(t)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="text-xs text-muted-foreground break-all">id: {teacherId || "-"}</div>
+              </div>
 
-          {/* Room */}
-          <div className="space-y-2">
-            <div className="text-sm">Room</div>
-            <Select value={roomId} onValueChange={setRoomId}>
-              <SelectTrigger>
-                <SelectValue placeholder="เลือกห้อง" />
-              </SelectTrigger>
-              <SelectContent>
-                {rooms.map((r) => (
-                  <SelectItem key={r.id} value={r.id}>
-                    {roomLabel(r)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="text-xs text-muted-foreground break-all">id: {roomId || "-"}</div>
-          </div>
+              {/* Room */}
+              <div className="space-y-2">
+                <div className="text-sm">Room</div>
+                <Select value={roomId} onValueChange={setRoomId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกห้อง" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {rooms.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {roomLabel(r)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="text-xs text-muted-foreground break-all">id: {roomId || "-"}</div>
+              </div>
 
-          {/* Day */}
-          <div className="space-y-2">
-            <div className="text-sm">Day of week</div>
-            <Select value={dayOfWeek} onValueChange={(v) => setDayOfWeek(v as any)}>
-              <SelectTrigger>
-                <SelectValue placeholder="เลือกวัน" />
-              </SelectTrigger>
-              <SelectContent>
-                {DOW.map((d) => (
-                  <SelectItem key={d} value={d}>
-                    {d}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              {/* Day */}
+              <div className="space-y-2">
+                <div className="text-sm">Day of week</div>
+                <Select value={dayOfWeek} onValueChange={(v) => setDayOfWeek(v as any)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกวัน" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DOW.map((d) => (
+                      <SelectItem key={d} value={d}>
+                        {d}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* Time Slot */}
-          <div className="space-y-2">
-            <div className="text-sm">Time slot (4 hours)</div>
-            <Select value={slotId} onValueChange={setSlotId}>
-              <SelectTrigger>
-                <SelectValue placeholder="เลือกช่วงเวลา" />
-              </SelectTrigger>
-              <SelectContent>
-                {TIME_SLOTS.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              {/* Time Slot */}
+              <div className="space-y-2">
+                <div className="text-sm">Time slot (4 hours)</div>
+                <Select value={slotId} onValueChange={setSlotId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกช่วงเวลา" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIME_SLOTS.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* Term / Year */}
-          <div className="space-y-2">
-            <div className="text-sm">Term</div>
-            <Input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="เช่น 1 / 2 / SUMMER" />
-          </div>
+              {/* Term / Year */}
+              <div className="space-y-2">
+                <div className="text-sm">Term</div>
+                <Input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="เช่น 1 / 2 / SUMMER" />
+              </div>
 
-          <div className="space-y-2">
-            <div className="text-sm">Year</div>
-            <Input value={year} onChange={(e) => setYear(e.target.value)} placeholder="เช่น 2025" inputMode="numeric" />
-          </div>
+              <div className="space-y-2">
+                <div className="text-sm">Year</div>
+                <Input value={year} onChange={(e) => setYear(e.target.value)} placeholder="เช่น 2025" inputMode="numeric" />
+              </div>
+            </div>
 
-          <div className="md:col-span-2 flex gap-2">
-            <Button onClick={create} disabled={!canCreate}>
-              Create Section
-            </Button>
-            <Button variant="secondary" onClick={load}>
-              Refresh
-            </Button>
-          </div>
+            <div className="text-sm text-muted-foreground">
+              หมายเหตุ: หากตัวเลือกว่าง ให้ไปเพิ่มข้อมูลที่ /admin/courses, /admin/rooms และ /admin/users ก่อน
+            </div>
 
-          <div className="md:col-span-2 text-sm text-muted-foreground">
-            หมายเหตุ: หากตัวเลือกว่าง ให้ไปเพิ่มข้อมูลที่ /admin/courses, /admin/rooms และ /admin/users ก่อน
-          </div>
-        </CardContent>
-      </Card>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpenCreate(false)}>
+                ยกเลิก
+              </Button>
+              <Button onClick={create} disabled={!canCreate}>
+                สร้าง Section
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
 
       {/* Range */}
       <Card>

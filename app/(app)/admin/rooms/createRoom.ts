@@ -34,9 +34,10 @@ export async function createRoom({ form, setBusy, setError, resetForm, refresh }
 
   if (!res.ok || !json?.ok) {
     setError(json?.message || "เพิ่มห้องไม่สำเร็จ");
-    return;
+    return false;
   }
 
   resetForm();
   await refresh();
+  return true;
 }

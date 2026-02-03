@@ -90,7 +90,7 @@ export default function Topbar({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
-            <Link href="/settings/password">Change password</Link>
+            <Link href="/settings">Change password</Link>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => signOut({ callbackUrl: "/login" })}

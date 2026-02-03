@@ -13,12 +13,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function AdminKeysPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [keys, setKeys] = useState<KeyRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [openCreate, setOpenCreate] = useState(false);
 
   const [form, setForm] = useState<{
     keyCode: string;
@@ -67,11 +83,11 @@ export default function AdminKeysPage() {
     const trimmedKeyCode = form.keyCode.trim();
     if (!trimmedKeyCode) {
       setError("กรุณากรอกรหัสกุญแจ (Key Code)");
-      return;
+      return false;
     }
     if (!form.roomId) {
       setError("กรุณาเลือกห้องก่อน");
-      return;
+      return false;
     }
 
     setBusy(true);
@@ -85,11 +101,12 @@ export default function AdminKeysPage() {
 
     if (!res.ok || !json?.ok) {
       setError(json?.message || "เพิ่มกุญแจไม่สำเร็จ");
-      return;
+      return false;
     }
 
     setForm({ keyCode: "", roomId: "", status: "AVAILABLE" });
     await loadKeys();
+    return true;
   }
 
   async function updateKeyStatus(keyId: string, status: KeyStatus) {
@@ -114,11 +131,90 @@ export default function AdminKeysPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Key</h1>
-        <p className="text-sm text-muted-foreground">
-          ManageKey (1 Room = 1 Key)
-        </p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Key</h1>
+          <p className="text-sm text-muted-foreground">
+            ManageKey (1 Room = 1 Key)
+          </p>
+        </div>
+        <Dialog open={openCreate} onOpenChange={setOpenCreate}>
+          <DialogTrigger asChild>
+            <Button>เพิ่มกุญแจ</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>เพิ่มกุญแจ</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input
+                placeholder="Key Code (unique) เช่น LAB-A-KEY-1"
+                value={form.keyCode}
+                onChange={(e) =>
+                  setForm((s) => ({ ...s, keyCode: e.target.value }))
+                }
+                disabled={busy}
+              />
+
+              <Select
+                value={form.status}
+                onValueChange={(v) =>
+                  setForm((s) => ({ ...s, status: v as KeyStatus }))
+                }
+                disabled={busy}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="สถานะ" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="AVAILABLE">AVAILABLE</SelectItem>
+                  <SelectItem value="BORROWED">BORROWED</SelectItem>
+                  <SelectItem value="LOST">LOST</SelectItem>
+                  <SelectItem value="DAMAGED">DAMAGED</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={form.roomId}
+                onValueChange={(v) =>
+                  setForm((s) => ({ ...s, roomId: v }))
+                }
+                disabled={busy}
+              >
+                <SelectTrigger className="sm:col-span-2">
+                  <SelectValue placeholder="เลือกห้อง (Room)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roomOptions.length === 0 ? (
+                    <SelectItem value="__empty__" disabled>
+                      ยังไม่มีห้องให้เลือก
+                    </SelectItem>
+                  ) : null}
+                  {roomOptions.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.code} — {r.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpenCreate(false)} disabled={busy}>
+                ยกเลิก
+              </Button>
+              <Button
+                onClick={async () => {
+                  const ok = await createKey();
+                  if (ok) setOpenCreate(false);
+                }}
+                disabled={busy}
+              >
+                {busy ? "กำลังบันทึก..." : "บันทึก"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {error && (
@@ -128,69 +224,11 @@ export default function AdminKeysPage() {
       )}
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">AddKey</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2">
-          <Input
-            placeholder="Key Code (unique) เช่น LAB-A-KEY-1"
-            value={form.keyCode}
-            onChange={(e) =>
-              setForm((s) => ({ ...s, keyCode: e.target.value }))
-            }
-            disabled={busy}
-          />
-
-          <select
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-            value={form.status}
-            onChange={(e) =>
-              setForm((s) => ({ ...s, status: e.target.value as KeyStatus }))
-            }
-            disabled={busy}
-          >
-            <option value="AVAILABLE">AVAILABLE</option>
-            <option value="BORROWED">BORROWED</option>
-            <option value="LOST">LOST</option>
-            <option value="DAMAGED">DAMAGED</option>
-          </select>
-
-          {/* ✅ เพิ่มเลือกห้อง เพื่อให้ roomId ไม่ว่าง */}
-          <select
-            className="sm:col-span-2 w-full rounded-md border bg-background px-3 py-2 text-sm"
-            value={form.roomId}
-            onChange={(e) => setForm((s) => ({ ...s, roomId: e.target.value }))}
-            disabled={busy}
-          >
-            <option value="">
-              {roomOptions.length ? "เลือกห้อง (Room)" : "ยังไม่มีห้องให้เลือก"}
-            </option>
-            {roomOptions.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.code} — {r.name}
-              </option>
-            ))}
-          </select>
-
-          <div className="sm:col-span-2">
-            <Button onClick={createKey} disabled={busy}>
-              {busy ? "กำลังบันทึก..." : "เพิ่มกุญแจ"}
-            </Button>
-            <Button
-              variant="outline"
-              className="ml-2"
-              onClick={loadKeys}
-              disabled={busy}
-            >
-              รีเฟรช
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">ListKey</CardTitle>
+          <Button variant="outline" onClick={loadKeys} disabled={busy}>
+            รีเฟรช
+          </Button>
         </CardHeader>
         <CardContent>
           <Table>
@@ -221,19 +259,21 @@ export default function AdminKeysPage() {
                   <TableCell>{k.status}</TableCell>
 
                   <TableCell className="text-right">
-                    <select
-                      className="rounded-md border bg-background px-2 py-1 text-sm"
+                    <Select
                       value={k.status}
-                      onChange={(e) =>
-                        updateKeyStatus(k.id, e.target.value as KeyStatus)
-                      }
+                      onValueChange={(v) => updateKeyStatus(k.id, v as KeyStatus)}
                       disabled={busy}
                     >
-                      <option value="AVAILABLE">AVAILABLE</option>
-                      <option value="BORROWED">BORROWED</option>
-                      <option value="LOST">LOST</option>
-                      <option value="DAMAGED">DAMAGED</option>
-                    </select>
+                      <SelectTrigger className="h-8 w-36 ml-auto">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AVAILABLE">AVAILABLE</SelectItem>
+                        <SelectItem value="BORROWED">BORROWED</SelectItem>
+                        <SelectItem value="LOST">LOST</SelectItem>
+                        <SelectItem value="DAMAGED">DAMAGED</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                 </TableRow>
               ))}

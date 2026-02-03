@@ -23,7 +23,7 @@ export const adminNav: NavItem[] = [
   { title: "จัดการรายวิชา", href: "/admin/courses", icon: "key" },
   { title: "จัดการกลุ่มเรียน", href: "/admin/sections", icon: "key" },
 
-  { title: "ตั้งค่า", href: "/settings/password", icon: "settings" },
+  { title: "ตั้งค่า", href: "/settings", icon: "settings" },
 ];
 
 export const teacherNav: NavItem[] = [
@@ -35,7 +35,7 @@ export const teacherNav: NavItem[] = [
   { title: "ตารางสอน", href: "/teacher/schedule", icon: "calendar" },
   { title: "รับกุญแจ / คืนกุญแจ", href: "/teacher/check", icon: "key" },
 
-  { title: "ตั้งค่า", href: "/settings/password", icon: "settings" },
+  { title: "ตั้งค่า", href: "/settings", icon: "settings" },
 ];
 
 export const studentNav: NavItem[] = [
@@ -46,5 +46,5 @@ export const studentNav: NavItem[] = [
   { title: "รับกุญแจ / คืนกุญแจ", href: "/student/check", icon: "key" },
   { title: "รายวิชาของฉัน", href: "/student/courses", icon: "key" },
 
-  { title: "ตั้งค่า", href: "/settings/password", icon: "settings" },
+  { title: "ตั้งค่า", href: "/settings", icon: "settings" },
 ];

@@ -5,11 +5,20 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function AdminCoursesPage() {
   const [items, setItems] = useState<Course[]>([]);
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
+  const [openCreate, setOpenCreate] = useState(false);
 
   async function load() {
     const r = await fetch("/api/admin/courses");
@@ -32,6 +41,7 @@ export default function AdminCoursesPage() {
     setCode("");
     setName("");
     load();
+    setOpenCreate(false);
   }
 
   async function del(id: string) {
@@ -43,20 +53,36 @@ export default function AdminCoursesPage() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Courses</CardTitle>
-        </CardHeader>
-        <CardContent className="flex gap-2">
-          <Input placeholder="Code (เช่น SCS409)" value={code} onChange={(e) => setCode(e.target.value)} />
-          <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-          <Button onClick={create}>Add</Button>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Courses</h1>
+          <p className="text-sm text-muted-foreground">จัดการรายวิชา</p>
+        </div>
+        <Dialog open={openCreate} onOpenChange={setOpenCreate}>
+          <DialogTrigger asChild>
+            <Button>เพิ่มรายวิชา</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>เพิ่มรายวิชา</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-3">
+              <Input placeholder="Code (เช่น SCS409)" value={code} onChange={(e) => setCode(e.target.value)} />
+              <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpenCreate(false)}>
+                ยกเลิก
+              </Button>
+              <Button onClick={create}>บันทึก</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>List</CardTitle>
+          <CardTitle>รายการรายวิชา</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           {items.map((c) => (

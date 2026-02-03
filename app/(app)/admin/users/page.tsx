@@ -10,6 +10,14 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import Link from "next/link";
 
 
@@ -20,7 +28,7 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-    // CSV import
+  // CSV import
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [importBusy, setImportBusy] = useState(false);
   const [importMsg, setImportMsg] = useState<string | null>(null);
@@ -72,8 +80,8 @@ export default function AdminUsersPage() {
     }
   }
 
-
   // Create form
+  const [openCreate, setOpenCreate] = useState(false);
   const [role, setRole] = useState<Role>("STUDENT");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -112,31 +120,31 @@ export default function AdminUsersPage() {
 
     if (!firstName.trim() || !lastName.trim()) {
       setError("กรุณากรอกชื่อ-นามสกุล");
-      return;
+      return false;
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
       setError("กรุณากรอกวันเกิดรูปแบบ YYYY-MM-DD");
-      return;
+      return false;
     }
 
     // role-based validation
     if (role === "STUDENT") {
       if (!/^\d{11}$/.test(studentId.trim())) {
         setError("STUDENT ต้องมี studentId 11 หลัก");
-        return;
+        return false;
       }
       if (email.trim()) {
         setError("STUDENT ไม่ต้องกรอก email");
-        return;
+        return false;
       }
     } else {
       if (!email.trim()) {
         setError("TEACHER/ADMIN ต้องมี email");
-        return;
+        return false;
       }
       if (studentId.trim()) {
         setError("TEACHER/ADMIN ไม่ต้องมี studentId");
-        return;
+        return false;
       }
     }
 
@@ -161,7 +169,7 @@ export default function AdminUsersPage() {
 
     if (!res.ok || !json?.ok) {
       setError(json?.detail || json?.message || "สร้าง user ไม่สำเร็จ");
-      return;
+      return false;
     }
 
     // reset form
@@ -175,6 +183,7 @@ export default function AdminUsersPage() {
     setStudentType("");
 
     await load();
+    return true;
   }
 
   async function deactivateUser(id: string) {
@@ -212,9 +221,94 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">User</h1>
-        <p className="text-sm text-muted-foreground">ManageUser (Admin)</p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">User</h1>
+          <p className="text-sm text-muted-foreground">ManageUser (Admin)</p>
+        </div>
+        <Dialog open={openCreate} onOpenChange={setOpenCreate}>
+          <DialogTrigger asChild>
+            <Button>สร้างผู้ใช้</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>สร้างผู้ใช้</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Select value={role} onValueChange={(v) => setRole(v as Role)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="STUDENT">STUDENT</SelectItem>
+                  <SelectItem value="TEACHER">TEACHER</SelectItem>
+                  <SelectItem value="ADMIN">ADMIN</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Input
+                placeholder="วันเกิด (YYYY-MM-DD)"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+              />
+
+              <Input placeholder="ชื่อ" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+              <Input placeholder="นามสกุล" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+
+              {role === "STUDENT" ? (
+                <Input
+                  placeholder="รหัสนักศึกษา 11 หลัก"
+                  value={studentId}
+                  onChange={(e) => setStudentId(e.target.value)}
+                />
+              ) : (
+                <Input
+                  placeholder="Email (Teacher/Admin)"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              )}
+
+              <Input placeholder="สาขา (optional)" value={major} onChange={(e) => setMajor(e.target.value)} />
+
+              <Select value={gender} onValueChange={(v) => setGender(v as any)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เพศ (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MALE">MALE</SelectItem>
+                  <SelectItem value="FEMALE">FEMALE</SelectItem>
+                  <SelectItem value="OTHER">OTHER</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={studentType} onValueChange={(v) => setStudentType(v as any)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="ประเภทนักศึกษา (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="REGULAR">REGULAR</SelectItem>
+                  <SelectItem value="SPECIAL">SPECIAL</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpenCreate(false)} disabled={busy}>
+                ยกเลิก
+              </Button>
+              <Button
+                onClick={async () => {
+                  const ok = await createUser();
+                  if (ok) setOpenCreate(false);
+                }}
+                disabled={busy}
+              >
+                {busy ? "กำลังสร้าง..." : "สร้างผู้ใช้"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {error && (
@@ -254,66 +348,7 @@ export default function AdminUsersPage() {
         </CardContent>
       </Card>
 
-      {/* Create */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">User</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2">
-          <Select value={role} onValueChange={(v) => setRole(v as Role)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="STUDENT">STUDENT</SelectItem>
-              <SelectItem value="TEACHER">TEACHER</SelectItem>
-              <SelectItem value="ADMIN">ADMIN</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Input placeholder="วันเกิด (YYYY-MM-DD)" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
-
-          <Input placeholder="ชื่อ" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-          <Input placeholder="นามสกุล" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-
-          {role === "STUDENT" ? (
-            <Input placeholder="รหัสนักศึกษา 11 หลัก" value={studentId} onChange={(e) => setStudentId(e.target.value)} />
-          ) : (
-            <Input placeholder="Email (Teacher/Admin)" value={email} onChange={(e) => setEmail(e.target.value)} />
-          )}
-
-          <Input placeholder="สาขา (optional)" value={major} onChange={(e) => setMajor(e.target.value)} />
-
-          <Select value={gender} onValueChange={(v) => setGender(v as any)}>
-            <SelectTrigger>
-              <SelectValue placeholder="เพศ (optional)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="MALE">MALE</SelectItem>
-              <SelectItem value="FEMALE">FEMALE</SelectItem>
-              <SelectItem value="OTHER">OTHER</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={studentType} onValueChange={(v) => setStudentType(v as any)}>
-            <SelectTrigger>
-              <SelectValue placeholder="ประเภทนักศึกษา (optional)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="REGULAR">REGULAR</SelectItem>
-              <SelectItem value="SPECIAL">SPECIAL</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <div className="sm:col-span-2">
-            <Button onClick={createUser} disabled={busy}>
-              {busy ? "กำลังสร้าง..." : "สร้างผู้ใช้"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-            <Card className="mb-6">
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle>Import Student (CSV)</CardTitle>
         </CardHeader>

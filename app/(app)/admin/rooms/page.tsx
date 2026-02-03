@@ -6,6 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 import type { Room } from "./types";
 import { loadRooms } from "./loadRooms";
@@ -16,6 +24,7 @@ export default function AdminRoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [openCreate, setOpenCreate] = useState(false);
 
   const [form, setForm] = useState({
     roomNumber: "",
@@ -36,9 +45,75 @@ export default function AdminRoomsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">ห้อง</h1>
-        <p className="text-sm text-muted-foreground">จัดการห้อง (เพิ่ม/ปิดใช้งาน)</p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">ห้อง</h1>
+          <p className="text-sm text-muted-foreground">จัดการห้อง (เพิ่ม/ปิดใช้งาน)</p>
+        </div>
+        <Dialog open={openCreate} onOpenChange={setOpenCreate}>
+          <DialogTrigger asChild>
+            <Button>เพิ่มห้อง</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>เพิ่มห้อง</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input
+                placeholder="Room Number เช่น 401"
+                value={form.roomNumber}
+                onChange={(e) => setForm((s) => ({ ...s, roomNumber: e.target.value }))}
+              />
+              <Input
+                placeholder="Floor"
+                value={form.floor}
+                onChange={(e) => setForm((s) => ({ ...s, floor: e.target.value }))}
+              />
+              <Input
+                placeholder="Computer Count"
+                value={form.computerCount}
+                onChange={(e) => setForm((s) => ({ ...s, computerCount: e.target.value }))}
+              />
+              <Input
+                placeholder="Code (unique) เช่น LAB-A"
+                value={form.code}
+                onChange={(e) => setForm((s) => ({ ...s, code: e.target.value }))}
+              />
+              <Input
+                placeholder="Name เช่น ห้องปฏิบัติการ A"
+                value={form.name}
+                onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
+              />
+
+              <div className="flex items-center gap-3 sm:col-span-2">
+                <Switch checked={form.isActive} onCheckedChange={(v) => setForm((s) => ({ ...s, isActive: v }))} />
+                <span className="text-sm">เปิดใช้งาน</span>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpenCreate(false)} disabled={busy}>
+                ยกเลิก
+              </Button>
+              <Button
+                onClick={async () => {
+                  const ok = await createRoom({
+                    form,
+                    setBusy,
+                    setError,
+                    resetForm: () =>
+                      setForm({ roomNumber: "", floor: "1", computerCount: "0", code: "", name: "", isActive: true }),
+                    refresh: load,
+                  });
+                  if (ok) setOpenCreate(false);
+                }}
+                disabled={busy}
+              >
+                {busy ? "กำลังบันทึก..." : "บันทึก"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {error && (
@@ -48,52 +123,11 @@ export default function AdminRoomsPage() {
       )}
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">เพิ่มห้อง</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2">
-          <Input placeholder="Room Number เช่น 401" value={form.roomNumber}
-            onChange={(e) => setForm((s) => ({ ...s, roomNumber: e.target.value }))} />
-          <Input placeholder="Floor" value={form.floor}
-            onChange={(e) => setForm((s) => ({ ...s, floor: e.target.value }))} />
-          <Input placeholder="Computer Count" value={form.computerCount}
-            onChange={(e) => setForm((s) => ({ ...s, computerCount: e.target.value }))} />
-          <Input placeholder="Code (unique) เช่น LAB-A" value={form.code}
-            onChange={(e) => setForm((s) => ({ ...s, code: e.target.value }))} />
-          <Input placeholder="Name เช่น ห้องปฏิบัติการ A" value={form.name}
-            onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))} />
-
-          <div className="flex items-center gap-3">
-            <Switch checked={form.isActive} onCheckedChange={(v) => setForm((s) => ({ ...s, isActive: v }))} />
-            <span className="text-sm">เปิดใช้งาน</span>
-          </div>
-
-          <div className="sm:col-span-2">
-            <Button
-              onClick={() =>
-                createRoom({
-                  form,
-                  setBusy,
-                  setError,
-                  resetForm: () =>
-                    setForm({ roomNumber: "", floor: "1", computerCount: "0", code: "", name: "", isActive: true }),
-                  refresh: load,
-                })
-              }
-              disabled={busy}
-            >
-              {busy ? "กำลังบันทึก..." : "เพิ่มห้อง"}
-            </Button>
-            <Button variant="outline" className="ml-2" onClick={load} disabled={busy}>
-              รีเฟรช
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">รายการห้อง</CardTitle>
+          <Button variant="outline" onClick={load} disabled={busy}>
+            รีเฟรช
+          </Button>
         </CardHeader>
         <CardContent>
           <Table>
