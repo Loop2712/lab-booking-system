@@ -60,24 +60,28 @@ export default function AdminMetricCards({ metrics }: { metrics: AdminDashboardM
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((item) => (
-        <Card key={item.title} className="@container/card">
-          <CardHeader>
-            <CardDescription>{item.title}</CardDescription>
-            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-              {item.value}
-            </CardTitle>
-            <CardAction>
-              <Badge variant="outline" className="gap-1">
-                {item.icon}
-                {item.badge}
-              </Badge>
-            </CardAction>
-            <div className="text-xs text-muted-foreground">{item.description}</div>
-          </CardHeader>
-        </Card>
-      ))}
+    <div className="overflow-x-auto">
+      <div className="grid min-w-[960px] grid-cols-6 gap-2">
+        {items.map((item) => (
+          <Card key={item.title} className="@container/card">
+            <CardHeader className="gap-1 p-3">
+              <CardDescription className="text-[11px]">{item.title}</CardDescription>
+              <CardTitle className="text-lg font-semibold tabular-nums @[250px]/card:text-xl">
+                {item.value}
+              </CardTitle>
+              <CardAction>
+                <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0.5">
+                  {item.icon}
+                  {item.badge}
+                </Badge>
+              </CardAction>
+              <div className="text-[10px] text-muted-foreground line-clamp-2">
+                {item.description}
+              </div>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

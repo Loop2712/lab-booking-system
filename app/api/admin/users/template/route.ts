@@ -10,11 +10,6 @@ const HEADERS = [
   "studentId",
   "firstName",
   "lastName",
-  "birthDate",
-  "gender",
-  "major",
-  "studentType",
-  "isActive",
 ];
 
 const SAMPLE_ROWS = [
@@ -22,21 +17,11 @@ const SAMPLE_ROWS = [
     studentId: "66010000001",
     firstName: "สมชาย",
     lastName: "ใจดี",
-    birthDate: "2007-05-14",
-    gender: "MALE",
-    major: "CS",
-    studentType: "REGULAR",
-    isActive: "1",
   },
   {
     studentId: "66010000002",
     firstName: "สมหญิง",
     lastName: "ตั้งใจ",
-    birthDate: "20061201",
-    gender: "FEMALE",
-    major: "IT",
-    studentType: "SPECIAL",
-    isActive: "1",
   },
 ];
 
@@ -66,11 +51,6 @@ function makeXlsxBuffer() {
     { wch: 12 }, // studentId
     { wch: 14 }, // firstName
     { wch: 14 }, // lastName
-    { wch: 12 }, // birthDate
-    { wch: 10 }, // gender
-    { wch: 10 }, // major
-    { wch: 12 }, // studentType
-    { wch: 8 },  // isActive
   ];
 
   const wb = XLSX.utils.book_new();

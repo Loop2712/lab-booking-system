@@ -5,6 +5,8 @@ type Payload = {
   exp: number; // epoch seconds
 };
 
+export const QR_TOKEN_TTL_SECONDS = 60 * 3;
+
 function b64url(input: Buffer | string) {
   const buf = Buffer.isBuffer(input) ? input : Buffer.from(input);
   return buf
@@ -28,7 +30,7 @@ function sign(payloadB64: string, secret: string) {
   return b64url(h.digest());
 }
 
-export function makeUserQrToken(uid: string, ttlSeconds = 60 * 60 * 24 * 30) {
+export function makeUserQrToken(uid: string, ttlSeconds = QR_TOKEN_TTL_SECONDS) {
   const secret = process.env.QR_TOKEN_SECRET;
   if (!secret) throw new Error("QR_TOKEN_SECRET is missing");
 

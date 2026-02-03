@@ -1,16 +1,11 @@
 import Link from "next/link";
-import { ChartAreaInteractive } from "@/components/chart-area-interactive";
-import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import AdminMetricCards from "./_components/admin-metric-cards";
+import AdminRoomsStatusTable from "./_components/admin-rooms-status-table";
 import { getAdminDashboardMetrics } from "./_data/dashboard-metrics";
-import { getAdminDashboardTableRows } from "./_data/dashboard-table";
 
 export default async function AdminDashboard() {
-  const [metrics, tableRows] = await Promise.all([
-    getAdminDashboardMetrics(),
-    getAdminDashboardTableRows(),
-  ]);
+  const metrics = await getAdminDashboardMetrics();
 
   return (
     <div className="flex flex-col gap-6">
@@ -25,8 +20,7 @@ export default async function AdminDashboard() {
         <AdminMetricCards metrics={metrics} />
 
         <div className="flex flex-col gap-4">
-          <ChartAreaInteractive />
-          <DataTable data={tableRows} />
+          <AdminRoomsStatusTable />
         </div>
       </div>
 

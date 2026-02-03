@@ -9,6 +9,9 @@ import * as XLSX from "xlsx";
 
 export const runtime = "nodejs";
 
+const DEFAULT_BIRTHDATE_TEXT = "2000-01-01";
+const DEFAULT_BIRTHDATE_UTC = new Date(Date.UTC(2000, 0, 1));
+
 // -------------------- utils --------------------
 function normalizeKey(k: string) {
   return String(k ?? "").trim().toLowerCase();
@@ -92,8 +95,7 @@ const rowSchema = z.object({
 
   birthDate: z
     .string()
-    .transform(v => v.trim())
-    .refine(v => v.length > 0, "birthDate ห้ามว่าง"),
+    .transform(v => v.trim()),
 
   gender: z
     .string()
@@ -194,12 +196,12 @@ export async function POST(req: Request) {
     }
 
     // map keys (case-insensitive)
-    const required = ["studentid", "firstname", "lastname", "birthdate"];
+    const required = ["studentid", "firstname", "lastname"];
     const firstRowKeys = Object.keys(rows[0] ?? {}).map(normalizeKey);
     const missing = required.filter((k) => !firstRowKeys.includes(k));
     if (missing.length) {
       return NextResponse.json(
-        { ok: false, message: `ขาดคอลัมน์: ${missing.join(", ")} (ต้องมี studentId, firstName, lastName, birthDate)` },
+        { ok: false, message: `ขาดคอลัมน์: ${missing.join(", ")} (ต้องมี studentId, firstName, lastName)` },
         { status: 400 }
       );
     }
@@ -236,23 +238,35 @@ export async function POST(req: Request) {
         continue;
       }
 
-      // parse birthDate (string formats)
-      let birthDateUtc = toUtcDateFromBirthDate(vr.data.birthDate);
+      const birthDateText = vr.data.birthDate;
+      const hasBirthDate = birthDateText.length > 0;
+      let birthDateUtc: Date | null = null;
 
-      // if XLSX: allow Excel serial date
-      if (!birthDateUtc && meta.kind === "xlsx") {
-        const asNum = Number(vr.data.birthDate);
-        if (!Number.isNaN(asNum) && asNum > 1000) {
-          birthDateUtc = excelSerialToUtcDate(asNum);
+      if (hasBirthDate) {
+        // parse birthDate (string formats)
+        birthDateUtc = toUtcDateFromBirthDate(birthDateText);
+
+        // if XLSX: allow Excel serial date
+        if (!birthDateUtc && meta.kind === "xlsx") {
+          const asNum = Number(birthDateText);
+          if (!Number.isNaN(asNum) && asNum > 1000) {
+            birthDateUtc = excelSerialToUtcDate(asNum);
+          }
         }
+
+        if (!birthDateUtc) {
+          errors.push({ line: i + 2, message: "birthDate ต้องเป็น YYYY-MM-DD หรือ YYYYMMDD (หรือเลือกเป็น Date ใน Excel ได้)" });
+          continue;
+        }
+      } else {
+        birthDateUtc = DEFAULT_BIRTHDATE_UTC;
       }
 
-      if (!birthDateUtc) {
-        errors.push({ line: i + 2, message: "birthDate ต้องเป็น YYYY-MM-DD หรือ YYYYMMDD (หรือเลือกเป็น Date ใน Excel ได้)" });
-        continue;
-      }
-
-      parsed.push({ ...vr.data, birthDateUtc });
+      parsed.push({
+        ...vr.data,
+        birthDate: hasBirthDate ? birthDateText : DEFAULT_BIRTHDATE_TEXT,
+        birthDateUtc,
+      });
     }
 
     // duplicate studentId in file

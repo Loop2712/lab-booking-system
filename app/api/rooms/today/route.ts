@@ -43,6 +43,16 @@ export async function GET() {
         requester: {
           select: { firstName: true, lastName: true, role: true },
         },
+        section: {
+          select: {
+            course: { select: { code: true, name: true } },
+          },
+        },
+        loan: {
+          select: {
+            borrower: { select: { firstName: true, lastName: true } },
+          },
+        },
       },
     });
 
@@ -57,6 +67,12 @@ export async function GET() {
         status: r.status,
         // ✅ ถ้าไม่ได้ login ให้ซ่อนข้อมูลผู้จอง
         requesterLabel: isAuthed ? `${r.requester.firstName} ${r.requester.lastName} (${r.requester.role})` : null,
+        borrowerLabel: isAuthed && r.loan?.borrower
+          ? `${r.loan.borrower.firstName} ${r.loan.borrower.lastName}`
+          : null,
+        courseLabel: isAuthed && r.section?.course
+          ? `${r.section.course.code} ${r.section.course.name}`
+          : null,
         startAt: r.startAt,
         endAt: r.endAt,
       };

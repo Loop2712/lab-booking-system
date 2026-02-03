@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+
+const REFRESH_MS = 3 * 60 * 1000;
 
 function makeQrUrl(token: string) {
   // ใช้บริการสร้าง QR ภายนอก (ง่ายสุด ไม่ต้องลง lib เพิ่ม)
@@ -16,7 +18,7 @@ export default function MyQrToken() {
 
   const qrUrl = useMemo(() => (token ? makeQrUrl(token) : ""), [token]);
 
-  async function load() {
+  const load = useCallback(async () => {
     setError(null);
     const res = await fetch("/api/qr/me", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
@@ -26,7 +28,7 @@ export default function MyQrToken() {
       return;
     }
     setToken(String(json.token || ""));
-  }
+  }, []);
 
   async function copy() {
     try {
@@ -38,7 +40,9 @@ export default function MyQrToken() {
 
   useEffect(() => {
     load();
-  }, []);
+    const timer = setInterval(load, REFRESH_MS);
+    return () => clearInterval(timer);
+  }, [load]);
 
   return (
     <div className="space-y-3">

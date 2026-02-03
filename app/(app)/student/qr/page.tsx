@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+
+const REFRESH_MS = 3 * 60 * 1000;
 
 export default function StudentQrPage() {
   const [token, setToken] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     setError(null);
     const res = await fetch("/api/qr/me", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
@@ -16,11 +18,13 @@ export default function StudentQrPage() {
       return;
     }
     setToken(json.token);
-  }
+  }, []);
 
   useEffect(() => {
     load();
-  }, []);
+    const timer = setInterval(load, REFRESH_MS);
+    return () => clearInterval(timer);
+  }, [load]);
 
   async function copy() {
     await navigator.clipboard.writeText(token);

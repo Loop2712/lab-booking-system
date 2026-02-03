@@ -350,17 +350,17 @@ export default function AdminUsersPage() {
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Import Student (CSV)</CardTitle>
+          <CardTitle>Import Student (XLSX/CSV)</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="text-sm text-muted-foreground">
-            รูปแบบไฟล์ CSV: <span className="font-mono">studentId, firstName, lastName, birthDate</span>
-            {" "} (birthDate รองรับ <span className="font-mono">YYYY-MM-DD</span> หรือ <span className="font-mono">YYYYMMDD</span> | รหัสผ่านเริ่มต้นนักศึกษา = <span className="font-mono">studentId</span>)
+            รูปแบบไฟล์: <span className="font-mono">studentId, firstName, lastName</span>
+            {" "} (ถ้าไม่ระบุ birthDate ระบบจะตั้งเป็น <span className="font-mono">2000-01-01</span> | รหัสผ่านเริ่มต้นนักศึกษา = <span className="font-mono">studentId</span>)
           </div>
 
           <Input
             type="file"
-            accept=".csv,text/csv"
+            accept=".xlsx,.xls,.csv,text/csv"
             onChange={(e) => {
               const f = e.target.files?.[0] ?? null;
               setCsvFile(f);
