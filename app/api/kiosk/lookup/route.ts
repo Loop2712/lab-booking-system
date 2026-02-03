@@ -50,34 +50,64 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "ROOM_NOT_FOUND" }, { status: 404 });
   }
 
-  // เลือก reservation ที่ “ตรงห้อง+วันนี้+ผู้ใช้” ให้เหมาะกับ mode
-  // CHECKIN: หา APPROVED (ยังไม่ checked_in)
-  // RETURN: หา CHECKED_IN
-  const wantedStatus = body.data.mode === "CHECKIN" ? "APPROVED" : "CHECKED_IN";
+  let reservations: Array<{
+    id: string;
+    type: string;
+    status: string;
+    slot: string;
+    startAt: Date;
+    endAt: Date;
+    requesterId: string;
+  }> = [];
 
-  // เงื่อนไขผู้ใช้เป็นเจ้าของ: requesterId หรือเป็น participant
-  const reservations = await prisma.reservation.findMany({
-    where: {
-      roomId: room.id,
-      startAt: { lt: dayEnd },
-      endAt: { gt: dayStart },
-      status: wantedStatus as any,
-      OR: [
-        { requesterId: user.id },
-        { participants: { some: { userId: user.id } } },
-      ],
-    },
-    orderBy: { startAt: "asc" },
-    select: {
-      id: true,
-      type: true,
-      status: true,
-      slot: true,
-      startAt: true,
-      endAt: true,
-      requesterId: true,
-    },
-  });
+  if (body.data.mode === "CHECKIN") {
+    reservations = await prisma.reservation.findMany({
+      where: {
+        roomId: room.id,
+        startAt: { lt: dayEnd },
+        endAt: { gt: dayStart },
+        status: "APPROVED",
+        OR: [
+          { requesterId: user.id },
+          { participants: { some: { userId: user.id } } },
+          { type: "IN_CLASS", section: { enrollments: { some: { studentId: user.id } } } },
+          { type: "IN_CLASS", section: { enrollments: { none: {} } } },
+        ],
+      },
+      orderBy: { startAt: "asc" },
+      select: {
+        id: true,
+        type: true,
+        status: true,
+        slot: true,
+        startAt: true,
+        endAt: true,
+        requesterId: true,
+      },
+    });
+  } else {
+    reservations = await prisma.reservation.findMany({
+      where: {
+        roomId: room.id,
+        loan: { is: { checkedOutAt: null } },
+        OR: [
+          { requesterId: user.id },
+          { participants: { some: { userId: user.id } } },
+          { loan: { is: { borrowerId: user.id } } },
+        ],
+      },
+      orderBy: { startAt: "asc" },
+      select: {
+        id: true,
+        type: true,
+        status: true,
+        slot: true,
+        startAt: true,
+        endAt: true,
+        requesterId: true,
+      },
+    });
+  }
 
   if (!reservations.length) {
     return NextResponse.json(

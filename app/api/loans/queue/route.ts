@@ -35,8 +35,7 @@ export async function GET() {
   // 2) กำลังยืม: CHECKED_IN แล้ว และยังไม่ COMPLETED
   const activeLoans = await prisma.reservation.findMany({
     where: {
-      status: "CHECKED_IN",
-      loan: { isNot: null },
+      loan: { is: { checkedOutAt: null } },
     },
     orderBy: { startAt: "asc" },
     select: {

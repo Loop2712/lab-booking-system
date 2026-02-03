@@ -58,6 +58,7 @@ export async function POST(req: Request) {
           requesterId: true,
           roomId: true,
           startAt: true,
+          sectionId: true,
           loan: { select: { id: true } },
           participants: { select: { userId: true } },
         },
@@ -78,13 +79,23 @@ export async function POST(req: Request) {
         return { ok: false as const, status: 400, message: "LATE_CHECKIN_NO_SHOW" };
       }
 
-      // 3) Ownership/permission check (เหมือนเดิม)
-      // - Student: ต้องเป็น requester หรือ participant
-      // - Teacher: ก็ใช้ rule เดียวกัน (ซึ่งครูจะเป็น requester ได้ทั้ง IN_CLASS และ AD_HOC)
-      const okOwner =
-        resv.requesterId === borrowerId || resv.participants.some((p) => p.userId === borrowerId);
-
-      if (!okOwner) return { ok: false as const, status: 403, message: "NOT_OWNER" };
+      // 3) Ownership/permission check
+      // - IN_CLASS: อนุญาตให้นักศึกษาที่ลงทะเบียน (enrollment)
+      // - AD_HOC: requester หรือ participant
+      if (resv.sectionId) {
+        const enrolled = await tx.enrollment.findFirst({
+          where: { sectionId: resv.sectionId, studentId: borrowerId },
+          select: { id: true },
+        });
+        if (!enrolled) {
+          const enrollCount = await tx.enrollment.count({ where: { sectionId: resv.sectionId } });
+          if (enrollCount > 0) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
+        }
+      } else {
+        const okOwner =
+          resv.requesterId === borrowerId || resv.participants.some((p) => p.userId === borrowerId);
+        if (!okOwner) return { ok: false as const, status: 403, message: "NOT_OWNER" };
+      }
 
       const key = await tx.key.findFirst({
         where: { roomId: resv.roomId, status: "AVAILABLE" },

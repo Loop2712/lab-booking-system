@@ -15,6 +15,7 @@ type Room = {
   name: string;
   roomNumber: string;
   floor: number;
+  isBorrowed: boolean;
 };
 
 type LookupResponse =
@@ -263,14 +264,20 @@ export default function SelfCheckClient() {
                         type="button"
                         variant={roomId === room.id ? "default" : "outline"}
                         onClick={() => openScanForRoom(room.id)}
-                        disabled={!mode}
+                        disabled={!mode || (mode === "CHECKIN" && room.isBorrowed)}
                         className="h-auto items-start justify-start gap-1 px-3 py-3 text-left"
                       >
                         <div className="text-sm font-semibold">
                           {room.code} • {room.roomNumber}
                         </div>
                         <div className="text-xs text-muted-foreground">ชั้น {room.floor}</div>
-                        <div className="text-[10px] text-emerald-700">พร้อมใช้งาน</div>
+                        <div
+                          className={`text-[10px] ${
+                            room.isBorrowed ? "text-rose-600" : "text-emerald-700"
+                          }`}
+                        >
+                          {room.isBorrowed ? "กำลังใช้งาน" : "พร้อมใช้งาน"}
+                        </div>
                       </Button>
                     ))}
                   </div>

@@ -56,7 +56,7 @@ export async function POST(req: Request) {
           id: true,
           status: true,
           requesterId: true,
-          loan: { select: { id: true, keyId: true } },
+          loan: { select: { id: true, keyId: true, borrowerId: true } },
           participants: { select: { userId: true } },
         },
       });
@@ -66,9 +66,11 @@ export async function POST(req: Request) {
         return { ok: false as const, status: 400, message: "INVALID_STATUS" };
       if (!resv.loan?.id) return { ok: false as const, status: 400, message: "NO_LOAN" };
 
-      // 3) Ownership check: requester หรือ participant เท่านั้นถึงคืนได้
+      // 3) Ownership check: requester/participant/borrower
       const okOwner =
-        resv.requesterId === returnedById || resv.participants.some((p) => p.userId === returnedById);
+        resv.requesterId === returnedById ||
+        resv.participants.some((p) => p.userId === returnedById) ||
+        resv.loan?.borrowerId === returnedById;
       if (!okOwner) return { ok: false as const, status: 403, message: "NOT_OWNER" };
 
       // ✅ ทำให้เหมือนของเดิมใน /api/loans/return
