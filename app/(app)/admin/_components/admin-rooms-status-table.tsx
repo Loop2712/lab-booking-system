@@ -4,13 +4,47 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import RoomsTimelineTable, { TimelineRoomRow } from "@/components/rooms/rooms-timeline-table";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TimelineBooking, TimelineRoomRow } from "@/components/rooms/rooms-timeline-table";
 
 type Payload = {
   ok: boolean;
   date: string;
   rooms: TimelineRoomRow[];
 };
+
+type RoomStatusRow = TimelineRoomRow & {
+  activeBooking: TimelineBooking | null;
+};
+
+function getActiveBooking(room: TimelineRoomRow, nowMs: number) {
+  const seen = new Set<string>();
+  for (const slot of room.slots) {
+    const booking = slot.booking;
+    if (!booking) continue;
+    if (seen.has(booking.reservationId)) continue;
+    seen.add(booking.reservationId);
+    const start = new Date(booking.startAt).getTime();
+    const end = new Date(booking.endAt).getTime();
+    if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+    if (start <= nowMs && nowMs < end) return booking;
+  }
+  return null;
+}
+
+function formatTime(iso: string) {
+  const date = new Date(iso);
+  if (!Number.isFinite(date.getTime())) return "-";
+  return date.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatUsage(booking: TimelineBooking | null) {
+  if (!booking) return "-";
+  const reason =
+    booking.type === "IN_CLASS" ? booking.courseLabel || "ตารางเรียน" : "จองนอกตาราง";
+  return `${reason} • ${formatTime(booking.startAt)} - ${formatTime(booking.endAt)}`;
+}
 
 export default function AdminRoomsStatusTable() {
   const [data, setData] = useState<Payload | null>(null);
@@ -44,14 +78,20 @@ export default function AdminRoomsStatusTable() {
     return () => clearInterval(t);
   }, [load]);
 
-  const rooms = useMemo(() => {
+  const rooms = useMemo<RoomStatusRow[]>(() => {
     if (!data?.rooms) return [];
     const kw = q.trim().toLowerCase();
-    if (!kw) return data.rooms;
-    return data.rooms.filter((r) => {
-      const hay = `${r.code} ${r.name} ${r.roomNumber} ${r.floor}`.toLowerCase();
-      return hay.includes(kw);
-    });
+    const nowMs = Date.now();
+    return data.rooms
+      .filter((r) => {
+        if (!kw) return true;
+        const hay = `${r.code} ${r.name} ${r.roomNumber} ${r.floor}`.toLowerCase();
+        return hay.includes(kw);
+      })
+      .map((room) => ({
+        ...room,
+        activeBooking: getActiveBooking(room, nowMs),
+      }));
   }, [data, q]);
 
   return (
@@ -79,11 +119,11 @@ export default function AdminRoomsStatusTable() {
             <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <span className="h-3 w-3 rounded-sm bg-emerald-600/90" />
-                ตารางเรียน
+                ว่าง
               </div>
               <div className="flex items-center gap-1">
                 <span className="h-3 w-3 rounded-sm bg-rose-600/90" />
-                จองนอกตาราง
+                ไม่ว่าง
               </div>
             </div>
           </div>
@@ -114,7 +154,54 @@ export default function AdminRoomsStatusTable() {
         ) : null}
 
         <div className="overflow-auto rounded-lg border">
-          <RoomsTimelineTable rooms={rooms} />
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow>
+                <TableHead className="min-w-[240px]">ห้อง</TableHead>
+                <TableHead className="min-w-[220px]">ผู้ยืม</TableHead>
+                <TableHead className="min-w-[260px]">การใช้งาน</TableHead>
+                <TableHead className="min-w-[140px]">สถานะ</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rooms.length ? (
+                rooms.map((room) => {
+                  const isBusy = !!room.activeBooking;
+                  const borrower =
+                    room.activeBooking?.borrowerLabel ??
+                    room.activeBooking?.requesterLabel ??
+                    (room.activeBooking ? "รอผู้ยืม" : "-");
+                  return (
+                    <TableRow key={room.id}>
+                      <TableCell className="font-medium">
+                        <div className="space-y-1">
+                          <div>
+                            {room.code} • {room.name}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            ห้อง {room.roomNumber} (ชั้น {room.floor})
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm">{borrower}</TableCell>
+                      <TableCell className="text-sm">{formatUsage(room.activeBooking)}</TableCell>
+                      <TableCell>
+                        <Badge className={isBusy ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"}>
+                          {isBusy ? "ไม่ว่าง" : "ว่าง"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-sm text-muted-foreground">
+                    ไม่พบข้อมูลห้อง
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
       </CardContent>
     </Card>
