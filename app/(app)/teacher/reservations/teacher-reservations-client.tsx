@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import WeekTimelineTable, { type WeekTimelineRow } from "@/components/rooms/week-timeline-table";
 import { parseTimeRangeToMinutes } from "@/lib/date/time";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Item = {
   id: string;
@@ -194,7 +195,36 @@ export default function TeacherReservationsClient() {
     });
   }, [inClassUnique]);
 
-  if (loading) return <div className="text-sm text-muted-foreground">กำลังโหลด...</div>;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-48" />
+          <div className="rounded-lg border bg-white p-3 space-y-2">
+            {Array.from({ length: 5 }).map((_, idx) => (
+              <div key={idx} className="flex gap-2">
+                <Skeleton className="h-10 w-20" />
+                <Skeleton className="h-10 flex-1" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-56" />
+          <div className="rounded-2xl border p-3 space-y-2">
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <div key={idx} className="flex items-center gap-3">
+                <Skeleton className="h-10 w-52" />
+                <Skeleton className="h-10 flex-1" />
+                <Skeleton className="h-8 w-20" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

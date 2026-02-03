@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import RoomsTimelineTable, { TimelineRoomRow } from "@/components/rooms/rooms-timeline-table";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -221,8 +222,8 @@ export default function RoomsTodayClient() {
           <CardHeader>
             <CardTitle className="text-sm">กำลังโหลด...</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            RoomBooking
+          <CardContent>
+            <RoomsTimelineSkeleton />
           </CardContent>
         </Card>
       ) : null}
@@ -375,6 +376,19 @@ function formatTimeRange(startIso: string, endIso: string) {
   } catch {
     return `${startIso} - ${endIso}`;
   }
+}
+
+function RoomsTimelineSkeleton() {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: 4 }).map((_, idx) => (
+        <div key={idx} className="flex gap-2">
+          <Skeleton className="h-12 w-52" />
+          <Skeleton className="h-12 flex-1" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 

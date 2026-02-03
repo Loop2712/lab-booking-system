@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -44,11 +45,23 @@ export default function StudentCoursesPage() {
   const [selectedSectionId, setSelectedSectionId] = useState<string>("");
 
   const [myEnrollments, setMyEnrollments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        loadMyEnrollments({ setMyEnrollments }),
+        loadSections({ setSections }),
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    loadMyEnrollments({ setMyEnrollments });
-    loadSections({ setSections });
-  }, []);
+    reload();
+  }, [reload]);
 
   const selected = useMemo(
     () => sections.find((s) => s.id === selectedSectionId),
@@ -146,10 +159,7 @@ export default function StudentCoursesPage() {
 
           <Button
             variant="secondary"
-            onClick={() => {
-              loadMyEnrollments({ setMyEnrollments });
-              loadSections({ setSections });
-            }}
+            onClick={reload}
           >
             Refresh
           </Button>
@@ -161,7 +171,9 @@ export default function StudentCoursesPage() {
           <CardTitle>ตารางสอนของฉัน</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {enrolledSections.length === 0 ? (
+          {loading ? (
+            <CourseTimelineSkeleton />
+          ) : enrolledSections.length === 0 ? (
             <div className="text-sm text-muted-foreground">ยังไม่มีวิชาที่ลงทะเบียน</div>
           ) : (
             <div className="rounded-lg border bg-white overflow-hidden">
@@ -169,7 +181,9 @@ export default function StudentCoursesPage() {
             </div>
           )}
 
-          {myEnrollments.length > 0 ? (
+          {loading ? (
+            <EnrolledListSkeleton />
+          ) : myEnrollments.length > 0 ? (
             <div className="space-y-2 pt-2">
               <div className="text-sm font-medium">รายการวิชาที่ลงทะเบียน</div>
               {myEnrollments.map((e) => (
@@ -204,3 +218,32 @@ export default function StudentCoursesPage() {
     </div>
   );
 }
+
+function CourseTimelineSkeleton() {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: 5 }).map((_, idx) => (
+        <div key={idx} className="flex gap-2">
+          <Skeleton className="h-10 w-20" />
+          <Skeleton className="h-10 flex-1" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EnrolledListSkeleton() {
+  return (
+    <div className="space-y-2 pt-2">
+      <Skeleton className="h-4 w-56" />
+      {Array.from({ length: 3 }).map((_, idx) => (
+        <div key={idx} className="flex items-center gap-3">
+          <Skeleton className="h-10 w-52" />
+          <Skeleton className="h-10 flex-1" />
+          <Skeleton className="h-8 w-20" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
