@@ -13,4 +13,12 @@ export type KeyRow = {
   status: KeyStatus;
   roomId: string;
   room?: Room;
+  currentHolder?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    studentId?: string | null;
+    email?: string | null;
+    role?: string | null;
+  } | null;
 };

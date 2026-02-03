@@ -26,7 +26,54 @@ export async function GET() {
     include: { _count: { select: { keys: true } } },
   });
 
-  return NextResponse.json({ ok: true, rooms });
+  const roomIds = rooms.map((r) => r.id);
+
+  const activeLoans = roomIds.length
+    ? await prisma.loan.findMany({
+        where: {
+          checkedOutAt: null,
+          key: { roomId: { in: roomIds } },
+        },
+        orderBy: { createdAt: "desc" },
+        select: {
+          key: { select: { roomId: true } },
+          borrower: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              studentId: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      })
+    : [];
+
+  type Holder = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    studentId: string | null;
+    email: string | null;
+    role: string;
+  } | null;
+
+  const holderByRoom = new Map<string, Holder>();
+  for (const loan of activeLoans) {
+    const roomId = loan.key.roomId;
+    if (!holderByRoom.has(roomId)) {
+      holderByRoom.set(roomId, loan.borrower ?? null);
+    }
+  }
+
+  const payload = rooms.map((room) => ({
+    ...room,
+    currentHolder: holderByRoom.get(room.id) ?? null,
+  }));
+
+  return NextResponse.json({ ok: true, rooms: payload });
 }
 
 export async function POST(req: Request) {

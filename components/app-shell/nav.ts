@@ -16,10 +16,12 @@ export const adminNav: NavItem[] = [
   { title: "แดชบอร์ด", href: "/admin", icon: "dashboard" },
   { title: "ห้องที่ใช้งานวันนี้", href: "/rooms-today", icon: "calendar" },
   { title: "รายการจองของฉัน", href: "/admin/reservations", icon: "calendar" },
+  { title: "จองนอกตาราง", href: "/admin/reserve", icon: "calendar" },
   { title: "จัดการห้อง", href: "/admin/rooms", icon: "calendar" },
   { title: "จัดการกุญแจ", href: "/admin/keys", icon: "key" },
   { title: "จัดการผู้ใช้", href: "/admin/users", icon: "users" },
   { title: "รับกุญแจ / คืนกุญแจ", href: "/admin/check", icon: "key" },
+  { title: "เช็คอินเอง (นักศึกษา)", href: "/admin/self-check", icon: "key" },
   { title: "จัดการรายวิชา", href: "/admin/courses", icon: "key" },
   { title: "จัดการกลุ่มเรียน", href: "/admin/sections", icon: "key" },
 

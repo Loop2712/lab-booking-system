@@ -245,6 +245,7 @@ export default function AdminRoomsPage() {
                 <TableHead>Floor</TableHead>
                 <TableHead>PC</TableHead>
                 <TableHead>กุญแจ</TableHead>
+                <TableHead>ผู้ถือกุญแจปัจจุบัน</TableHead>
                 <TableHead className="text-right">Active</TableHead>
               </TableRow>
             </TableHeader>
@@ -257,6 +258,20 @@ export default function AdminRoomsPage() {
                   <TableCell>{r.floor}</TableCell>
                   <TableCell>{r.computerCount}</TableCell>
                   <TableCell>{r._count?.keys ?? 0}</TableCell>
+                  <TableCell>
+                    {r.currentHolder ? (
+                      <div className="space-y-0.5 text-sm">
+                        <div className="font-medium">
+                          {r.currentHolder.firstName} {r.currentHolder.lastName}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {r.currentHolder.studentId ?? r.currentHolder.email ?? "-"}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-right">
                     <Switch checked={r.isActive} 
                     onCheckedChange={() =>
@@ -273,7 +288,7 @@ export default function AdminRoomsPage() {
               ))}
               {rooms.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-sm text-muted-foreground">
+                  <TableCell colSpan={8} className="text-sm text-muted-foreground">
                     ยังไม่มีข้อมูลห้อง
                   </TableCell>
                 </TableRow>

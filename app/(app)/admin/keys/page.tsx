@@ -237,6 +237,7 @@ export default function AdminKeysPage() {
                 <TableHead>KeyCode</TableHead>
                 <TableHead>Room</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>ผู้ถือกุญแจปัจจุบัน</TableHead>
                 <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
@@ -257,6 +258,21 @@ export default function AdminKeysPage() {
                   </TableCell>
 
                   <TableCell>{k.status}</TableCell>
+
+                  <TableCell>
+                    {k.currentHolder ? (
+                      <div className="space-y-0.5 text-sm">
+                        <div className="font-medium">
+                          {k.currentHolder.firstName} {k.currentHolder.lastName}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {k.currentHolder.studentId ?? k.currentHolder.email ?? "-"}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
 
                   <TableCell className="text-right">
                     <Select
@@ -280,7 +296,7 @@ export default function AdminKeysPage() {
 
               {keys.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-sm text-muted-foreground">
+                  <TableCell colSpan={5} className="text-sm text-muted-foreground">
                     Key
                   </TableCell>
                 </TableRow>

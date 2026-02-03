@@ -20,10 +20,34 @@ export async function GET() {
 
   const keys = await prisma.key.findMany({
     orderBy: [{ createdAt: "desc" }],
-    include: { room: true },
+    include: {
+      room: true,
+      loans: {
+        where: { checkedOutAt: null },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: {
+          borrower: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              studentId: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      },
+    },
   });
 
-  return NextResponse.json({ ok: true, keys });
+  const payload = keys.map(({ loans, ...k }) => ({
+    ...k,
+    currentHolder: loans[0]?.borrower ?? null,
+  }));
+
+  return NextResponse.json({ ok: true, keys: payload });
 }
 
 export async function POST(req: Request) {
