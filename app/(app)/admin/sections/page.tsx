@@ -876,6 +876,7 @@ export default function AdminSectionsPage() {
                   <TableHead>อาจารย์</TableHead>
                   <TableHead>เทอม/ปี</TableHead>
                   <TableHead>นักศึกษา (สูงสุด 40)</TableHead>
+                  <TableHead className="w-[120px]">แก้ไข</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -906,11 +907,16 @@ export default function AdminSectionsPage() {
                       <TableCell>
                         {s._count.enrollments}/40
                       </TableCell>
+                      <TableCell>
+                        <Button size="sm" variant="outline" onClick={() => openEditDialog(s)}>
+                          แก้ไข
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center text-sm text-muted-foreground">
                       ยังไม่มีข้อมูล Section
                     </TableCell>
                   </TableRow>

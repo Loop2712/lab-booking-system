@@ -2,6 +2,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { minutesFromIsoBangkok, parseTimeRangeToMinutes } from "@/lib/date/time";
 
 export type TimelineBooking = {
   reservationId: string;
@@ -45,21 +46,8 @@ function pad2(n: number) {
   return String(n).padStart(2, "0");
 }
 
-function minutesOfDay(iso: string) {
-  const d = new Date(iso);
-  if (!Number.isFinite(d.getTime())) return null;
-  return d.getHours() * 60 + d.getMinutes();
-}
-
-function minutesFromSlot(slotId: string) {
-  const match = /^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/.exec(slotId);
-  if (!match) return null;
-  const startH = Number(match[1]);
-  const startM = Number(match[2]);
-  const endH = Number(match[3]);
-  const endM = Number(match[4]);
-  if ([startH, startM, endH, endM].some((v) => Number.isNaN(v))) return null;
-  return { startMin: startH * 60 + startM, endMin: endH * 60 + endM };
+function minutesFromSlot(slot?: string | null) {
+  return parseTimeRangeToMinutes(slot);
 }
 
 function bookingColor(booking: TimelineBooking) {
@@ -120,10 +108,10 @@ export default function RoomsTimelineTable({ rooms, emptyMessage }: RoomsTimelin
                 const ranges = bookings
                   .map((b) => {
                     const slotRange = minutesFromSlot(b.slot);
-                    const startMin = slotRange?.startMin ?? minutesOfDay(b.startAt);
-                    const endMin = slotRange?.endMin ?? minutesOfDay(b.endAt);
-                    if (!Number.isFinite(startMin) || !Number.isFinite(endMin)) return null;
-                    return { booking: b, startMin: startMin as number, endMin: endMin as number };
+                    const startMin = slotRange?.startMin ?? minutesFromIsoBangkok(b.startAt);
+                    const endMin = slotRange?.endMin ?? minutesFromIsoBangkok(b.endAt);
+                    if (startMin == null || endMin == null) return null;
+                    return { booking: b, startMin, endMin };
                   })
                   .filter((r): r is { booking: TimelineBooking; startMin: number; endMin: number } => !!r);
 

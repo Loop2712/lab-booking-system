@@ -28,6 +28,7 @@ export async function GET() {
       note: true,
       createdAt: true,
       room: { select: { code: true, name: true, roomNumber: true, floor: true } },
+      section: { select: { course: { select: { code: true, name: true } } } },
     },
   });
 

@@ -1,4 +1,4 @@
-import MyReservationsTable from "@/app/(app)/student/reservations/table";
+import TeacherReservationsClient from "./teacher-reservations-client";
 
 export default function TeacherReservationsPage() {
   return (
@@ -8,7 +8,7 @@ export default function TeacherReservationsPage() {
         ดูสถานะคำขอจอง และยกเลิกได้ก่อนเวลาเริ่มอย่างน้อย 60 นาที
       </p>
 
-      <MyReservationsTable />
+      <TeacherReservationsClient />
     </div>
   );
 }
