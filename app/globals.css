@@ -57,9 +57,9 @@
   --brand-light-green: #e9faef;
   --brand-line-green: #c3d4c5;
   --brand-light-gray: #f6f7f8;
-  --brand-light-gray-line: #e3e4e5;
+  --brand-light-gray-line: #e5e7eb;
   --brand-gray: #9e9e99;
-  --brand-gray-sm: #797979;
+  --brand-gray-sm: #6b7280;
   --brand-gray-dark: #3f3958;
 
   --background: var(--brand-bg);
@@ -135,5 +135,11 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  h1 {
+    @apply text-2xl font-semibold;
+  }
+  h2 {
+    @apply text-lg font-semibold;
   }
 }

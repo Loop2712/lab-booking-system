@@ -9,6 +9,8 @@ import { addDaysYmd, isYmdBetweenInclusive, todayYmdBkk } from "@/lib/date/index
 
 export const runtime = "nodejs";
 
+const MAX_RANGE_DAYS = 365;
+
 const bodySchema = z.object({
   from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -27,7 +29,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
   const body = bodySchema.parse(await req.json());
   const minYmd = todayYmdBkk();
-  const maxYmd = addDaysYmd(minYmd, 30);
+  const maxYmd = addDaysYmd(minYmd, MAX_RANGE_DAYS);
   if (
     !isYmdBetweenInclusive(body.from, minYmd, maxYmd) ||
     !isYmdBetweenInclusive(body.to, minYmd, maxYmd)

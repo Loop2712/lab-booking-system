@@ -46,7 +46,19 @@ function pad2(n: number) {
 
 function minutesOfDay(iso: string) {
   const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) return null;
   return d.getHours() * 60 + d.getMinutes();
+}
+
+function minutesFromSlot(slotId: string) {
+  const match = /^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/.exec(slotId);
+  if (!match) return null;
+  const startH = Number(match[1]);
+  const startM = Number(match[2]);
+  const endH = Number(match[3]);
+  const endM = Number(match[4]);
+  if ([startH, startM, endH, endM].some((v) => Number.isNaN(v))) return null;
+  return { startMin: startH * 60 + startM, endMin: endH * 60 + endM };
 }
 
 function bookingColor(booking: TimelineBooking) {
@@ -62,12 +74,17 @@ function bookingLabel(booking: TimelineBooking) {
 
 export default function RoomsTimelineTable({ rooms, emptyMessage }: RoomsTimelineTableProps) {
   return (
-    <Table>
-      <TableHeader className="bg-muted/40">
+    <Table className="relative">
+      <TableHeader className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <TableRow>
-          <TableHead className="min-w-[220px]">ห้อง</TableHead>
+          <TableHead className="min-w-[220px] sticky left-0 top-0 z-30 bg-background/95 backdrop-blur border-r">
+            ห้อง
+          </TableHead>
           {HOURS.map((h) => (
-            <TableHead key={h} className="min-w-[90px] text-center">
+            <TableHead
+              key={h}
+              className="min-w-[90px] text-center sticky top-0 z-20 bg-background/95 backdrop-blur"
+            >
               {pad2(h)}:00
             </TableHead>
           ))}
@@ -77,7 +94,7 @@ export default function RoomsTimelineTable({ rooms, emptyMessage }: RoomsTimelin
         {rooms.length ? (
           rooms.map((room) => (
             <TableRow key={room.id}>
-              <TableCell className="font-medium">
+              <TableCell className="font-medium sticky left-0 z-10 bg-background/95 border-r">
                 <div className="space-y-1">
                   <div>
                     {room.code} • {room.name}
@@ -99,11 +116,15 @@ export default function RoomsTimelineTable({ rooms, emptyMessage }: RoomsTimelin
                   return true;
                 });
 
-                const ranges = bookings.map((b) => ({
-                  booking: b,
-                  startMin: minutesOfDay(b.startAt),
-                  endMin: minutesOfDay(b.endAt),
-                }));
+                const ranges = bookings
+                  .map((b) => {
+                    const slotRange = minutesFromSlot(b.slot);
+                    const startMin = slotRange?.startMin ?? minutesOfDay(b.startAt);
+                    const endMin = slotRange?.endMin ?? minutesOfDay(b.endAt);
+                    if (!Number.isFinite(startMin) || !Number.isFinite(endMin)) return null;
+                    return { booking: b, startMin: startMin as number, endMin: endMin as number };
+                  })
+                  .filter((r): r is { booking: TimelineBooking; startMin: number; endMin: number } => !!r);
 
                 const cells: { booking: TimelineBooking | null; isStart: boolean }[] = [];
 
@@ -120,7 +141,7 @@ export default function RoomsTimelineTable({ rooms, emptyMessage }: RoomsTimelin
                 return cells.map((cell, idx) => (
                   <TableCell key={idx} className="p-0">
                     {cell.booking ? (
-                      <div className={cn("h-16 px-2 py-1 text-[11px] leading-tight", bookingColor(cell.booking))}>
+                      <div className={cn("h-12 px-2 py-1 text-[11px] leading-tight", bookingColor(cell.booking))}>
                         {cell.isStart ? (
                           <>
                             <div className="font-medium truncate">{bookingLabel(cell.booking)}</div>
@@ -131,7 +152,7 @@ export default function RoomsTimelineTable({ rooms, emptyMessage }: RoomsTimelin
                         ) : null}
                       </div>
                     ) : (
-                      <div className="h-16 px-2 py-1 text-[11px] text-muted-foreground" />
+                      <div className="h-12 px-2 py-1 text-[11px] text-muted-foreground bg-muted/10" />
                     )}
                   </TableCell>
                 ));

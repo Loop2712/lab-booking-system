@@ -25,7 +25,7 @@ export default async function PublicHomePage() {
     <div className={kanit.className}>
       <div className="min-h-screen bg-gradient-to-b from-stone-50 via-stone-50 to-emerald-50 text-black">
         <header className="border-b border-emerald-100 bg-white/80 backdrop-blur">
-          <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
+          <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between px-4 py-4 md:px-6">
             <div className="flex items-center gap-3">
               <Image
                 src="/logo.png"
@@ -51,7 +51,7 @@ export default async function PublicHomePage() {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl px-6 py-10">
+        <main className="mx-auto w-full max-w-[1280px] px-4 py-10 md:px-6">
           <div className="space-y-3">
             <h1 className="text-2xl font-semibold text-[#6ABE75]">สถานะห้องวันนี้</h1>
             <div className="h-1 w-72 rounded-full bg-[#6ABE75]/60" />

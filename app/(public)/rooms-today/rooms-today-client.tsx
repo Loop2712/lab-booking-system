@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import RoomsTimelineTable, { TimelineRoomRow } from "@/components/rooms/rooms-timeline-table";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -147,8 +148,8 @@ export default function RoomsTodayClient() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <Input
             value={q}
@@ -162,6 +163,9 @@ export default function RoomsTodayClient() {
             onChange={(e) => setSelectedDate(e.target.value)}
             className="w-[170px] bg-white/90"
           />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => setSelectedDate(addDaysYmd(selectedDate, -1))}>
             ก่อนหน้า
           </Button>
@@ -178,8 +182,15 @@ export default function RoomsTodayClient() {
             รีเฟรช
           </Button>
         </div>
+      </div>
 
-        <div className="text-xs text-black/70">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap gap-2">
+          <Badge className="h-7 px-3 text-[11px] bg-emerald-600/90 text-white">มีเรียน</Badge>
+          <Badge className="h-7 px-3 text-[11px] bg-rose-600/90 text-white">จอง</Badge>
+          <Badge className="h-7 px-3 text-[11px] bg-muted text-foreground">ว่าง</Badge>
+        </div>
+        <div>
           {data?.date ? (
             <>
               วันที่: <span className="font-semibold">{data.date}</span>
@@ -194,17 +205,6 @@ export default function RoomsTodayClient() {
               ) : null}
             </>
           ) : null}
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2 text-xs text-black/70">
-        <div className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded-sm bg-emerald-600/90" />
-          ตารางเรียน
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded-sm bg-rose-600/90" />
-          จองนอกตาราง
         </div>
       </div>
       {error ? (
@@ -331,7 +331,7 @@ export default function RoomsTodayClient() {
         </DialogContent>
       </Dialog>
 
-      <div className="overflow-auto rounded-lg border bg-white/90">
+      <div className="rounded-lg border bg-white/90">
         <RoomsTimelineTable rooms={rooms} />
       </div>
     </div>

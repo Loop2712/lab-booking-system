@@ -93,7 +93,7 @@ export default function LoginForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label>ประเภทผู้ใช้</Label>
         <div className="grid grid-cols-2 gap-2">
@@ -105,6 +105,7 @@ export default function LoginForm({
               setPassword("");
               setError(null);
             }}
+            className="w-full"
           >
             Student
           </Button>
@@ -116,6 +117,7 @@ export default function LoginForm({
               setPassword("");
               setError(null);
             }}
+            className="w-full"
           >
             Staff (Teacher/Admin)
           </Button>

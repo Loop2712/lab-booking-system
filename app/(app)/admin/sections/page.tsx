@@ -1,12 +1,13 @@
 "use client";
 import type { Course, Room, Section, User } from "./types";
-import { todayStr } from "./todayStr";
 import { TIME_SLOTS } from "@/lib/reserve/slots";
+import { addDaysYmd, todayYmdBkk } from "@/lib/date";
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import {
   Select,
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 
 const DOW = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
+const KEEP_SLOT = "KEEP";
 
 
 export default function AdminSectionsPage() {
@@ -43,6 +45,21 @@ export default function AdminSectionsPage() {
   const [term, setTerm] = useState("");
   const [year, setYear] = useState<string>("");
   const [openCreate, setOpenCreate] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editCourseId, setEditCourseId] = useState<string>("");
+  const [editTeacherId, setEditTeacherId] = useState<string>("");
+  const [editRoomId, setEditRoomId] = useState<string>("");
+  const [editDayOfWeek, setEditDayOfWeek] = useState<(typeof DOW)[number]>("MON");
+  const [editSlotId, setEditSlotId] = useState(TIME_SLOTS[0]?.id ?? "08:00-12:00");
+  const [editTerm, setEditTerm] = useState("");
+  const [editYear, setEditYear] = useState<string>("");
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkTerm, setBulkTerm] = useState("");
+  const [bulkClearTerm, setBulkClearTerm] = useState(false);
+  const [bulkSlotId, setBulkSlotId] = useState<string>(KEEP_SLOT);
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   // filters
   const [q, setQ] = useState("");
@@ -52,8 +69,10 @@ export default function AdminSectionsPage() {
   const [fRoom, setFRoom] = useState<string>("ALL");
 
   // range (used by generate range / delete / regenerate)
-  const [from, setFrom] = useState(todayStr());
-  const [to, setTo] = useState(todayStr()); // ✅ เอา default +30 วันออกแล้ว
+  const [from, setFrom] = useState(() => todayYmdBkk());
+  const [to, setTo] = useState(() => todayYmdBkk());
+  const minRangeYmd = useMemo(() => todayYmdBkk(), []);
+  const maxRangeYmd = useMemo(() => addDaysYmd(minRangeYmd, 365), [minRangeYmd]);
 
   async function load() {
     const [a, b, c, d] = await Promise.all([
@@ -89,6 +108,7 @@ export default function AdminSectionsPage() {
   }, [teachers, teacherId]);
 
   const canCreate = useMemo(() => !!courseId && !!teacherId && !!roomId, [courseId, teacherId, roomId]);
+  const canEdit = useMemo(() => !!editId && !!editCourseId && !!editTeacherId && !!editRoomId, [editId, editCourseId, editTeacherId, editRoomId]);
 
   const filtered = useMemo(() => {
     return sections.filter((s) => {
@@ -107,12 +127,29 @@ export default function AdminSectionsPage() {
     });
   }, [sections, q, fTerm, fYear, fTeacher, fRoom]);
 
+  const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+  const visibleIds = useMemo(() => filtered.map((s) => s.id), [filtered]);
+  const allVisibleSelected = useMemo(
+    () => visibleIds.length > 0 && visibleIds.every((id) => selectedSet.has(id)),
+    [visibleIds, selectedSet]
+  );
+  const selectedSections = useMemo(
+    () => sections.filter((s) => selectedSet.has(s.id)),
+    [sections, selectedSet]
+  );
+
   async function create() {
     if (!canCreate) return;
 
     const slot = TIME_SLOTS.find((s) => s.id === slotId);
     if (!slot) {
       alert("ช่วงเวลาไม่ถูกต้อง");
+      return;
+    }
+
+    const yearValue = year.trim();
+    if (yearValue && !/^\d{4}$/.test(yearValue)) {
+      alert("ปีการศึกษาไม่ถูกต้อง (ตัวอย่าง: 2025)");
       return;
     }
 
@@ -126,8 +163,8 @@ export default function AdminSectionsPage() {
         dayOfWeek,
         startTime: slot.start,
         endTime: slot.end,
-        term: term || undefined,
-        year: year ? Number(year) : undefined,
+        term: term.trim() || undefined,
+        year: yearValue ? Number(yearValue) : undefined,
       }),
     });
 
@@ -177,6 +214,143 @@ export default function AdminSectionsPage() {
   const courseLabel = (c: Course) => `${c.code} — ${c.name}`;
   const roomLabel = (r: Room) => `${r.code}${r.roomNumber ? ` (${r.roomNumber})` : ""} — ${r.name}`;
   const teacherLabel = (t: User) => `${t.firstName} ${t.lastName}${t.email ? ` (${t.email})` : ""}`;
+
+  function openEditDialog(section: Section) {
+    const slotKey = `${section.startTime}-${section.endTime}`;
+    const slotMatch = TIME_SLOTS.find((s) => s.id === slotKey);
+    setEditId(section.id);
+    setEditCourseId(section.course.id);
+    setEditTeacherId(section.teacher.id);
+    setEditRoomId(section.room.id);
+    setEditDayOfWeek(section.dayOfWeek as any);
+    setEditSlotId(slotMatch?.id ?? slotKey);
+    setEditTerm(section.term ?? "");
+    setEditYear(section.year ? String(section.year) : "");
+    setOpenEdit(true);
+  }
+
+  async function updateSection() {
+    if (!canEdit || !editId) return;
+
+    const slot = TIME_SLOTS.find((s) => s.id === editSlotId);
+    if (!slot) {
+      alert("ช่วงเวลาไม่ถูกต้อง");
+      return;
+    }
+
+    const yearValue = editYear.trim();
+    if (yearValue && !/^\d{4}$/.test(yearValue)) {
+      alert("ปีการศึกษาไม่ถูกต้อง (ตัวอย่าง: 2025)");
+      return;
+    }
+
+    const r = await fetch(`/api/admin/sections/${editId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        courseId: editCourseId,
+        teacherId: editTeacherId,
+        roomId: editRoomId,
+        dayOfWeek: editDayOfWeek,
+        startTime: slot.start,
+        endTime: slot.end,
+        term: editTerm.trim() || undefined,
+        year: yearValue ? Number(yearValue) : undefined,
+      }),
+    });
+
+    const j = await r.json();
+    if (!j.ok) return alert(j.message ?? "ERROR");
+    await load();
+    setOpenEdit(false);
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) => {
+      const set = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => set.delete(id));
+      } else {
+        visibleIds.forEach((id) => set.add(id));
+      }
+      return Array.from(set);
+    });
+  }
+
+  function toggleSelectOne(id: string) {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      return [...prev, id];
+    });
+  }
+
+  async function applyBulkUpdate() {
+    if (selectedSections.length === 0) return;
+
+    const hasTermChange = bulkClearTerm || bulkTerm.trim().length > 0;
+    const hasSlotChange = bulkSlotId !== KEEP_SLOT;
+
+    if (!hasTermChange && !hasSlotChange) {
+      alert("กรุณาเลือกเทอมหรือช่วงเวลาเพื่อแก้ไข");
+      return;
+    }
+
+    const slot = hasSlotChange ? TIME_SLOTS.find((s) => s.id === bulkSlotId) : null;
+    if (hasSlotChange && !slot) {
+      alert("ช่วงเวลาไม่ถูกต้อง");
+      return;
+    }
+
+    setBulkLoading(true);
+    try {
+      const results = await Promise.all(
+        selectedSections.map(async (section) => {
+          const termValue = bulkClearTerm
+            ? null
+            : bulkTerm.trim()
+            ? bulkTerm.trim()
+            : section.term ?? null;
+          const startTime = slot?.start ?? section.startTime;
+          const endTime = slot?.end ?? section.endTime;
+
+          const res = await fetch(`/api/admin/sections/${section.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              courseId: section.course.id,
+              teacherId: section.teacher.id,
+              roomId: section.room.id,
+              dayOfWeek: section.dayOfWeek,
+              startTime,
+              endTime,
+              term: termValue,
+              year: section.year ?? null,
+            }),
+          });
+
+          const json = await res.json().catch(() => ({}));
+          return { ok: res.ok && json?.ok, message: json?.message };
+        })
+      );
+
+      const failed = results.filter((r) => !r.ok);
+      if (failed.length) {
+        alert(`อัปเดตไม่สำเร็จ ${failed.length} รายการ`);
+      } else {
+        alert("อัปเดตสำเร็จ");
+      }
+
+      await load();
+      setSelectedIds([]);
+      setBulkTerm("");
+      setBulkClearTerm(false);
+      setBulkSlotId(KEEP_SLOT);
+    } catch (e: any) {
+      alert(e?.message || "ERROR");
+    } finally {
+      setBulkLoading(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -309,6 +483,121 @@ export default function AdminSectionsPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <Dialog
+          open={openEdit}
+          onOpenChange={(open) => {
+            setOpenEdit(open);
+            if (!open) setEditId(null);
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>แก้ไข Section</DialogTitle>
+            </DialogHeader>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <div className="text-sm">Course</div>
+                <Select value={editCourseId} onValueChange={setEditCourseId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกวิชา" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {courses.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {courseLabel(c)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm">Teacher</div>
+                <Select value={editTeacherId} onValueChange={setEditTeacherId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกอาจารย์" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teachers.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {teacherLabel(t)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm">Room</div>
+                <Select value={editRoomId} onValueChange={setEditRoomId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกห้อง" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {rooms.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {roomLabel(r)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm">Day of week</div>
+                <Select value={editDayOfWeek} onValueChange={(v) => setEditDayOfWeek(v as any)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกวัน" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DOW.map((d) => (
+                      <SelectItem key={d} value={d}>
+                        {d}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm">Time slot (4 hours)</div>
+                <Select value={editSlotId} onValueChange={setEditSlotId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกช่วงเวลา" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIME_SLOTS.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm">Term</div>
+                <Input value={editTerm} onChange={(e) => setEditTerm(e.target.value)} placeholder="เช่น 1 / 2 / SUMMER" />
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm">Year</div>
+                <Input value={editYear} onChange={(e) => setEditYear(e.target.value)} placeholder="เช่น 2025" inputMode="numeric" />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpenEdit(false)}>
+                ยกเลิก
+              </Button>
+              <Button onClick={updateSection} disabled={!canEdit}>
+                บันทึกการแก้ไข
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Range */}
@@ -316,14 +605,29 @@ export default function AdminSectionsPage() {
         <CardHeader>
           <CardTitle>สร้าง/ลบตารางเรียน (IN_CLASS)</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-2 items-end">
+        <CardContent className="flex flex-wrap gap-2 items-end">
           <div className="space-y-2">
             <div className="text-sm">วันที่เริ่ม (YYYY-MM-DD)</div>
-            <Input value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Input
+              type="date"
+              value={from}
+              min={minRangeYmd}
+              max={maxRangeYmd}
+              onChange={(e) => setFrom(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <div className="text-sm">วันที่เริ่ม (YYYY-MM-DD)</div>
-            <Input value={to} onChange={(e) => setTo(e.target.value)} />
+            <Input
+              type="date"
+              value={to}
+              min={minRangeYmd}
+              max={maxRangeYmd}
+              onChange={(e) => setTo(e.target.value)}
+            />
+          </div>
+          <div className="text-xs text-muted-foreground pb-1">
+            ช่วงวันที่ที่อนุญาต: {minRangeYmd} ถึง {maxRangeYmd}
           </div>
         </CardContent>
       </Card>
@@ -334,7 +638,7 @@ export default function AdminSectionsPage() {
           <CardTitle>รายการ Section</CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {/* Search / Filter */}
           <div className="grid gap-2 md:grid-cols-5">
             <Input placeholder="Search (code/name/room/teacher)..." value={q} onChange={(e) => setQ(e.target.value)} />
@@ -372,35 +676,141 @@ export default function AdminSectionsPage() {
             </Select>
           </div>
 
-          {/* List */}
-          {filtered.map((s) => (
-            <div key={s.id} className="border rounded-md p-3 space-y-1">
-              <div className="font-medium">
-                {s.course.code} {s.course.name}
+          <div className="rounded-lg border bg-muted/20 p-3 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-sm font-semibold">แก้ไขหลายรายการ</div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                เลือกแล้ว {selectedIds.length} รายการ
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedIds([])}
+                  disabled={selectedIds.length === 0}
+                >
+                  ล้างการเลือก
+                </Button>
               </div>
-
-              <div className="text-sm text-muted-foreground">
-                {s.dayOfWeek} {s.startTime}-{s.endTime} | Room: {s.room.code} | Teacher: {s.teacher.firstName} {s.teacher.lastName}
-                {s.term ? ` | term: ${s.term}` : ""}{s.year ? ` | year: ${s.year}` : ""}
-              </div>
-
-              <div className="text-sm text-muted-foreground">
-                Student: {s._count.enrollments} | List: {s._count.reservations}
-              </div>
-
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Button variant="secondary" onClick={() => generate(s.id)}>สร้างตารางเรียน</Button>
-                <Button variant="outline" onClick={() => deleteGenerated(s.id)}>ลบตารางเรียน</Button>
-                <Button variant="destructive" onClick={() => regenerate(s.id)}>สร้างใหม่</Button>
-              </div>
-
-              <div className="text-xs text-muted-foreground break-all">id: {s.id}</div>
             </div>
-          ))}
+            <div className="grid gap-2 md:grid-cols-4">
+              <Input
+                placeholder="แก้เทอม (ว่าง = ไม่เปลี่ยน)"
+                value={bulkTerm}
+                onChange={(e) => setBulkTerm(e.target.value)}
+                disabled={bulkClearTerm}
+              />
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-primary"
+                  checked={bulkClearTerm}
+                  onChange={(e) => setBulkClearTerm(e.target.checked)}
+                />
+                ล้างค่าเทอม
+              </label>
+              <Select value={bulkSlotId} onValueChange={setBulkSlotId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="ไม่เปลี่ยนเวลา" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={KEEP_SLOT}>ไม่เปลี่ยนเวลา</SelectItem>
+                  {TIME_SLOTS.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                onClick={applyBulkUpdate}
+                disabled={selectedSections.length === 0 || bulkLoading}
+              >
+                {bulkLoading ? "กำลังบันทึก..." : "บันทึกหลายรายการ"}
+              </Button>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              จะปรับเฉพาะเทอมหรือช่วงเวลา (เวลาเริ่ม-สิ้นสุด) ให้รายการที่เลือกเท่านั้น
+            </div>
+          </div>
 
-          {filtered.length === 0 && (
-            <div className="text-sm text-muted-foreground">ยังไม่มีข้อมูล Section</div>
-          )}
+          <div className="rounded-lg border bg-white">
+            <Table>
+              <TableHeader className="bg-muted/40">
+                <TableRow>
+                  <TableHead className="w-[40px]">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 accent-primary"
+                      checked={allVisibleSelected}
+                      onChange={toggleSelectAll}
+                    />
+                  </TableHead>
+                  <TableHead>วิชา</TableHead>
+                  <TableHead>วัน/เวลา</TableHead>
+                  <TableHead>ห้อง</TableHead>
+                  <TableHead>อาจารย์</TableHead>
+                  <TableHead>เทอม/ปี</TableHead>
+                  <TableHead>นักศึกษา/จอง</TableHead>
+                  <TableHead className="min-w-[240px]">แอคชั่น</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.length ? (
+                  filtered.map((s) => (
+                    <TableRow key={s.id}>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 accent-primary"
+                          checked={selectedSet.has(s.id)}
+                          onChange={() => toggleSelectOne(s.id)}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {s.course.code} {s.course.name}
+                      </TableCell>
+                      <TableCell>
+                        {s.dayOfWeek} {s.startTime}-{s.endTime}
+                      </TableCell>
+                      <TableCell>{s.room.code}</TableCell>
+                      <TableCell>
+                        {s.teacher.firstName} {s.teacher.lastName}
+                      </TableCell>
+                      <TableCell>
+                        {s.term ?? "-"} / {s.year ?? "-"}
+                      </TableCell>
+                      <TableCell>
+                        {s._count.enrollments} / {s._count.reservations}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-2">
+                          <Button size="sm" variant="outline" onClick={() => openEditDialog(s)}>
+                            แก้ไข
+                          </Button>
+                          <Button size="sm" variant="secondary" onClick={() => generate(s.id)}>
+                            สร้างตารางเรียน
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => deleteGenerated(s.id)}>
+                            ลบตารางเรียน
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => regenerate(s.id)}>
+                            สร้างใหม่
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center text-sm text-muted-foreground">
+                      ยังไม่มีข้อมูล Section
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

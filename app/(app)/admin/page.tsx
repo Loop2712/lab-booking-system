@@ -11,9 +11,19 @@ export default async function AdminDashboard() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold">แดชบอร์ดแอดมิน</h1>
-        <p className="text-sm text-muted-foreground">
-          ภาพรวมคำขอจอง การยืม-คืนกุญแจ และรายการจองล่าสุด
-        </p>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground whitespace-nowrap overflow-x-auto">
+          <Link href="/teacher/requests" className="hover:text-foreground transition">
+            ภาพรวมคำขอจอง
+          </Link>
+          <span>•</span>
+          <Link href="/admin/check" className="hover:text-foreground transition">
+            การยืม-คืนกุญแจ
+          </Link>
+          <span>•</span>
+          <Link href="/admin/reservations" className="hover:text-foreground transition">
+            รายการจองล่าสุด
+          </Link>
+        </div>
       </div>
 
       <div className="@container/main flex flex-col gap-6">

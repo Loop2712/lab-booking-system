@@ -12,10 +12,10 @@ export default async function LoginPage({
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-2xl border p-6 shadow-sm">
-        <h1 className="text-xl font-semibold">เข้าสู่ระบบ</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          เลือกประเภทผู้ใช้ แล้วกรอกรหัสผ่าน (บุคลากรใช้ YYYYMMDD)
+      <div className="w-full max-w-[480px] rounded-2xl border p-6 shadow-sm">
+        <h1 className="text-2xl font-semibold">เข้าสู่ระบบ</h1>
+        <p className="text-sm text-muted-foreground mt-2">
+          เลือกประเภทผู้ใช้ แล้วกรอกรหัสผ่านเพื่อเข้าสู่ระบบ
         </p>
 
         <div className="mt-6">

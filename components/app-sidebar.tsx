@@ -53,7 +53,7 @@ export function AppSidebar({ nav, user, brand, ...props }: AppSidebarProps) {
                   alt={brand?.title ?? "Lab Booking"}
                   width={1536}
                   height={1024}
-                  className="h-12 w-auto"
+                  className="h-14 w-auto"
                   priority
                 />
               </Link>

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TimelineBooking, TimelineRoomRow } from "@/components/rooms/rooms-timeline-table";
+import { cn } from "@/lib/utils";
 
 type Payload = {
   ok: boolean;
@@ -157,22 +158,37 @@ export default function AdminRoomsStatusTable() {
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow>
-                <TableHead className="min-w-[240px]">ห้อง</TableHead>
-                <TableHead className="min-w-[220px]">ผู้ยืม</TableHead>
-                <TableHead className="min-w-[260px]">การใช้งาน</TableHead>
-                <TableHead className="min-w-[140px]">สถานะ</TableHead>
+                <TableHead className="min-w-[240px] text-xs font-semibold text-muted-foreground">
+                  ห้อง
+                </TableHead>
+                <TableHead className="min-w-[220px] text-xs font-semibold text-muted-foreground">
+                  ผู้ยืม
+                </TableHead>
+                <TableHead className="min-w-[260px] text-xs font-semibold text-muted-foreground">
+                  การใช้งาน
+                </TableHead>
+                <TableHead className="min-w-[140px] text-xs font-semibold text-muted-foreground">
+                  สถานะ
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rooms.length ? (
-                rooms.map((room) => {
+                rooms.map((room, idx) => {
                   const isBusy = !!room.activeBooking;
                   const borrower =
                     room.activeBooking?.borrowerLabel ??
                     room.activeBooking?.requesterLabel ??
                     (room.activeBooking ? "รอผู้ยืม" : "-");
                   return (
-                    <TableRow key={room.id}>
+                    <TableRow
+                      key={room.id}
+                      className={cn(
+                        "border-border/60",
+                        idx % 2 === 0 ? "bg-white" : "bg-muted/20",
+                        "hover:bg-muted/30"
+                      )}
+                    >
                       <TableCell className="font-medium">
                         <div className="space-y-1">
                           <div>
@@ -186,7 +202,12 @@ export default function AdminRoomsStatusTable() {
                       <TableCell className="text-sm">{borrower}</TableCell>
                       <TableCell className="text-sm">{formatUsage(room.activeBooking)}</TableCell>
                       <TableCell>
-                        <Badge className={isBusy ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"}>
+                        <Badge
+                          className={cn(
+                            "h-8 px-3 text-[12px] font-semibold",
+                            isBusy ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"
+                          )}
+                        >
                           {isBusy ? "ไม่ว่าง" : "ว่าง"}
                         </Badge>
                       </TableCell>

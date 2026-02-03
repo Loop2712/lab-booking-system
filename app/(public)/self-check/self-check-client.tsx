@@ -201,9 +201,24 @@ export default function SelfCheckClient() {
         <CardHeader>
           <CardTitle className="text-base">ยืม-คืนกุญแจ</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="space-y-2">
-            <Label>โหมด</Label>
+        <CardContent className="space-y-6">
+          <div className="rounded-lg border bg-muted/20 p-3 text-sm">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline">
+                โหมด: {mode ? (mode === "CHECKIN" ? "ยืมกุญแจ" : "คืนกุญแจ") : "-"}
+              </Badge>
+              <Badge variant="outline">
+                ห้อง:{" "}
+                {selectedRoom
+                  ? `${selectedRoom.code} • ${selectedRoom.roomNumber} • ชั้น ${selectedRoom.floor}`
+                  : "-"}
+              </Badge>
+              <Badge variant="outline">สถานะ: {mode ? "พร้อมทำรายการ" : "-"}</Badge>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="text-sm font-semibold">ขั้นตอน 1: เลือกโหมด</div>
             <ToggleGroup
               type="single"
               value={mode}
@@ -217,10 +232,14 @@ export default function SelfCheckClient() {
               }}
               variant="outline"
               size="sm"
-              className="flex flex-wrap"
+              className="grid w-full grid-cols-2"
             >
-              <ToggleGroupItem value="CHECKIN">ยืมกุญแจ (Check-in)</ToggleGroupItem>
-              <ToggleGroupItem value="RETURN">คืนกุญแจ (Check-out)</ToggleGroupItem>
+              <ToggleGroupItem value="CHECKIN" className="w-full">
+                ยืมกุญแจ (Check-in)
+              </ToggleGroupItem>
+              <ToggleGroupItem value="RETURN" className="w-full">
+                คืนกุญแจ (Check-out)
+              </ToggleGroupItem>
             </ToggleGroup>
             {!mode ? (
               <div className="text-xs text-muted-foreground">กรุณาเลือกโหมดก่อนจึงจะเลือกห้องได้</div>
@@ -228,7 +247,7 @@ export default function SelfCheckClient() {
           </div>
 
           <div className="space-y-3">
-            <Label>เลือกห้อง</Label>
+            <div className="text-sm font-semibold">ขั้นตอน 2: เลือกห้อง</div>
             {loadingRooms ? (
               <div className="text-sm text-muted-foreground">กำลังโหลดรายชื่อห้อง...</div>
             ) : roomsByFloor.length === 0 ? (
@@ -237,7 +256,7 @@ export default function SelfCheckClient() {
               roomsByFloor.map((group) => (
                 <div key={group.floor} className="space-y-2">
                   <div className="text-sm font-semibold">ชั้น {group.floor}</div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {group.rooms.map((room) => (
                       <Button
                         key={room.id}
@@ -245,8 +264,13 @@ export default function SelfCheckClient() {
                         variant={roomId === room.id ? "default" : "outline"}
                         onClick={() => openScanForRoom(room.id)}
                         disabled={!mode}
+                        className="h-auto items-start justify-start gap-1 px-3 py-3 text-left"
                       >
-                        {room.code} • {room.roomNumber}
+                        <div className="text-sm font-semibold">
+                          {room.code} • {room.roomNumber}
+                        </div>
+                        <div className="text-xs text-muted-foreground">ชั้น {room.floor}</div>
+                        <div className="text-[10px] text-emerald-700">พร้อมใช้งาน</div>
                       </Button>
                     ))}
                   </div>
@@ -319,7 +343,7 @@ export default function SelfCheckClient() {
       {lookup?.ok ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">ยืนยันการทำรายการ</CardTitle>
+            <CardTitle className="text-base">ขั้นตอน 3: ยืนยันการทำรายการ</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between gap-2">
