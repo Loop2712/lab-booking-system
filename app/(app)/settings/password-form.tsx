@@ -73,7 +73,7 @@ export default function PasswordForm() {
     setNewPassword("");
     setConfirmPassword(""); 
     setTimeout(() => {
-        signOut({ callbackUrl: "/login" });
+        signOut({ callbackUrl: "/" });
     }, 1500);
   }
 

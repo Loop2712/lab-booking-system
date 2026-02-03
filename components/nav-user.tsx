@@ -80,7 +80,7 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => signOut({ callbackUrl: "/login" })}>
+            <DropdownMenuItem onSelect={() => signOut({ callbackUrl: "/" })}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

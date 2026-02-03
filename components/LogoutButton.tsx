@@ -8,7 +8,7 @@ export default function LogoutButton({ className }: { className?: string }) {
     <Button
       variant="outline"
       className={className}
-      onClick={() => signOut({ callbackUrl: "/login" })}
+      onClick={() => signOut({ callbackUrl: "/" })}
     >
       ออกจากระบบ
     </Button>

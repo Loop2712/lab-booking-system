@@ -28,7 +28,14 @@ export default async function PublicHomePage() {
         <header className="border-b border-emerald-100 bg-white/80 backdrop-blur">
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
             <div className="flex items-center gap-3">
-              <Image src="/logo.png" alt="Lab Booking Logo" width={140} height={40} priority />
+              <Image
+                src="/logo.png"
+                alt="Computer Lab Key Booking System"
+                width={1536}
+                height={1024}
+                className="h-10 w-auto"
+                priority
+              />
             </div>
 
             <nav className="hidden items-center gap-6 text-sm font-medium text-black sm:flex">

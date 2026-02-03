@@ -9,7 +9,7 @@ export type IconKey =
 export type NavItem = {
   title: string;
   href: string;
-  icon: IconKey; //  plain string
+  icon: IconKey; 
 };
 
 export const adminNav: NavItem[] = [

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,8 @@ export default function AdminRoomsPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
+  const [q, setQ] = useState("");
+  const [activeFilter, setActiveFilter] = useState<"all" | "1" | "0">("all");
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importBusy, setImportBusy] = useState(false);
   const [importMsg, setImportMsg] = useState<string | null>(null);
@@ -48,6 +51,21 @@ export default function AdminRoomsPage() {
   useEffect(() => {
     load();
   }, []);
+
+  const filteredRooms = useMemo(() => {
+    const kw = q.trim().toLowerCase();
+    return rooms.filter((room) => {
+      const hay = `${room.code} ${room.name} ${room.roomNumber} ${room.floor}`.toLowerCase();
+      const matchKeyword = !kw || hay.includes(kw);
+      const matchActive =
+        activeFilter === "all"
+          ? true
+          : activeFilter === "1"
+            ? room.isActive
+            : !room.isActive;
+      return matchKeyword && matchActive;
+    });
+  }, [rooms, q, activeFilter]);
 
   async function runImport(dryRun: boolean) {
     if (!importFile) {
@@ -170,70 +188,100 @@ export default function AdminRoomsPage() {
           {error}
         </div>
       )}
-
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Import Rooms (XLSX/CSV)</CardTitle>
+          <CardTitle className="text-base">ค้นหา / ตัวกรอง และนำเข้า</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="text-sm text-muted-foreground">
-            รูปแบบไฟล์: <span className="font-mono">code, name, roomNumber, floor, computerCount, isActive</span>
-            {" "} (isActive รองรับ <span className="font-mono">1/0</span> หรือ <span className="font-mono">true/false</span>)
-          </div>
+        <CardContent>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="space-y-4">
+              <div className="text-sm font-semibold">ค้นหา / ตัวกรอง</div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Input
+                  placeholder="ค้นหาห้อง เช่น LAB-1, 401, ชั้น 4..."
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                />
 
-          <Input
-            type="file"
-            accept=".xlsx,.xls,.csv,text/csv"
-            onChange={(e) => {
-              const f = e.target.files?.[0] ?? null;
-              setImportFile(f);
-              setImportPreview(null);
-              setImportMsg(null);
-              setImportErr(null);
-            }}
-          />
+                <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as any)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="สถานะ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">ทั้งหมด</SelectItem>
+                    <SelectItem value="1">ใช้งาน</SelectItem>
+                    <SelectItem value="0">ปิดใช้งาน</SelectItem>
+                  </SelectContent>
+                </Select>
 
-          <div className="flex flex-wrap gap-2">
-            <Button disabled={!importFile || importBusy} onClick={() => runImport(true)}>
-              {importBusy ? "กำลังทำงาน..." : "ตรวจสอบไฟล์ (Dry-run)"}
-            </Button>
-            <Button
-              variant="secondary"
-              disabled={!importFile || importBusy || !importPreview}
-              onClick={() => runImport(false)}
-              title={!importPreview ? "ต้องกด Dry-run ให้ผ่านก่อน" : ""}
-            >
-              {importBusy ? "กำลังนำเข้า..." : "นำเข้า (Upsert)"}
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/api/admin/rooms/template?format=xlsx">ดาวน์โหลดเทมเพลต (XLSX)</Link>
-            </Button>
-          </div>
-
-          {importMsg && <div className="text-sm text-green-600">{importMsg}</div>}
-          {importErr && (
-            <div className="text-sm text-red-600 whitespace-pre-wrap">
-              {importErr}
-            </div>
-          )}
-
-          {importPreview?.sample?.length ? (
-            <div className="pt-2">
-              <div className="text-sm font-semibold mb-2">ตัวอย่าง 10 แถวแรก (ผลการอ่านไฟล์)</div>
-              <div className="overflow-auto border rounded-md">
-                <pre className="text-xs p-3">{JSON.stringify(importPreview.sample, null, 2)}</pre>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={load} disabled={busy}>
+                    รีเฟรช
+                  </Button>
+                </div>
               </div>
             </div>
-          ) : null}
+
+            <div className="space-y-3">
+              <div className="text-sm font-semibold">Import Rooms (XLSX/CSV)</div>
+              <div className="text-sm text-muted-foreground">
+                รูปแบบไฟล์: <span className="font-mono">code, name, roomNumber, floor, computerCount, isActive</span>
+                {" "} (isActive รองรับ <span className="font-mono">1/0</span> หรือ <span className="font-mono">true/false</span>)
+              </div>
+
+              <Input
+                type="file"
+                accept=".xlsx,.xls,.csv,text/csv"
+                onChange={(e) => {
+                  const f = e.target.files?.[0] ?? null;
+                  setImportFile(f);
+                  setImportPreview(null);
+                  setImportMsg(null);
+                  setImportErr(null);
+                }}
+              />
+
+              <div className="flex flex-wrap gap-2">
+                <Button disabled={!importFile || importBusy} onClick={() => runImport(true)}>
+                  {importBusy ? "กำลังทำงาน..." : "ตรวจสอบไฟล์ (Dry-run)"}
+                </Button>
+                <Button
+                  variant="secondary"
+                  disabled={!importFile || importBusy || !importPreview}
+                  onClick={() => runImport(false)}
+                  title={!importPreview ? "ต้องกด Dry-run ให้ผ่านก่อน" : ""}
+                >
+                  {importBusy ? "กำลังนำเข้า..." : "นำเข้า (Upsert)"}
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/api/admin/rooms/template?format=xlsx">ดาวน์โหลดเทมเพลต (XLSX)</Link>
+                </Button>
+              </div>
+
+              {importMsg && <div className="text-sm text-green-600">{importMsg}</div>}
+              {importErr && (
+                <div className="text-sm text-red-600 whitespace-pre-wrap">
+                  {importErr}
+                </div>
+              )}
+
+              {importPreview?.sample?.length ? (
+                <div className="pt-2">
+                  <div className="text-sm font-semibold mb-2">ตัวอย่าง 10 แถวแรก (ผลการอ่านไฟล์)</div>
+                  <div className="overflow-auto border rounded-md">
+                    <pre className="text-xs p-3">{JSON.stringify(importPreview.sample, null, 2)}</pre>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">รายการห้อง</CardTitle>
-          <Button variant="outline" onClick={load} disabled={busy}>
-            รีเฟรช
-          </Button>
+          <div className="text-sm text-muted-foreground">{filteredRooms.length} ห้อง</div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -250,7 +298,7 @@ export default function AdminRoomsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rooms.map((r) => (
+              {filteredRooms.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-mono">{r.code}</TableCell>
                   <TableCell>{r.name}</TableCell>
@@ -286,10 +334,10 @@ export default function AdminRoomsPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {rooms.length === 0 && (
+              {filteredRooms.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={8} className="text-sm text-muted-foreground">
-                    ยังไม่มีข้อมูลห้อง
+                    ไม่พบข้อมูลห้อง
                   </TableCell>
                 </TableRow>
               )}
@@ -300,3 +348,4 @@ export default function AdminRoomsPage() {
     </div>
   );
 }
+

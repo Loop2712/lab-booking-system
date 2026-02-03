@@ -93,7 +93,7 @@ export default function Topbar({
             <Link href="/settings">Change password</Link>
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => signOut({ callbackUrl: "/" })}
             className="text-destructive"
           >
             Logout

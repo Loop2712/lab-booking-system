@@ -20,7 +20,7 @@ export default async function AppShell({
   const session = await getServerSession(authOptions);
   const name = session?.user?.name ?? "User";
   const email = session?.user?.email ?? "-";
-  const avatar = session?.user?.image ?? "/logo.png";
+  const avatar = session?.user?.image ?? "/logo1.png";
 
   return (
     <SidebarProvider
