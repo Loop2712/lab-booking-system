@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { verifyUserQrToken } from "@/lib/security/user-qr";
 import { addDays } from "@/lib/date/addDays";
 import { getBangkokYMD, startOfBangkokDay } from "@/lib/date/bangkok";
-import { requireScannerKey } from "../_util";
+import { requireKioskDevice } from "@/lib/kiosk-device";
 
 export const runtime = "nodejs";
 
@@ -15,7 +15,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const gate = await requireScannerKey(req);
+  const gate = await requireKioskDevice();
   if (!gate.ok) return gate.res;
 
   const body = bodySchema.safeParse(await req.json().catch(() => null));

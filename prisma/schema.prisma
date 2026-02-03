@@ -96,7 +96,6 @@ model User {
 
   passwordTokens          PasswordResetToken[]
   reservationParticipants ReservationParticipant[]
-  kioskTokens             KioskToken[]           @relation("KioskTokenCreator")
 
   @@index([role])
 }
@@ -262,16 +261,14 @@ model Loan {
 }
 
 model KioskToken {
-  id          String   @id @default(cuid())
-  token       String   @unique
-  expiresAt   DateTime
-  revokedAt   DateTime?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  token     String   @unique
+  isActive  Boolean  @default(true)
+  pairedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
 
-  createdById String?
-  createdBy   User?    @relation("KioskTokenCreator", fields: [createdById], references: [id])
-
-  @@index([expiresAt])
+  @@index([isActive])
   @@index([revokedAt])
 }
 

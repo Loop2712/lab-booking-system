@@ -58,6 +58,11 @@ export type Reservation = Prisma.ReservationModel
  */
 export type Loan = Prisma.LoanModel
 /**
+ * Model KioskToken
+ * 
+ */
+export type KioskToken = Prisma.KioskTokenModel
+/**
  * Model Account
  * 
  */

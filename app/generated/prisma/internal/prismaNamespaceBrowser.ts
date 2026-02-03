@@ -59,6 +59,7 @@ export const ModelName = {
   Enrollment: 'Enrollment',
   Reservation: 'Reservation',
   Loan: 'Loan',
+  KioskToken: 'KioskToken',
   Account: 'Account',
   Session: 'Session',
   VerificationToken: 'VerificationToken',
@@ -202,6 +203,18 @@ export const LoanScalarFieldEnum = {
 } as const
 
 export type LoanScalarFieldEnum = (typeof LoanScalarFieldEnum)[keyof typeof LoanScalarFieldEnum]
+
+
+export const KioskTokenScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  isActive: 'isActive',
+  pairedAt: 'pairedAt',
+  createdAt: 'createdAt',
+  revokedAt: 'revokedAt'
+} as const
+
+export type KioskTokenScalarFieldEnum = (typeof KioskTokenScalarFieldEnum)[keyof typeof KioskTokenScalarFieldEnum]
 
 
 export const AccountScalarFieldEnum = {

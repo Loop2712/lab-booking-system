@@ -80,12 +80,12 @@ export type PrismaVersion = {
 }
 
 /**
- * Prisma Client JS version: 7.2.0
- * Query Engine version: 0c8ef2ce45c83248ab3df073180d5eda9e8be7a3
+ * Prisma Client JS version: 7.1.0
+ * Query Engine version: ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba
  */
 export const prismaVersion: PrismaVersion = {
-  client: "7.2.0",
-  engine: "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3"
+  client: "7.1.0",
+  engine: "ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba"
 }
 
 /**
@@ -392,6 +392,7 @@ export const ModelName = {
   Enrollment: 'Enrollment',
   Reservation: 'Reservation',
   Loan: 'Loan',
+  KioskToken: 'KioskToken',
   Account: 'Account',
   Session: 'Session',
   VerificationToken: 'VerificationToken',
@@ -412,7 +413,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "room" | "key" | "course" | "section" | "enrollment" | "reservation" | "loan" | "account" | "session" | "verificationToken" | "passwordResetToken" | "reservationParticipant"
+    modelProps: "user" | "room" | "key" | "course" | "section" | "enrollment" | "reservation" | "loan" | "kioskToken" | "account" | "session" | "verificationToken" | "passwordResetToken" | "reservationParticipant"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1008,6 +1009,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    KioskToken: {
+      payload: Prisma.$KioskTokenPayload<ExtArgs>
+      fields: Prisma.KioskTokenFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.KioskTokenFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KioskTokenPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.KioskTokenFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KioskTokenPayload>
+        }
+        findFirst: {
+          args: Prisma.KioskTokenFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KioskTokenPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.KioskTokenFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KioskTokenPayload>
+        }
+        findMany: {
+          args: Prisma.KioskTokenFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KioskTokenPayload>[]
+        }
+        create: {
+          args: Prisma.KioskTokenCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KioskTokenPayload>
+        }
+        createMany: {
+          args: Prisma.KioskTokenCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.KioskTokenCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KioskTokenPayload>[]
+        }
+        delete: {
+          args: Prisma.KioskTokenDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KioskTokenPayload>
+        }
+        update: {
+          args: Prisma.KioskTokenUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KioskTokenPayload>
+        }
+        deleteMany: {
+          args: Prisma.KioskTokenDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.KioskTokenUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.KioskTokenUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KioskTokenPayload>[]
+        }
+        upsert: {
+          args: Prisma.KioskTokenUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KioskTokenPayload>
+        }
+        aggregate: {
+          args: Prisma.KioskTokenAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKioskToken>
+        }
+        groupBy: {
+          args: Prisma.KioskTokenGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KioskTokenGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.KioskTokenCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KioskTokenCountAggregateOutputType> | number
+        }
+      }
+    }
     Account: {
       payload: Prisma.$AccountPayload<ExtArgs>
       fields: Prisma.AccountFieldRefs
@@ -1539,6 +1614,18 @@ export const LoanScalarFieldEnum = {
 export type LoanScalarFieldEnum = (typeof LoanScalarFieldEnum)[keyof typeof LoanScalarFieldEnum]
 
 
+export const KioskTokenScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  isActive: 'isActive',
+  pairedAt: 'pairedAt',
+  createdAt: 'createdAt',
+  revokedAt: 'revokedAt'
+} as const
+
+export type KioskTokenScalarFieldEnum = (typeof KioskTokenScalarFieldEnum)[keyof typeof KioskTokenScalarFieldEnum]
+
+
 export const AccountScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -1891,6 +1978,7 @@ export type GlobalOmitConfig = {
   enrollment?: Prisma.EnrollmentOmit
   reservation?: Prisma.ReservationOmit
   loan?: Prisma.LoanOmit
+  kioskToken?: Prisma.KioskTokenOmit
   account?: Prisma.AccountOmit
   session?: Prisma.SessionOmit
   verificationToken?: Prisma.VerificationTokenOmit

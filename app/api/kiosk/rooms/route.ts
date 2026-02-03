@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { requireScannerKey } from "../_util";
+import { requireKioskDevice } from "@/lib/kiosk-device";
 
 export const runtime = "nodejs";
 
-export async function GET(req: Request) {
-  const gate = await requireScannerKey(req);
+export async function GET() {
+  const gate = await requireKioskDevice();
   if (!gate.ok) return gate.res;
 
   const rooms = await prisma.room.findMany({

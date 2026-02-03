@@ -5,16 +5,13 @@ import { Kanit } from "next/font/google";
 import { authOptions } from "@/lib/auth/options";
 import { Button } from "@/components/ui/button";
 import { dashboardHref } from "../dashboardHref";
-import SelfCheckClient from "./self-check-client";
-import { requireKioskDevice } from "@/lib/kiosk-device";
 
 const kanit = Kanit({
   subsets: ["latin", "thai"],
   weight: ["300", "400", "600", "700"],
 });
 
-export default async function SelfCheckPage() {
-  await requireKioskDevice("page");
+export default async function NotAllowedPage() {
   const session = await getServerSession(authOptions);
   const role = (session as any)?.role as string | undefined;
 
@@ -39,12 +36,6 @@ export default async function SelfCheckPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              <nav className="hidden items-center gap-6 text-sm font-medium text-black sm:flex">
-                <Link href="/self-check" className="hover:text-[#6ABE75] transition">
-                  ยืม-คืน
-                </Link>
-              </nav>
-
               <Button asChild className="bg-[#6ABE75] text-white hover:bg-[#5AAE67]">
                 <Link href={buttonHref}>{buttonText}</Link>
               </Button>
@@ -52,17 +43,20 @@ export default async function SelfCheckPage() {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl px-6 py-10">
-          <div className="space-y-3">
-            <h1 className="text-2xl font-semibold text-[#6ABE75]">ยืม-คืนกุญแจ</h1>
-            <div className="h-1 w-72 rounded-full bg-[#6ABE75]/60" />
+        <main className="mx-auto w-full max-w-6xl px-6 py-16">
+          <div className="max-w-xl space-y-4">
+            <h1 className="text-2xl font-semibold text-[#6ABE75]">ใช้ได้เฉพาะเครื่องเคาน์เตอร์</h1>
             <p className="text-sm text-black/70">
-              บริการยืม-คืนกุญแจผ่าน Kiosk สำหรับอุปกรณ์ที่ถูกจับคู่ไว้เท่านั้น
+              หน้านี้เปิดใช้งานได้เฉพาะอุปกรณ์ที่ถูกจับคู่ไว้แล้ว หากต้องการใช้งาน โปรดติดต่อผู้ดูแลระบบ
             </p>
-          </div>
-
-          <div className="mt-6">
-            <SelfCheckClient />
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="outline">
+                <Link href="/">กลับหน้าแรก</Link>
+              </Button>
+              <Button asChild className="bg-[#6ABE75] text-white hover:bg-[#5AAE67]">
+                <Link href={buttonHref}>{buttonText}</Link>
+              </Button>
+            </div>
           </div>
         </main>
 

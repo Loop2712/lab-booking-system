@@ -22,12 +22,7 @@ export async function PATCH(
   try {
     const token = await prisma.kioskToken.update({
       where: { id },
-      data: { revokedAt: new Date() },
-      include: {
-        createdBy: {
-          select: { id: true, firstName: true, lastName: true, email: true },
-        },
-      },
+      data: { isActive: false, revokedAt: new Date() },
     });
 
     return NextResponse.json({ ok: true, token });

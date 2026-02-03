@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,18 +9,11 @@ import { Badge } from "@/components/ui/badge";
 type KioskToken = {
   id: string;
   token: string;
+  isActive: boolean;
+  pairedAt: string;
   createdAt: string;
-  expiresAt: string;
   revokedAt: string | null;
-  createdBy?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string | null;
-  } | null;
 };
-
-const TOKEN_TTL_HOURS = 15;
 
 function formatDateTime(value: string | Date) {
   try {
@@ -32,9 +26,7 @@ function formatDateTime(value: string | Date) {
 
 function getStatus(token: KioskToken) {
   if (token.revokedAt) return "REVOKED";
-  const exp = new Date(token.expiresAt).getTime();
-  if (Number.isNaN(exp)) return "UNKNOWN";
-  return exp <= Date.now() ? "EXPIRED" : "ACTIVE";
+  return token.isActive ? "ACTIVE" : "UNPAIRED";
 }
 
 export default function AdminSelfCheckPage() {
@@ -52,7 +44,7 @@ export default function AdminSelfCheckPage() {
       const res = await fetch("/api/admin/kiosk-tokens", { cache: "no-store" });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json?.ok) {
-        setError(json?.message || "โหลด Kiosk Token ไม่สำเร็จ");
+        setError(json?.message || "โหลดรายการ Kiosk Device ไม่สำเร็จ");
         setLoading(false);
         return;
       }
@@ -61,6 +53,26 @@ export default function AdminSelfCheckPage() {
     } catch (e: any) {
       setError(e?.message || "ERROR");
       setLoading(false);
+    }
+  }
+
+  async function revokeToken(id: string) {
+    setRevokingId(id);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/kiosk-tokens/${id}`, { method: "PATCH" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.ok) {
+        setError(json?.message || "ยกเลิกอุปกรณ์ไม่สำเร็จ");
+        setRevokingId(null);
+        return;
+      }
+      const token = json.token as KioskToken;
+      setItems((prev) => prev.map((item) => (item.id === token.id ? token : item)));
+      setRevokingId(null);
+    } catch (e: any) {
+      setError(e?.message || "ERROR");
+      setRevokingId(null);
     }
   }
 
@@ -85,27 +97,7 @@ export default function AdminSelfCheckPage() {
     }
   }
 
-  async function revokeToken(id: string) {
-    setRevokingId(id);
-    setError(null);
-    try {
-      const res = await fetch(`/api/admin/kiosk-tokens/${id}`, { method: "PATCH" });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || !json?.ok) {
-        setError(json?.message || "ยกเลิก Token ไม่สำเร็จ");
-        setRevokingId(null);
-        return;
-      }
-      const token = json.token as KioskToken;
-      setItems((prev) => prev.map((item) => (item.id === token.id ? token : item)));
-      setRevokingId(null);
-    } catch (e: any) {
-      setError(e?.message || "ERROR");
-      setRevokingId(null);
-    }
-  }
-
-  const activeCount = useMemo(() => items.filter((t) => getStatus(t) === "ACTIVE").length, [items]);
+  const activeCount = useMemo(() => items.filter((t) => t.isActive && !t.revokedAt).length, [items]);
 
   useEffect(() => {
     loadTokens();
@@ -113,11 +105,19 @@ export default function AdminSelfCheckPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Kiosk Token</h1>
+      <div className="space-y-2">
+        <h1 className="text-2xl font-semibold">Kiosk Device</h1>
         <p className="text-sm text-muted-foreground">
-          จัดการ Kiosk Token สำหรับหน้า /self-check (อายุ {TOKEN_TTL_HOURS} ชั่วโมง)
+          จัดการอุปกรณ์ที่จับคู่สำหรับหน้า /self-check
         </p>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild className="bg-[#6ABE75] text-white hover:bg-[#5AAE67]">
+            <Link href="/kiosk/pair">ไปหน้าจับคู่เครื่อง</Link>
+          </Button>
+          <Button variant="outline" onClick={loadTokens} disabled={loading}>
+            รีเฟรช
+          </Button>
+        </div>
       </div>
 
       {error ? (
@@ -128,24 +128,20 @@ export default function AdminSelfCheckPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">สร้าง Kiosk Token ใหม่</CardTitle>
+          <CardTitle className="text-base">สร้าง Kiosk Token สำหรับจับคู่</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <Button onClick={createToken} disabled={creating}>
-              {creating ? "กำลังสร้าง..." : "สร้าง Kiosk Token (15 ชั่วโมง)"}
-            </Button>
-            <Button variant="outline" onClick={loadTokens} disabled={loading}>
-              รีเฟรช
+              {creating ? "กำลังสร้าง..." : "สร้าง Kiosk Token"}
             </Button>
           </div>
-
           {latestToken ? (
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-50 px-4 py-3 text-sm">
               <div className="font-medium text-emerald-900">Token ที่สร้างล่าสุด</div>
               <div className="mt-1 font-mono break-all text-emerald-900">{latestToken.token}</div>
               <div className="mt-1 text-xs text-emerald-800">
-                หมดอายุ: {formatDateTime(latestToken.expiresAt)}
+                สร้างเมื่อ: {formatDateTime(latestToken.createdAt)}
               </div>
               <div className="mt-2">
                 <Button
@@ -163,14 +159,14 @@ export default function AdminSelfCheckPage() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">รายการ Token</CardTitle>
+          <CardTitle className="text-base">รายการอุปกรณ์</CardTitle>
           <div className="text-sm text-muted-foreground">Active: {activeCount}</div>
         </CardHeader>
         <CardContent className="space-y-3">
           {loading ? (
             <div className="text-sm text-muted-foreground">กำลังโหลด...</div>
           ) : items.length === 0 ? (
-            <div className="text-sm text-muted-foreground">ยังไม่มี Token</div>
+            <div className="text-sm text-muted-foreground">ยังไม่มีอุปกรณ์ที่จับคู่</div>
           ) : (
             items.map((item) => {
               const status = getStatus(item);
@@ -183,15 +179,19 @@ export default function AdminSelfCheckPage() {
                     <div className="font-mono break-all text-sm">{item.token}</div>
                     <Badge variant={statusVariant as any}>{status}</Badge>
                   </div>
+                  {item.isActive ? (
+                    <div className="text-xs text-muted-foreground">
+                      จับคู่เมื่อ: {formatDateTime(item.pairedAt)}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-muted-foreground">ยังไม่ถูกจับคู่</div>
+                  )}
                   <div className="text-xs text-muted-foreground">
                     สร้างเมื่อ: {formatDateTime(item.createdAt)}
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    หมดอายุ: {formatDateTime(item.expiresAt)}
-                  </div>
-                  {item.createdBy ? (
+                  {item.revokedAt ? (
                     <div className="text-xs text-muted-foreground">
-                      สร้างโดย: {item.createdBy.firstName} {item.createdBy.lastName} ({item.createdBy.email ?? "-"})
+                      ถูกยกเลิกเมื่อ: {formatDateTime(item.revokedAt)}
                     </div>
                   ) : null}
                   <div className="flex flex-wrap gap-2">
@@ -200,15 +200,15 @@ export default function AdminSelfCheckPage() {
                       variant="outline"
                       onClick={() => navigator.clipboard.writeText(item.token)}
                     >
-                      คัดลอก
+                      คัดลอก Token
                     </Button>
                     <Button
                       size="sm"
                       variant="destructive"
-                      disabled={status !== "ACTIVE" || revokingId === item.id}
+                      disabled={!item.isActive || !!item.revokedAt || revokingId === item.id}
                       onClick={() => revokeToken(item.id)}
                     >
-                      {revokingId === item.id ? "กำลังยกเลิก..." : "ยกเลิก Token"}
+                      {revokingId === item.id ? "กำลังยกเลิก..." : "ยกเลิกอุปกรณ์"}
                     </Button>
                   </div>
                 </div>

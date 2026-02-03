@@ -21,9 +21,7 @@ type LookupResponse =
   | { ok: true; user: any; room: any; reservation: any; mode: "CHECKIN" | "RETURN" }
   | { ok: false; message: string; detail?: any };
 
-const LS_KEY = "scanner_kiosk_key";
-const LS_EXPIRES = "scanner_kiosk_key_expires";
-const TOKEN_TTL_MS = 15 * 60 * 60 * 1000;
+const API_BASE = "/self-check/api";
 
 function formatTime(dt: string) {
   try {
@@ -33,21 +31,13 @@ function formatTime(dt: string) {
   }
 }
 
-function formatExpire(ts: number | null) {
-  if (!ts) return "";
-  try {
-    return new Date(ts).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" });
-  } catch {
-    return String(ts);
+function redirectNotAllowed() {
+  if (typeof window !== "undefined") {
+    window.location.href = "/not-allowed";
   }
 }
 
 export default function SelfCheckClient() {
-  const [kioskToken, setKioskToken] = useState<string>("");
-  const [tokenSaved, setTokenSaved] = useState<boolean>(false);
-  const [tokenExpiresAt, setTokenExpiresAt] = useState<number | null>(null);
-  const [tokenError, setTokenError] = useState<string | null>(null);
-
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomId, setRoomId] = useState<string>("");
   const [mode, setMode] = useState<"CHECKIN" | "RETURN" | "">("");
@@ -62,7 +52,7 @@ export default function SelfCheckClient() {
   const [loadingLookup, setLoadingLookup] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
-  const ready = useMemo(() => tokenSaved && !!roomId && !!mode, [tokenSaved, roomId, mode]);
+  const ready = useMemo(() => !!roomId && !!mode, [roomId, mode]);
   const selectedRoom = useMemo(() => rooms.find((room) => room.id === roomId) ?? null, [rooms, roomId]);
   const roomsByFloor = useMemo(() => {
     const map = new Map<number, Room[]>();
@@ -86,72 +76,15 @@ export default function SelfCheckClient() {
       }));
   }, [rooms]);
 
-  function clearToken() {
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem(LS_KEY);
-      window.localStorage.removeItem(LS_EXPIRES);
-    }
-    setKioskToken("");
-    setTokenSaved(false);
-    setTokenExpiresAt(null);
-    setTokenError(null);
-    setErr(null);
-    setRooms([]);
-    setRoomId("");
-    setLookup(null);
-    setToken("");
-    setScanOpen(false);
-  }
-
-  function loadSavedToken() {
-    if (typeof window === "undefined") return;
-    const saved = window.localStorage.getItem(LS_KEY) || "";
-    const expiresRaw = window.localStorage.getItem(LS_EXPIRES) || "";
-    if (!saved) return;
-
-    const now = Date.now();
-    let expiresAt = Number(expiresRaw);
-    if (!expiresAt || Number.isNaN(expiresAt)) {
-      expiresAt = now + TOKEN_TTL_MS;
-      window.localStorage.setItem(LS_EXPIRES, String(expiresAt));
-    }
-
-    if (expiresAt <= now) {
-      clearToken();
-      setTokenError("Kiosk Token หมดอายุแล้ว กรุณาใส่ใหม่");
-      return;
-    }
-
-    setKioskToken(saved);
-    setTokenSaved(true);
-    setTokenExpiresAt(expiresAt);
-  }
-
-  function saveToken() {
-    const value = kioskToken.trim();
-    if (!value || typeof window === "undefined") return;
-    const expiresAt = Date.now() + TOKEN_TTL_MS;
-    window.localStorage.setItem(LS_KEY, value);
-    window.localStorage.setItem(LS_EXPIRES, String(expiresAt));
-    setTokenSaved(true);
-    setTokenExpiresAt(expiresAt);
-    setTokenError(null);
-  }
-
-  async function fetchRooms(k: string) {
+  async function fetchRooms() {
     setLoadingRooms(true);
     setErr(null);
     try {
-      const res = await fetch("/api/kiosk/rooms", {
-        headers: { "x-scanner-key": k },
-        cache: "no-store",
-      });
+      const res = await fetch(`${API_BASE}/rooms`, { cache: "no-store" });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json?.ok) {
-        if (json?.message === "SCANNER_KEY_INVALID") {
-          clearToken();
-          setTokenError("Kiosk Token ไม่ถูกต้องหรือหมดอายุแล้ว");
-          setLoadingRooms(false);
+        if (json?.message === "KIOSK_DEVICE_INVALID") {
+          redirectNotAllowed();
           return;
         }
         setErr(json?.message || "โหลดรายชื่อห้องไม่สำเร็จ");
@@ -169,30 +102,24 @@ export default function SelfCheckClient() {
   }
 
   async function doLookup(scannedToken?: string) {
-    const k = kioskToken.trim();
     const t = (scannedToken ?? token).trim();
-    if (!k || !roomId || !mode || !t) return;
+    if (!roomId || !mode || !t) return;
 
     setLoadingLookup(true);
     setErr(null);
     setLookup(null);
 
     try {
-      const res = await fetch("/api/kiosk/lookup", {
+      const res = await fetch(`${API_BASE}/lookup`, {
         method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-scanner-key": k,
-        },
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({ roomId, token: t, mode }),
       });
 
       const json = (await res.json().catch(() => ({}))) as LookupResponse;
       if (!res.ok || !json?.ok) {
-        if ((json as any)?.message === "SCANNER_KEY_INVALID") {
-          clearToken();
-          setTokenError("Kiosk Token ไม่ถูกต้องหรือหมดอายุแล้ว");
-          setLoadingLookup(false);
+        if ((json as any)?.message === "KIOSK_DEVICE_INVALID") {
+          redirectNotAllowed();
           return;
         }
         setLookup(json);
@@ -212,32 +139,26 @@ export default function SelfCheckClient() {
 
   async function confirm() {
     if (!lookup || !lookup.ok) return;
-    const k = kioskToken.trim();
     const t = token.trim();
     const reservationId = lookup.reservation?.id;
 
-    if (!k || !t || !reservationId) return;
+    if (!t || !reservationId) return;
 
     setConfirming(true);
     setErr(null);
 
     try {
-      const endpoint = lookup.mode === "CHECKIN" ? "/api/kiosk/check-in" : "/api/kiosk/return";
+      const endpoint = lookup.mode === "CHECKIN" ? `${API_BASE}/check-in` : `${API_BASE}/return`;
       const res = await fetch(endpoint, {
         method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-scanner-key": k,
-        },
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({ reservationId, userToken: t }),
       });
 
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json?.ok) {
-        if ((json as any)?.message === "SCANNER_KEY_INVALID") {
-          clearToken();
-          setTokenError("Kiosk Token ไม่ถูกต้องหรือหมดอายุแล้ว");
-          setConfirming(false);
+        if ((json as any)?.message === "KIOSK_DEVICE_INVALID") {
+          redirectNotAllowed();
           return;
         }
         setErr(json?.message || "ยืนยันไม่สำเร็จ");
@@ -256,7 +177,7 @@ export default function SelfCheckClient() {
   }
 
   function openScanForRoom(id: string) {
-    if (!tokenSaved || !mode) return;
+    if (!mode) return;
     setRoomId(id);
     setLookup(null);
     setErr(null);
@@ -265,7 +186,7 @@ export default function SelfCheckClient() {
   }
 
   useEffect(() => {
-    loadSavedToken();
+    fetchRooms();
   }, []);
 
   useEffect(() => {
@@ -274,80 +195,8 @@ export default function SelfCheckClient() {
     }
   }, [scanOpen]);
 
-  useEffect(() => {
-    if (!tokenExpiresAt) return;
-    const ms = tokenExpiresAt - Date.now();
-    if (ms <= 0) {
-      clearToken();
-      setTokenError("Kiosk Token หมดอายุแล้ว กรุณาใส่ใหม่");
-      return;
-    }
-    const timer = setTimeout(() => {
-      clearToken();
-      setTokenError("Kiosk Token หมดอายุแล้ว กรุณาใส่ใหม่");
-    }, ms);
-    return () => clearTimeout(timer);
-  }, [tokenExpiresAt]);
-
-  useEffect(() => {
-    if (tokenSaved && kioskToken.trim()) {
-      fetchRooms(kioskToken.trim());
-    }
-  }, [tokenSaved, kioskToken]);
-
   return (
     <div className="space-y-6">
-      {!tokenSaved ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Kiosk Token</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="rounded-xl border border-amber-400/40 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              หน้านี้ใช้ได้เฉพาะสถานที่ที่กำหนดเท่านั้น กรุณาใส่ Kiosk Token
-            </div>
-            <div className="space-y-1">
-              <Label>Kiosk Token</Label>
-              <Input
-                value={kioskToken}
-                onChange={(e) => setKioskToken(e.target.value)}
-                placeholder="ใส่ Kiosk Token"
-                type="password"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={saveToken} disabled={!kioskToken.trim()}>
-                บันทึก Kiosk Token
-              </Button>
-              <Button variant="outline" onClick={clearToken} disabled={!kioskToken.trim()}>
-                ล้าง
-              </Button>
-            </div>
-            {tokenError ? (
-              <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
-                {tokenError}
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Kiosk Token ใช้งานอยู่</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="text-sm text-muted-foreground">
-              หมดอายุเมื่อ: <span className="font-medium text-foreground">{formatExpire(tokenExpiresAt)}</span>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={clearToken}>
-                ล้าง Kiosk Token
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       <Card>
         <CardHeader>
           <CardTitle className="text-base">ยืม-คืนกุญแจ</CardTitle>
@@ -380,9 +229,7 @@ export default function SelfCheckClient() {
 
           <div className="space-y-3">
             <Label>เลือกห้อง</Label>
-            {!tokenSaved ? (
-              <div className="text-sm text-muted-foreground">กรุณาใส่ Kiosk Token ก่อน</div>
-            ) : loadingRooms ? (
+            {loadingRooms ? (
               <div className="text-sm text-muted-foreground">กำลังโหลดรายชื่อห้อง...</div>
             ) : roomsByFloor.length === 0 ? (
               <div className="text-sm text-muted-foreground">ไม่พบข้อมูลห้อง</div>
@@ -397,7 +244,7 @@ export default function SelfCheckClient() {
                         type="button"
                         variant={roomId === room.id ? "default" : "outline"}
                         onClick={() => openScanForRoom(room.id)}
-                        disabled={!tokenSaved || !mode}
+                        disabled={!mode}
                       >
                         {room.code} • {room.roomNumber}
                       </Button>
@@ -449,9 +296,7 @@ export default function SelfCheckClient() {
                 if (e.key === "Enter") doLookup(e.currentTarget.value);
               }}
             />
-            <div className="text-xs text-muted-foreground">
-              กด Enter เพื่อค้นหา หรือกดปุ่ม “ค้นหา”
-            </div>
+            <div className="text-xs text-muted-foreground">กด Enter เพื่อค้นหา หรือกดปุ่ม “ค้นหา”</div>
           </div>
 
           {scanOpen && err ? (

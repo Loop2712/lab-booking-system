@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
 import { verifyUserQrToken } from "@/lib/security/user-qr";
-import { requireScannerKey } from "../_util";
+import { requireKioskDevice } from "@/lib/kiosk-device";
 
 export const runtime = "nodejs";
 
@@ -12,7 +12,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const gate = await requireScannerKey(req);
+  const gate = await requireKioskDevice();
   if (!gate.ok) return gate.res;
 
   const body = bodySchema.safeParse(await req.json().catch(() => null));
