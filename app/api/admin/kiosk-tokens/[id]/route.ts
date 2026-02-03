@@ -8,13 +8,14 @@ export const runtime = "nodejs";
 
 export async function PATCH(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const resolved = await params;
   const session = await getServerSession(authOptions);
   const guard = requireApiRole(session, ["ADMIN"], { requireUid: true });
   if (!guard.ok) return guard.response;
 
-  const id = params.id;
+  const id = resolved.id;
   if (!id) {
     return NextResponse.json({ ok: false, message: "BAD_ID" }, { status: 400 });
   }

@@ -54,16 +54,11 @@ export async function POST(req: Request) {
       // ✅ ตรวจสิทธิ์คนคืน (แนะนำให้ใช้ rule เดียวกับคนยืม)
       if (resv.type === "IN_CLASS") {
         if (!resv.sectionId) return { ok: false as const, status: 400, message: "MISSING_SECTION" };
-        if (resv.loan?.borrowerId !== returnedById) {
-          const enrolled = await tx.enrollment.findFirst({
-            where: { sectionId: resv.sectionId, studentId: returnedById },
-            select: { id: true },
-          });
-          if (!enrolled) {
-            const enrollCount = await tx.enrollment.count({ where: { sectionId: resv.sectionId } });
-            if (enrollCount > 0) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
-          }
-        }
+        const enrolled = await tx.enrollment.findFirst({
+          where: { sectionId: resv.sectionId, studentId: returnedById },
+          select: { id: true },
+        });
+        if (!enrolled) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
       } else {
         if (returnedById !== resv.requesterId) {
           const p = await tx.reservationParticipant.findFirst({

@@ -4,7 +4,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
-import { findSlot } from "@/lib/reserve/slots";
+function toMinutes(value: string) {
+  const [h, m] = value.split(":").map((n) => Number(n));
+  return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
+}
+
+function isValidTime(value: string) {
+  if (!/^\d{2}:\d{2}$/.test(value)) return false;
+  const [h, m] = value.split(":").map((n) => Number(n));
+  return h >= 0 && h <= 23 && m >= 0 && m <= 59;
+}
 
 export const runtime = "nodejs";
 
@@ -44,10 +53,15 @@ export async function POST(req: Request) {
   if (!guard.ok) return guard.response;
 
   const body = createSchema.parse(await req.json());
-  const slotId = `${body.startTime}-${body.endTime}`;
-  if (!findSlot(slotId)) {
+  if (!isValidTime(body.startTime) || !isValidTime(body.endTime)) {
     return NextResponse.json(
-      { ok: false, message: "INVALID_TIME_SLOT" },
+      { ok: false, message: "INVALID_TIME_FORMAT" },
+      { status: 400 }
+    );
+  }
+  if (toMinutes(body.endTime) <= toMinutes(body.startTime)) {
+    return NextResponse.json(
+      { ok: false, message: "INVALID_TIME_RANGE" },
       { status: 400 }
     );
   }

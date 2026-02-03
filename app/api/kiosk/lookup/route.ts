@@ -71,7 +71,6 @@ export async function POST(req: Request) {
           { requesterId: user.id },
           { participants: { some: { userId: user.id } } },
           { type: "IN_CLASS", section: { enrollments: { some: { studentId: user.id } } } },
-          { type: "IN_CLASS", section: { enrollments: { none: {} } } },
         ],
       },
       orderBy: { startAt: "asc" },

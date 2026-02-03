@@ -55,6 +55,10 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
       setError("เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น");
       return;
     }
+    if (startMin < 7 * 60 || endMin > 21 * 60) {
+      setError("จองได้เฉพาะช่วงเวลา 07:00 - 21:00");
+      return;
+    }
 
     setLoading(true);
 
@@ -91,6 +95,8 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
           ? "ช่วงเวลาไม่ถูกต้อง"
           : json?.message === "CONFLICT_WITH_CLASS_SCHEDULE"
           ? "ช่วงเวลานี้ทับกับตารางเรียนของห้องนี้ กรุณาเลือกเวลาอื่น"
+          : json?.message === "TIME_OUT_OF_RANGE"
+          ? "จองได้เฉพาะช่วงเวลา 07:00 - 21:00"
           : "จองไม่สำเร็จ กรุณาลองใหม่";
 
       setError(msg);
@@ -132,12 +138,24 @@ export default function ReserveForm({ rooms }: { rooms: RoomItem[] }) {
 
       <div className="space-y-2">
         <Label>เวลาเริ่มต้น</Label>
-        <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+        <Input
+          type="time"
+          min="07:00"
+          max="21:00"
+          value={startTime}
+          onChange={(e) => setStartTime(e.target.value)}
+        />
       </div>
 
       <div className="space-y-2">
         <Label>เวลาสิ้นสุด</Label>
-        <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+        <Input
+          type="time"
+          min="07:00"
+          max="21:00"
+          value={endTime}
+          onChange={(e) => setEndTime(e.target.value)}
+        />
       </div>
 
       <div className="space-y-2">

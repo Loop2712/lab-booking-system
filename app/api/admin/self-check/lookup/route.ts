@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   if (!user || !user.isActive) {
     return NextResponse.json({ ok: false, message: "USER_NOT_FOUND" }, { status: 404 });
   }
-  if (user.role !== "STUDENT") {
+  if (user.role !== "STUDENT" && user.role !== "TEACHER") {
     return NextResponse.json({ ok: false, message: "ROLE_NOT_ALLOWED" }, { status: 403 });
   }
 

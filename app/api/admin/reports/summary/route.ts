@@ -1,95 +1,99 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
-import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
+import { requireAdmin } from "@/lib/auth/requireAdmin";
+import {
+  buildReservationWhere,
+  getReportDateRange,
+  normalizeReportFilters,
+  reportFilterSchema,
+} from "@/lib/reports/filters";
 
 export const runtime = "nodejs";
 
-function startOfDayUTC(ymd: string) {
-  return new Date(`${ymd}T00:00:00.000Z`);
+function getGroupCount(
+  item: { _count?: boolean | { _all?: number | null } | null } | null
+) {
+  if (!item || !item._count || typeof item._count === "boolean") return 0;
+  return item._count._all ?? 0;
 }
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  const guard = requireApiRole(session, ["ADMIN"]);
+  const guard = await requireAdmin();
   if (!guard.ok) return guard.response;
 
   const url = new URL(req.url);
-  const from = url.searchParams.get("from");
-  const to = url.searchParams.get("to");
-  const roomId = url.searchParams.get("roomId") || "ALL";
-  const type = url.searchParams.get("type") || "ALL";
-  const status = url.searchParams.get("status") || "ALL";
-
-  if (!from || !to) return NextResponse.json({ ok: false, message: "BAD_RANGE" }, { status: 400 });
-
-  const where: any = {
-    date: { gte: startOfDayUTC(from), lte: startOfDayUTC(to) },
-  };
-  if (roomId !== "ALL") where.roomId = roomId;
-  if (type !== "ALL") where.type = type;
-  if (status !== "ALL") where.status = status;
-
-  const total = await prisma.reservation.count({ where });
-
-  const byRoom = await prisma.reservation.groupBy({
-    by: ["roomId"],
-    where,
-    _count: { _all: true },
-    orderBy: { _count: { roomId: "desc" } },
+  const parsed = reportFilterSchema.safeParse({
+    dateFrom: url.searchParams.get("dateFrom"),
+    dateTo: url.searchParams.get("dateTo"),
+    type: url.searchParams.get("type") ?? undefined,
+    status: url.searchParams.get("status") ?? undefined,
+    roomId: url.searchParams.get("roomId") ?? undefined,
+    room: url.searchParams.get("room") ?? undefined,
+    keyId: url.searchParams.get("keyId") ?? undefined,
+    key: url.searchParams.get("key") ?? undefined,
+    requester: url.searchParams.get("requester") ?? undefined,
   });
 
-  const roomMap = await prisma.room.findMany({
-    where: { id: { in: byRoom.map((x) => x.roomId).filter(Boolean) } },
-    select: { id: true, code: true, name: true },
-  });
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, message: "INVALID_QUERY", detail: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
 
-  const roomLabel = new Map(roomMap.map((r) => [r.id, `${r.code} — ${r.name}`]));
+  const filters = normalizeReportFilters(parsed.data);
+  const range = getReportDateRange(filters.dateFrom, filters.dateTo);
+  if (!range) {
+    return NextResponse.json(
+      { ok: false, message: "INVALID_DATE_RANGE" },
+      { status: 400 }
+    );
+  }
 
-  const byType = await prisma.reservation.groupBy({
-    by: ["type"],
-    where,
-    _count: { _all: true },
-  });
+  const where = buildReservationWhere(filters, range);
 
-  const byStatus = await prisma.reservation.groupBy({
-    by: ["status"],
-    where,
-    _count: { _all: true },
-  });
+  try {
+    const [totalReservations, statusGroups, typeGroups] =
+      await prisma.$transaction([
+        prisma.reservation.count({ where }),
+        prisma.reservation.groupBy({
+          by: ["status"],
+          where,
+          orderBy: { status: "asc" },
+          _count: { _all: true },
+        }),
+        prisma.reservation.groupBy({
+          by: ["type"],
+          where,
+          orderBy: { type: "asc" },
+          _count: { _all: true },
+        }),
+      ]);
 
-  const topRequesters = await prisma.reservation.groupBy({
-    by: ["requesterId"],
-    where,
-    _count: { _all: true },
-    orderBy: { _count: { requesterId: "desc" } },
-    take: 10,
-  });
+    const statusMap = new Map(
+      statusGroups.map((item) => [item.status, getGroupCount(item)])
+    );
+    const typeMap = new Map(
+      typeGroups.map((item) => [item.type, getGroupCount(item)])
+    );
 
-  const requesterUsers = await prisma.user.findMany({
-    where: { id: { in: topRequesters.map((x) => x.requesterId).filter(Boolean) } },
-    select: { id: true, firstName: true, lastName: true, email: true, role: true },
-  });
-
-  const requesterLabel = new Map(
-    requesterUsers.map((u) => [u.id, `${u.firstName} ${u.lastName}${u.email ? ` (${u.email})` : ""}`])
-  );
-
-  return NextResponse.json({
-    ok: true,
-    total,
-    byRoom: byRoom.map((x) => ({
-      roomId: x.roomId,
-      room: roomLabel.get(x.roomId) ?? x.roomId,
-      count: x._count._all,
-    })),
-    byType: byType.map((x) => ({ type: x.type, count: x._count._all })),
-    byStatus: byStatus.map((x) => ({ status: x.status, count: x._count._all })),
-    topRequesters: topRequesters.map((x) => ({
-      requesterId: x.requesterId,
-      requester: requesterLabel.get(x.requesterId) ?? x.requesterId,
-      count: x._count._all,
-    })),
-  });
+    return NextResponse.json({
+      ok: true,
+      totalReservations,
+      totalCompleted: statusMap.get("COMPLETED") ?? 0,
+      totalCancelled: statusMap.get("CANCELLED") ?? 0,
+      totalNoShow: statusMap.get("NO_SHOW") ?? 0,
+      totalCheckedIn: statusMap.get("CHECKED_IN") ?? 0,
+      breakdownByType: [
+        { type: "IN_CLASS", count: typeMap.get("IN_CLASS") ?? 0 },
+        { type: "AD_HOC", count: typeMap.get("AD_HOC") ?? 0 },
+      ],
+    });
+  } catch (error) {
+    console.error("[REPORT_SUMMARY_ERROR]", error);
+    return NextResponse.json(
+      { ok: false, message: "INTERNAL_ERROR" },
+      { status: 500 }
+    );
+  }
 }

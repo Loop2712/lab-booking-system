@@ -25,10 +25,8 @@ const ICONS: Record<IconKey, React.ElementType> = {
 
 export default function Sidebar({
   nav,
-  headerTitle,
 }: {
   nav: NavItem[];
-  headerTitle: string;
 }) {
   const pathname = usePathname();
 

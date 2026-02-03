@@ -56,6 +56,7 @@ export async function POST(req: Request) {
           id: true,
           status: true,
           requesterId: true,
+          sectionId: true,
           loan: { select: { id: true, keyId: true, borrowerId: true } },
           participants: { select: { userId: true } },
         },
@@ -65,6 +66,14 @@ export async function POST(req: Request) {
       if (resv.status !== "CHECKED_IN")
         return { ok: false as const, status: 400, message: "INVALID_STATUS" };
       if (!resv.loan?.id) return { ok: false as const, status: 400, message: "NO_LOAN" };
+
+      if (resv.sectionId) {
+        const enrolled = await tx.enrollment.findFirst({
+          where: { sectionId: resv.sectionId, studentId: returnedById },
+          select: { id: true },
+        });
+        if (!enrolled) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
+      }
 
       // 3) Ownership check: requester/participant/borrower
       const okOwner =

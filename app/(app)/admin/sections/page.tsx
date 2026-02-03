@@ -1,6 +1,5 @@
 "use client";
 import type { Course, Room, Section, User } from "./types";
-import { TIME_SLOTS } from "@/lib/reserve/slots";
 import { addDaysYmd, todayYmdBkk } from "@/lib/date";
 
 import { useEffect, useMemo, useState } from "react";
@@ -26,7 +25,18 @@ import {
 } from "@/components/ui/dialog";
 
 const DOW = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
-const KEEP_SLOT = "KEEP";
+const TIME_FORMAT = /^\d{2}:\d{2}$/;
+
+function toMinutes(value: string) {
+  const [h, m] = value.split(":").map((n) => Number(n));
+  return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
+}
+
+function isValidTime(value: string) {
+  if (!TIME_FORMAT.test(value)) return false;
+  const [h, m] = value.split(":").map((n) => Number(n));
+  return h >= 0 && h <= 23 && m >= 0 && m <= 59;
+}
 
 
 export default function AdminSectionsPage() {
@@ -41,7 +51,8 @@ export default function AdminSectionsPage() {
   const [roomId, setRoomId] = useState<string>("");
 
   const [dayOfWeek, setDayOfWeek] = useState<(typeof DOW)[number]>("MON");
-  const [slotId, setSlotId] = useState(TIME_SLOTS[0]?.id ?? "08:00-12:00");
+  const [startTime, setStartTime] = useState("08:00");
+  const [endTime, setEndTime] = useState("12:00");
   const [term, setTerm] = useState("");
   const [year, setYear] = useState<string>("");
   const [openCreate, setOpenCreate] = useState(false);
@@ -51,15 +62,18 @@ export default function AdminSectionsPage() {
   const [editTeacherId, setEditTeacherId] = useState<string>("");
   const [editRoomId, setEditRoomId] = useState<string>("");
   const [editDayOfWeek, setEditDayOfWeek] = useState<(typeof DOW)[number]>("MON");
-  const [editSlotId, setEditSlotId] = useState(TIME_SLOTS[0]?.id ?? "08:00-12:00");
+  const [editStartTime, setEditStartTime] = useState("08:00");
+  const [editEndTime, setEditEndTime] = useState("12:00");
   const [editTerm, setEditTerm] = useState("");
   const [editYear, setEditYear] = useState<string>("");
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkTerm, setBulkTerm] = useState("");
   const [bulkClearTerm, setBulkClearTerm] = useState(false);
-  const [bulkSlotId, setBulkSlotId] = useState<string>(KEEP_SLOT);
+  const [bulkStartTime, setBulkStartTime] = useState<string>("");
+  const [bulkEndTime, setBulkEndTime] = useState<string>("");
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkScheduleLoading, setBulkScheduleLoading] = useState<null | "generate" | "delete" | "regenerate">(null);
 
   // filters
   const [q, setQ] = useState("");
@@ -107,8 +121,14 @@ export default function AdminSectionsPage() {
     if (!teacherId && teachers.length) setTeacherId(teachers[0].id);
   }, [teachers, teacherId]);
 
-  const canCreate = useMemo(() => !!courseId && !!teacherId && !!roomId, [courseId, teacherId, roomId]);
-  const canEdit = useMemo(() => !!editId && !!editCourseId && !!editTeacherId && !!editRoomId, [editId, editCourseId, editTeacherId, editRoomId]);
+  const canCreate = useMemo(
+    () => !!courseId && !!teacherId && !!roomId && !!startTime && !!endTime,
+    [courseId, teacherId, roomId, startTime, endTime]
+  );
+  const canEdit = useMemo(
+    () => !!editId && !!editCourseId && !!editTeacherId && !!editRoomId && !!editStartTime && !!editEndTime,
+    [editId, editCourseId, editTeacherId, editRoomId, editStartTime, editEndTime]
+  );
 
   const filtered = useMemo(() => {
     return sections.filter((s) => {
@@ -141,9 +161,12 @@ export default function AdminSectionsPage() {
   async function create() {
     if (!canCreate) return;
 
-    const slot = TIME_SLOTS.find((s) => s.id === slotId);
-    if (!slot) {
-      alert("ช่วงเวลาไม่ถูกต้อง");
+    if (!isValidTime(startTime) || !isValidTime(endTime)) {
+      alert("รูปแบบเวลาไม่ถูกต้อง");
+      return;
+    }
+    if (toMinutes(endTime) <= toMinutes(startTime)) {
+      alert("เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น");
       return;
     }
 
@@ -161,8 +184,8 @@ export default function AdminSectionsPage() {
         teacherId,
         roomId,
         dayOfWeek,
-        startTime: slot.start,
-        endTime: slot.end,
+        startTime,
+        endTime,
         term: term.trim() || undefined,
         year: yearValue ? Number(yearValue) : undefined,
       }),
@@ -216,14 +239,13 @@ export default function AdminSectionsPage() {
   const teacherLabel = (t: User) => `${t.firstName} ${t.lastName}${t.email ? ` (${t.email})` : ""}`;
 
   function openEditDialog(section: Section) {
-    const slotKey = `${section.startTime}-${section.endTime}`;
-    const slotMatch = TIME_SLOTS.find((s) => s.id === slotKey);
     setEditId(section.id);
     setEditCourseId(section.course.id);
     setEditTeacherId(section.teacher.id);
     setEditRoomId(section.room.id);
     setEditDayOfWeek(section.dayOfWeek as any);
-    setEditSlotId(slotMatch?.id ?? slotKey);
+    setEditStartTime(section.startTime);
+    setEditEndTime(section.endTime);
     setEditTerm(section.term ?? "");
     setEditYear(section.year ? String(section.year) : "");
     setOpenEdit(true);
@@ -232,9 +254,12 @@ export default function AdminSectionsPage() {
   async function updateSection() {
     if (!canEdit || !editId) return;
 
-    const slot = TIME_SLOTS.find((s) => s.id === editSlotId);
-    if (!slot) {
-      alert("ช่วงเวลาไม่ถูกต้อง");
+    if (!isValidTime(editStartTime) || !isValidTime(editEndTime)) {
+      alert("รูปแบบเวลาไม่ถูกต้อง");
+      return;
+    }
+    if (toMinutes(editEndTime) <= toMinutes(editStartTime)) {
+      alert("เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น");
       return;
     }
 
@@ -252,8 +277,8 @@ export default function AdminSectionsPage() {
         teacherId: editTeacherId,
         roomId: editRoomId,
         dayOfWeek: editDayOfWeek,
-        startTime: slot.start,
-        endTime: slot.end,
+        startTime: editStartTime,
+        endTime: editEndTime,
         term: editTerm.trim() || undefined,
         year: yearValue ? Number(yearValue) : undefined,
       }),
@@ -288,17 +313,26 @@ export default function AdminSectionsPage() {
     if (selectedSections.length === 0) return;
 
     const hasTermChange = bulkClearTerm || bulkTerm.trim().length > 0;
-    const hasSlotChange = bulkSlotId !== KEEP_SLOT;
+    const hasTimeChange = bulkStartTime.trim().length > 0 || bulkEndTime.trim().length > 0;
 
-    if (!hasTermChange && !hasSlotChange) {
-      alert("กรุณาเลือกเทอมหรือช่วงเวลาเพื่อแก้ไข");
+    if (!hasTermChange && !hasTimeChange) {
+      alert("กรุณาเลือกเทอมหรือเวลาเพื่อแก้ไข");
       return;
     }
 
-    const slot = hasSlotChange ? TIME_SLOTS.find((s) => s.id === bulkSlotId) : null;
-    if (hasSlotChange && !slot) {
-      alert("ช่วงเวลาไม่ถูกต้อง");
-      return;
+    if (hasTimeChange) {
+      if (!bulkStartTime || !bulkEndTime) {
+        alert("กรุณากรอกเวลาเริ่มต้นและเวลาสิ้นสุดให้ครบ");
+        return;
+      }
+      if (!isValidTime(bulkStartTime) || !isValidTime(bulkEndTime)) {
+        alert("รูปแบบเวลาไม่ถูกต้อง");
+        return;
+      }
+      if (toMinutes(bulkEndTime) <= toMinutes(bulkStartTime)) {
+        alert("เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น");
+        return;
+      }
     }
 
     setBulkLoading(true);
@@ -310,8 +344,8 @@ export default function AdminSectionsPage() {
             : bulkTerm.trim()
             ? bulkTerm.trim()
             : section.term ?? null;
-          const startTime = slot?.start ?? section.startTime;
-          const endTime = slot?.end ?? section.endTime;
+          const startTime = hasTimeChange ? bulkStartTime : section.startTime;
+          const endTime = hasTimeChange ? bulkEndTime : section.endTime;
 
           const res = await fetch(`/api/admin/sections/${section.id}`, {
             method: "PATCH",
@@ -344,11 +378,82 @@ export default function AdminSectionsPage() {
       setSelectedIds([]);
       setBulkTerm("");
       setBulkClearTerm(false);
-      setBulkSlotId(KEEP_SLOT);
+      setBulkStartTime("");
+      setBulkEndTime("");
     } catch (e: any) {
       alert(e?.message || "ERROR");
     } finally {
       setBulkLoading(false);
+    }
+  }
+
+  async function applyBulkSchedule(action: "generate" | "delete" | "regenerate") {
+    if (selectedSections.length === 0) {
+      alert("กรุณาเลือก Section ก่อน");
+      return;
+    }
+    if (to < from) {
+      alert("วันที่สิ้นสุดต้องไม่ก่อนวันเริ่มต้น");
+      return;
+    }
+
+    const label =
+      action === "generate"
+        ? "สร้างตารางเรียน"
+        : action === "delete"
+        ? "ลบตารางเรียน"
+        : "สร้างใหม่";
+    if (!confirm(`${label} สำหรับ ${selectedSections.length} วิชา ในช่วง ${from} ถึง ${to} ใช่หรือไม่?`)) {
+      return;
+    }
+
+    setBulkScheduleLoading(action);
+    try {
+      const results = await Promise.all(
+        selectedSections.map(async (section) => {
+          if (action === "delete") {
+            const res = await fetch(
+              `/api/admin/sections/${section.id}/generated?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+              { method: "DELETE" }
+            );
+            const json = await res.json().catch(() => ({}));
+            return { ok: res.ok && json?.ok, deleted: json?.deleted ?? 0 };
+          }
+
+          const res = await fetch(`/api/admin/sections/${section.id}/${action === "generate" ? "generate" : "regenerate"}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ from, to }),
+          });
+          const json = await res.json().catch(() => ({}));
+          return {
+            ok: res.ok && json?.ok,
+            created: json?.created ?? 0,
+            deleted: json?.deleted ?? 0,
+          };
+        })
+      );
+
+      const failed = results.filter((r) => !r.ok).length;
+      const created = results.reduce((sum, r) => sum + (r.created ?? 0), 0);
+      const deleted = results.reduce((sum, r) => sum + (r.deleted ?? 0), 0);
+      if (failed) {
+        alert(`ทำรายการไม่สำเร็จ ${failed} รายการ`);
+      } else {
+        if (action === "delete") {
+          alert(`ลบตารางเรียนสำเร็จ: ${deleted} รายการ`);
+        } else if (action === "generate") {
+          alert(`สร้างตารางเรียนสำเร็จ: ${created} รายการ`);
+        } else {
+          alert(`สร้างใหม่สำเร็จ: ลบ ${deleted} รายการ | สร้าง ${created} รายการ`);
+        }
+      }
+
+      await load();
+    } catch (e: any) {
+      alert(e?.message || "ERROR");
+    } finally {
+      setBulkScheduleLoading(null);
     }
   }
 
@@ -440,21 +545,23 @@ export default function AdminSectionsPage() {
                 </Select>
               </div>
 
-              {/* Time Slot */}
+              {/* Time */}
               <div className="space-y-2">
-                <div className="text-sm">Time slot (4 hours)</div>
-                <Select value={slotId} onValueChange={setSlotId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกช่วงเวลา" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIME_SLOTS.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="text-sm">เวลาเริ่มต้น</div>
+                <Input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm">เวลาสิ้นสุด</div>
+                <Input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                />
               </div>
 
               {/* Term / Year */}
@@ -562,19 +669,21 @@ export default function AdminSectionsPage() {
               </div>
 
               <div className="space-y-2">
-                <div className="text-sm">Time slot (4 hours)</div>
-                <Select value={editSlotId} onValueChange={setEditSlotId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกช่วงเวลา" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIME_SLOTS.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="text-sm">เวลาเริ่มต้น</div>
+                <Input
+                  type="time"
+                  value={editStartTime}
+                  onChange={(e) => setEditStartTime(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm">เวลาสิ้นสุด</div>
+                <Input
+                  type="time"
+                  value={editEndTime}
+                  onChange={(e) => setEditEndTime(e.target.value)}
+                />
               </div>
 
               <div className="space-y-2">
@@ -605,29 +714,58 @@ export default function AdminSectionsPage() {
         <CardHeader>
           <CardTitle>สร้าง/ลบตารางเรียน (IN_CLASS)</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-2 items-end">
-          <div className="space-y-2">
-            <div className="text-sm">วันที่เริ่ม (YYYY-MM-DD)</div>
-            <Input
-              type="date"
-              value={from}
-              min={minRangeYmd}
-              max={maxRangeYmd}
-              onChange={(e) => setFrom(e.target.value)}
-            />
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap gap-2 items-end">
+            <div className="space-y-2">
+              <div className="text-sm">วันที่เริ่ม (YYYY-MM-DD)</div>
+              <Input
+                type="date"
+                value={from}
+                min={minRangeYmd}
+                max={maxRangeYmd}
+                onChange={(e) => setFrom(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="text-sm">วันที่สิ้นสุด (YYYY-MM-DD)</div>
+              <Input
+                type="date"
+                value={to}
+                min={minRangeYmd}
+                max={maxRangeYmd}
+                onChange={(e) => setTo(e.target.value)}
+              />
+            </div>
+            <div className="text-xs text-muted-foreground pb-1">
+              ช่วงวันที่ที่อนุญาต: {minRangeYmd} ถึง {maxRangeYmd}
+            </div>
           </div>
-          <div className="space-y-2">
-            <div className="text-sm">วันที่เริ่ม (YYYY-MM-DD)</div>
-            <Input
-              type="date"
-              value={to}
-              min={minRangeYmd}
-              max={maxRangeYmd}
-              onChange={(e) => setTo(e.target.value)}
-            />
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              disabled={selectedSections.length === 0 || bulkScheduleLoading !== null}
+              onClick={() => applyBulkSchedule("generate")}
+            >
+              {bulkScheduleLoading === "generate" ? "กำลังสร้าง..." : "สร้างตารางเรียนที่เลือก"}
+            </Button>
+            <Button
+              variant="outline"
+              disabled={selectedSections.length === 0 || bulkScheduleLoading !== null}
+              onClick={() => applyBulkSchedule("delete")}
+            >
+              {bulkScheduleLoading === "delete" ? "กำลังลบ..." : "ลบตารางเรียนที่เลือก"}
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={selectedSections.length === 0 || bulkScheduleLoading !== null}
+              onClick={() => applyBulkSchedule("regenerate")}
+            >
+              {bulkScheduleLoading === "regenerate" ? "กำลังสร้างใหม่..." : "สร้างใหม่ที่เลือก"}
+            </Button>
           </div>
-          <div className="text-xs text-muted-foreground pb-1">
-            ช่วงวันที่ที่อนุญาต: {minRangeYmd} ถึง {maxRangeYmd}
+          <div className="text-xs text-muted-foreground">
+            เลือก Section จากรายการด้านล่างเพื่อสร้าง/ลบหลายวิชาพร้อมกัน
           </div>
         </CardContent>
       </Card>
@@ -692,7 +830,7 @@ export default function AdminSectionsPage() {
                 </Button>
               </div>
             </div>
-            <div className="grid gap-2 md:grid-cols-4">
+            <div className="grid gap-2 md:grid-cols-5">
               <Input
                 placeholder="แก้เทอม (ว่าง = ไม่เปลี่ยน)"
                 value={bulkTerm}
@@ -708,19 +846,18 @@ export default function AdminSectionsPage() {
                 />
                 ล้างค่าเทอม
               </label>
-              <Select value={bulkSlotId} onValueChange={setBulkSlotId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="ไม่เปลี่ยนเวลา" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={KEEP_SLOT}>ไม่เปลี่ยนเวลา</SelectItem>
-                  {TIME_SLOTS.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                type="time"
+                value={bulkStartTime}
+                onChange={(e) => setBulkStartTime(e.target.value)}
+                placeholder="เวลาเริ่มต้น"
+              />
+              <Input
+                type="time"
+                value={bulkEndTime}
+                onChange={(e) => setBulkEndTime(e.target.value)}
+                placeholder="เวลาสิ้นสุด"
+              />
               <Button
                 type="button"
                 onClick={applyBulkUpdate}
@@ -730,7 +867,7 @@ export default function AdminSectionsPage() {
               </Button>
             </div>
             <div className="text-xs text-muted-foreground">
-              จะปรับเฉพาะเทอมหรือช่วงเวลา (เวลาเริ่ม-สิ้นสุด) ให้รายการที่เลือกเท่านั้น
+              จะปรับเฉพาะเทอมหรือเวลา (เริ่ม-สิ้นสุด) ให้รายการที่เลือกเท่านั้น
             </div>
           </div>
 

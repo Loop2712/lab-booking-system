@@ -73,10 +73,7 @@ export async function POST(req: Request) {
           where: { sectionId: resv.sectionId, studentId: borrowerId },
           select: { id: true },
         });
-        if (!enrolled) {
-          const enrollCount = await tx.enrollment.count({ where: { sectionId: resv.sectionId } });
-          if (enrollCount > 0) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
-        }
+        if (!enrolled) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
       } else {
         // AD_HOC: requester หรือ participant
         if (borrowerId !== resv.requesterId) {

@@ -94,11 +94,14 @@ export async function POST(
   // หา user จาก studentId
   const user = await prisma.user.findUnique({
     where: { studentId: body.studentId },
-    select: { id: true, role: true, firstName: true, lastName: true, studentId: true },
+    select: { id: true, role: true, isActive: true, firstName: true, lastName: true, studentId: true },
   });
 
   if (!user || user.role !== "STUDENT") {
     return NextResponse.json({ ok: false, message: "STUDENT_NOT_FOUND" }, { status: 404 });
+  }
+  if (!user.isActive) {
+    return NextResponse.json({ ok: false, message: "USER_INACTIVE" }, { status: 400 });
   }
 
   if (user.id === uid) {

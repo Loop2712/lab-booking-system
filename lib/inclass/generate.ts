@@ -1,6 +1,15 @@
 import { prisma } from "@/lib/db/prisma";
 import { toDayName } from "@/lib/date/toDayName";
-import { findSlot } from "@/lib/reserve/slots";
+function toMinutes(value: string) {
+  const [h, m] = value.split(":").map((x) => parseInt(x, 10));
+  return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
+}
+
+function isValidTime(value: string) {
+  if (!/^\d{2}:\d{2}$/.test(value)) return false;
+  const [h, m] = value.split(":").map((x) => parseInt(x, 10));
+  return h >= 0 && h <= 23 && m >= 0 && m <= 59;
+}
 
 function startOfDay(d: Date) {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0));
@@ -39,8 +48,11 @@ export async function generateInClassReservations(args: {
   }
 
   const slotId = `${section.startTime}-${section.endTime}`;
-  if (!findSlot(slotId)) {
-    return { ok: false as const, message: "INVALID_TIME_SLOT" };
+  if (!isValidTime(section.startTime) || !isValidTime(section.endTime)) {
+    return { ok: false as const, message: "INVALID_TIME_FORMAT" };
+  }
+  if (toMinutes(section.endTime) <= toMinutes(section.startTime)) {
+    return { ok: false as const, message: "INVALID_TIME_RANGE" };
   }
 
   const fromDate = startOfDay(new Date(`${args.from}T00:00:00Z`));

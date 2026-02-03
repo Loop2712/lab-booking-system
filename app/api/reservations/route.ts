@@ -34,6 +34,9 @@ function timeToMinutes(value: string) {
   return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
 }
 
+const MIN_BOOK_MINUTES = 7 * 60;  // 07:00
+const MAX_BOOK_MINUTES = 21 * 60; // 21:00
+
 function isValidTime(value: string) {
   if (!/^\d{2}:\d{2}$/.test(value)) return false;
   const [h, m] = value.split(":").map((n) => Number(n));
@@ -131,9 +134,17 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    if (timeToMinutes(end) <= timeToMinutes(start)) {
+    const startMin = timeToMinutes(start);
+    const endMin = timeToMinutes(end);
+    if (endMin <= startMin) {
       return NextResponse.json(
         { ok: false, message: "INVALID_TIME_RANGE" },
+        { status: 400 }
+      );
+    }
+    if (startMin < MIN_BOOK_MINUTES || endMin > MAX_BOOK_MINUTES) {
+      return NextResponse.json(
+        { ok: false, message: "TIME_OUT_OF_RANGE" },
         { status: 400 }
       );
     }

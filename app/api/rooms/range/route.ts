@@ -7,7 +7,7 @@ import { startOfBangkokDay } from "@/lib/date/bangkok";
 
 export const runtime = "nodejs";
 
-function isYmd(value: string | null) {
+function isYmd(value: string | null): value is string {
   return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 

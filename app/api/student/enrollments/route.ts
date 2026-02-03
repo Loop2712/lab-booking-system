@@ -52,6 +52,17 @@ export async function POST(req: Request) {
 
   const body = addSchema.parse(await req.json());
 
+  const section = await prisma.section.findUnique({
+    where: { id: body.sectionId },
+    select: { id: true, isActive: true },
+  });
+  if (!section) {
+    return NextResponse.json({ ok: false, message: "SECTION_NOT_FOUND" }, { status: 404 });
+  }
+  if (!section.isActive) {
+    return NextResponse.json({ ok: false, message: "SECTION_INACTIVE" }, { status: 400 });
+  }
+
   const created = await prisma.enrollment.create({
     data: {
       studentId: uid,
