@@ -1,4 +1,4 @@
-import MyReservationsTable from "@/app/(app)/student/reservations/table";
+import MyReservationsTable from "@/components/reservations/MyReservationsTable";
 
 export default function AdminReservationsPage() {
   return (

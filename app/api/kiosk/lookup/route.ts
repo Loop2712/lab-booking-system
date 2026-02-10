@@ -9,7 +9,7 @@ import { requireKioskDevice } from "@/lib/kiosk-device";
 export const runtime = "nodejs";
 
 const bodySchema = z.object({
-  roomId: z.string().min(1),
+  roomId: z.string().min(1).optional(),
   token: z.string().min(10),
   mode: z.enum(["CHECKIN", "RETURN"]),
 });
@@ -42,12 +42,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "USER_NOT_FOUND" }, { status: 404 });
   }
 
-  const room = await prisma.room.findUnique({
-    where: { id: body.data.roomId },
-    select: { id: true, code: true, name: true, roomNumber: true, floor: true, isActive: true },
-  });
-  if (!room || !room.isActive) {
-    return NextResponse.json({ ok: false, message: "ROOM_NOT_FOUND" }, { status: 404 });
+  let roomFilter: { roomId?: string } = {};
+  if (body.data.roomId) {
+    const room = await prisma.room.findUnique({
+      where: { id: body.data.roomId },
+      select: { id: true, isActive: true },
+    });
+    if (!room || !room.isActive) {
+      return NextResponse.json({ ok: false, message: "ROOM_NOT_FOUND" }, { status: 404 });
+    }
+    roomFilter = { roomId: body.data.roomId };
   }
 
   let reservations: Array<{
@@ -63,7 +67,7 @@ export async function POST(req: Request) {
   if (body.data.mode === "CHECKIN") {
     reservations = await prisma.reservation.findMany({
       where: {
-        roomId: room.id,
+        ...roomFilter,
         startAt: { lt: dayEnd },
         endAt: { gt: dayStart },
         status: "APPROVED",
@@ -82,12 +86,13 @@ export async function POST(req: Request) {
         startAt: true,
         endAt: true,
         requesterId: true,
+        room: { select: { id: true, code: true, name: true, roomNumber: true, floor: true } },
       },
     });
   } else {
     reservations = await prisma.reservation.findMany({
       where: {
-        roomId: room.id,
+        ...roomFilter,
         loan: { is: { checkedOutAt: null } },
         OR: [
           { requesterId: user.id },
@@ -104,6 +109,7 @@ export async function POST(req: Request) {
         startAt: true,
         endAt: true,
         requesterId: true,
+        room: { select: { id: true, code: true, name: true, roomNumber: true, floor: true } },
       },
     });
   }
@@ -128,7 +134,7 @@ export async function POST(req: Request) {
     ok: true,
     mode: body.data.mode,
     user,
-    room,
     reservation,
+    room: reservation.room,
   });
 }

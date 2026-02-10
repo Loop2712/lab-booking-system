@@ -53,7 +53,7 @@ export default function SelfCheckClient() {
   const [loadingLookup, setLoadingLookup] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
-  const ready = useMemo(() => !!roomId && !!mode, [roomId, mode]);
+  const ready = useMemo(() => !!mode, [mode]);
   const selectedRoom = useMemo(() => rooms.find((room) => room.id === roomId) ?? null, [rooms, roomId]);
   const roomsByFloor = useMemo(() => {
     const map = new Map<number, Room[]>();
@@ -104,17 +104,20 @@ export default function SelfCheckClient() {
 
   async function doLookup(scannedToken?: string) {
     const t = (scannedToken ?? token).trim();
-    if (!roomId || !mode || !t) return;
+    if (!mode || !t) return;
 
     setLoadingLookup(true);
     setErr(null);
     setLookup(null);
 
     try {
+      const payload: any = { token: t, mode };
+      if (roomId) payload.roomId = roomId;
+
       const res = await fetch(`${API_BASE}/lookup`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ roomId, token: t, mode }),
+        body: JSON.stringify(payload),
       });
 
       const json = (await res.json().catch(() => ({}))) as LookupResponse;
@@ -177,9 +180,9 @@ export default function SelfCheckClient() {
     }
   }
 
-  function openScanForRoom(id: string) {
+  function openScan(selectedRoomId?: string) {
     if (!mode) return;
-    setRoomId(id);
+    if (selectedRoomId) setRoomId(selectedRoomId);
     setLookup(null);
     setErr(null);
     setToken("");
@@ -212,7 +215,7 @@ export default function SelfCheckClient() {
                 ห้อง:{" "}
                 {selectedRoom
                   ? `${selectedRoom.code} • ${selectedRoom.roomNumber} • ชั้น ${selectedRoom.floor}`
-                  : "-"}
+                  : "ทุกห้อง"}
               </Badge>
               <Badge variant="outline">สถานะ: {mode ? "พร้อมทำรายการ" : "-"}</Badge>
             </div>
@@ -243,12 +246,15 @@ export default function SelfCheckClient() {
               </ToggleGroupItem>
             </ToggleGroup>
             {!mode ? (
-              <div className="text-xs text-muted-foreground">กรุณาเลือกโหมดก่อนจึงจะเลือกห้องได้</div>
+              <div className="text-xs text-muted-foreground">กรุณาเลือกโหมดก่อนจึงจะสแกนผู้ใช้ได้</div>
             ) : null}
           </div>
 
           <div className="space-y-3">
-            <div className="text-sm font-semibold">ขั้นตอน 2: เลือกห้อง</div>
+            <div className="text-sm font-semibold">ขั้นตอน 2: เลือกห้อง (ไม่บังคับ)</div>
+            <div className="text-xs text-muted-foreground">
+              เลือกห้องเพื่อกรองรายการให้แคบลง หากไม่เลือก ระบบจะค้นหาห้องที่ตรงให้โดยอัตโนมัติ
+            </div>
             {loadingRooms ? (
               <div className="text-sm text-muted-foreground">กำลังโหลดรายชื่อห้อง...</div>
             ) : roomsByFloor.length === 0 ? (
@@ -263,7 +269,11 @@ export default function SelfCheckClient() {
                         key={room.id}
                         type="button"
                         variant={roomId === room.id ? "default" : "outline"}
-                        onClick={() => openScanForRoom(room.id)}
+                        onClick={() => {
+                          setRoomId((prev) => (prev === room.id ? "" : room.id));
+                          setLookup(null);
+                          setErr(null);
+                        }}
                         disabled={!mode || (mode === "CHECKIN" && room.isBorrowed)}
                         className="h-auto items-start justify-start gap-1 px-3 py-3 text-left"
                       >
@@ -282,8 +292,18 @@ export default function SelfCheckClient() {
                     ))}
                   </div>
                 </div>
-              ))
-            )}
+                ))
+              )}
+          </div>
+
+          <div className="space-y-3">
+            <div className="text-sm font-semibold">ขั้นตอน 3: สแกนผู้ใช้</div>
+            <Button onClick={() => openScan()} disabled={!mode}>
+              เปิดหน้าสแกน
+            </Button>
+            <div className="text-xs text-muted-foreground">
+              สแกน QR/ใส่ Token ของผู้ใช้ ระบบจะแนะนำรายการให้ทันที
+            </div>
           </div>
 
           {!scanOpen && err ? (
@@ -313,7 +333,11 @@ export default function SelfCheckClient() {
               </div>
               <div className="text-xs text-muted-foreground">ชั้น {selectedRoom.floor}</div>
             </div>
-          ) : null}
+          ) : (
+            <div className="rounded-lg border p-3 text-sm text-muted-foreground">
+              ไม่ได้ระบุห้อง ระบบจะค้นหาห้องที่ตรงให้โดยอัตโนมัติ
+            </div>
+          )}
 
           <div className="space-y-1">
             <Label>สแกน QR / ใส่ Token</Label>
@@ -355,7 +379,9 @@ export default function SelfCheckClient() {
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between gap-2">
               <div className="font-semibold">ยืนยัน</div>
-              <Badge variant="secondary">{lookup.mode}</Badge>
+              <Badge variant="secondary">
+                {lookup.mode === "CHECKIN" ? "ยืมกุญแจ" : "คืนกุญแจ"}
+              </Badge>
             </div>
 
             <div className="text-sm space-y-1">

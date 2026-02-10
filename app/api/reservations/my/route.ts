@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { getReservationStatusInfo } from "@/lib/reservations/status";
 
 export const runtime = "nodejs";
 
@@ -41,6 +42,7 @@ export async function GET() {
       startAt: r.startAt.toISOString(),
       endAt: r.endAt.toISOString(),
       createdAt: r.createdAt.toISOString(),
+      ...getReservationStatusInfo(r.status),
     })),
   });
 }

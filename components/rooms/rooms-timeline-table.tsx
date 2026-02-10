@@ -42,6 +42,22 @@ const START_HOUR = 7;
 const END_HOUR = 21; // exclusive
 const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
 
+const CLASS_COLORS = [
+  "bg-emerald-600/90 text-white",
+  "bg-teal-600/90 text-white",
+  "bg-sky-600/90 text-white",
+  "bg-cyan-600/90 text-white",
+  "bg-green-600/90 text-white",
+];
+
+const ADHOC_COLORS = [
+  "bg-rose-600/90 text-white",
+  "bg-red-600/90 text-white",
+  "bg-orange-600/90 text-white",
+  "bg-amber-600/90 text-white",
+  "bg-pink-600/90 text-white",
+];
+
 function pad2(n: number) {
   return String(n).padStart(2, "0");
 }
@@ -50,10 +66,18 @@ function minutesFromSlot(slot?: string | null) {
   return parseTimeRangeToMinutes(slot);
 }
 
+function hashString(input: string) {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash * 31 + input.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
 function bookingColor(booking: TimelineBooking) {
-  return booking.type === "IN_CLASS"
-    ? "bg-emerald-600/90 text-white"
-    : "bg-rose-600/90 text-white";
+  const palette = booking.type === "IN_CLASS" ? CLASS_COLORS : ADHOC_COLORS;
+  const idx = hashString(booking.reservationId) % palette.length;
+  return palette[idx];
 }
 
 function bookingLabel(booking: TimelineBooking) {
@@ -63,16 +87,16 @@ function bookingLabel(booking: TimelineBooking) {
 
 export default function RoomsTimelineTable({ rooms, emptyMessage }: RoomsTimelineTableProps) {
   return (
-    <Table className="relative">
+    <Table className="relative w-full table-fixed">
       <TableHeader className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <TableRow>
-          <TableHead className="min-w-[220px] sticky left-0 top-0 z-30 bg-background/95 backdrop-blur border-r">
+          <TableHead className="w-[180px] sticky left-0 top-0 z-30 bg-background/95 backdrop-blur border-r text-xs">
             ห้อง
           </TableHead>
           {HOURS.map((h) => (
             <TableHead
               key={h}
-              className="min-w-[90px] text-center sticky top-0 z-20 bg-background/95 backdrop-blur"
+              className="w-[56px] text-center sticky top-0 z-20 bg-background/95 backdrop-blur text-[10px]"
             >
               {pad2(h)}:00
             </TableHead>
@@ -88,7 +112,7 @@ export default function RoomsTimelineTable({ rooms, emptyMessage }: RoomsTimelin
                   <div>
                     {room.code} • {room.name}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-[11px] text-muted-foreground">
                     ห้อง {room.roomNumber} (ชั้น {room.floor})
                   </div>
                 </div>
@@ -115,7 +139,7 @@ export default function RoomsTimelineTable({ rooms, emptyMessage }: RoomsTimelin
                   })
                   .filter((r): r is { booking: TimelineBooking; startMin: number; endMin: number } => !!r);
 
-                const cells: { booking: TimelineBooking | null; isStart: boolean }[] = [];
+                const cells: { booking: TimelineBooking | null; isStart: boolean; isEnd: boolean }[] = [];
 
                 for (const h of HOURS) {
                   const cellStart = h * 60;
@@ -124,27 +148,44 @@ export default function RoomsTimelineTable({ rooms, emptyMessage }: RoomsTimelin
                   const booking = hit?.booking ?? null;
                   const prev = cells[cells.length - 1]?.booking ?? null;
                   const isStart = booking ? !prev || prev.reservationId !== booking.reservationId : false;
-                  cells.push({ booking, isStart });
+                  cells.push({ booking, isStart, isEnd: false });
                 }
 
-                return cells.map((cell, idx) => (
-                  <TableCell key={idx} className="p-0">
-                    {cell.booking ? (
-                      <div className={cn("h-12 px-2 py-1 text-[11px] leading-tight", bookingColor(cell.booking))}>
-                        {cell.isStart ? (
-                          <>
-                            <div className="font-medium truncate">{bookingLabel(cell.booking)}</div>
-                            {cell.booking.borrowerLabel ? (
-                              <div className="truncate">{cell.booking.borrowerLabel}</div>
-                            ) : null}
-                          </>
-                        ) : null}
-                      </div>
-                    ) : (
-                      <div className="h-12 px-2 py-1 text-[11px] text-muted-foreground bg-muted/10" />
-                    )}
-                  </TableCell>
-                ));
+                for (let i = 0; i < cells.length; i++) {
+                  const current = cells[i];
+                  if (!current.booking) continue;
+                  const next = cells[i + 1]?.booking ?? null;
+                  current.isEnd = !next || next.reservationId !== current.booking.reservationId;
+                }
+
+                return cells.map((cell, idx) => {
+                  const stripe = idx % 2 === 0 ? "bg-muted/5" : "bg-muted/10";
+                  return (
+                    <TableCell key={idx} className="p-0">
+                      {cell.booking ? (
+                        <div
+                          className={cn(
+                            "h-12 px-1 py-1 text-[10px] leading-tight",
+                            bookingColor(cell.booking),
+                            cell.isStart ? "border-l-4 border-black/20" : "",
+                            cell.isEnd ? "border-r-4 border-black/20" : ""
+                          )}
+                        >
+                          {cell.isStart ? (
+                            <>
+                          <div className="font-medium truncate">{bookingLabel(cell.booking)}</div>
+                              {cell.booking.borrowerLabel ? (
+                                <div className="truncate">{cell.booking.borrowerLabel}</div>
+                              ) : null}
+                            </>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <div className={cn("h-12 px-2 py-1 text-[11px] text-muted-foreground", stripe)} />
+                      )}
+                    </TableCell>
+                  );
+                });
               })()}
             </TableRow>
           ))

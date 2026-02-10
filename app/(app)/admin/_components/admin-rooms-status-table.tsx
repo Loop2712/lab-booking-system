@@ -21,13 +21,31 @@ type RoomStatusRow = TimelineRoomRow & {
 
 function getActiveBooking(room: TimelineRoomRow) {
   const seen = new Set<string>();
+  const bookings: TimelineBooking[] = [];
   for (const slot of room.slots) {
     const booking = slot.booking;
     if (!booking) continue;
     if (seen.has(booking.reservationId)) continue;
     seen.add(booking.reservationId);
-    if (booking.status === "CHECKED_IN") return booking;
+    bookings.push(booking);
   }
+
+  const checkedIn = bookings.find((b) => b.status === "CHECKED_IN");
+  if (checkedIn) return checkedIn;
+
+  const now = new Date();
+  const inRange = (b: TimelineBooking) => {
+    const start = new Date(b.startAt);
+    const end = new Date(b.endAt);
+    return Number.isFinite(start.getTime()) && Number.isFinite(end.getTime()) && start <= now && now < end;
+  };
+
+  const adhocNow = bookings.find((b) => b.type === "AD_HOC" && inRange(b));
+  if (adhocNow) return adhocNow;
+
+  const classNow = bookings.find((b) => b.type === "IN_CLASS" && inRange(b));
+  if (classNow) return classNow;
+
   return null;
 }
 

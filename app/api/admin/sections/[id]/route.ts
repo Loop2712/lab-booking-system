@@ -24,8 +24,6 @@ const updateSchema = z.object({
   dayOfWeek: z.enum(["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]),
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   endTime: z.string().regex(/^\d{2}:\d{2}$/),
-  term: z.string().optional().nullable(),
-  year: z.number().int().optional().nullable(),
   isActive: z.boolean().optional(),
 });
 
@@ -59,8 +57,6 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         dayOfWeek: body.dayOfWeek,
         startTime: body.startTime,
         endTime: body.endTime,
-        term: body.term ?? null,
-        year: body.year ?? null,
         ...(typeof body.isActive === "boolean" ? { isActive: body.isActive } : {}),
       },
     });

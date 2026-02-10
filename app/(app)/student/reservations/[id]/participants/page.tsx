@@ -12,7 +12,9 @@ export default function ParticipantsPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
 
-  const [studentId, setStudentId] = useState("");
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<Array<{ id: string; firstName: string; lastName: string; studentId?: string | null }>>([]);
+  const [searching, setSearching] = useState(false);
   const [items, setItems] = useState<P[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -34,28 +36,54 @@ export default function ParticipantsPage() {
     load();
   }, [load]);
 
-  async function add() {
-    setError(null);
-    if (studentId.trim().length !== 11) {
-      setError("กรุณากรอกรหัสนักศึกษา 11 หลัก");
+  async function search() {
+    const q = query.trim();
+    if (q.length < 2) {
+      setError("พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหา");
       return;
     }
+    setSearching(true);
+    setError(null);
+    const res = await fetch(`/api/users/search?q=${encodeURIComponent(q)}`);
+    const json = await res.json().catch(() => ({}));
+    setSearching(false);
+    if (!res.ok || !json?.ok) {
+      setError("ค้นหาไม่สำเร็จ");
+      setResults([]);
+      return;
+    }
+    setResults(Array.isArray(json.items) ? json.items : []);
+  }
+
+  async function addUser(user: { id: string }) {
+    setError(null);
     setBusy(true);
     const res = await fetch(`/api/reservations/${id}/participants`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ studentId: studentId.trim() }),
+      body: JSON.stringify({ userId: user.id }),
     });
     const json = await res.json().catch(() => ({}));
     setBusy(false);
 
     if (!res.ok || !json?.ok) {
       const msg = json?.message || `เพิ่มไม่สำเร็จ (${res.status})`;
-      setError(msg === "LIMIT_EXCEEDED" ? "เพิ่มไม่ได้: จำกัดรวมสูงสุด 5 คน (รวมผู้จอง)" : msg);
+      const friendly =
+        msg === "LIMIT_EXCEEDED"
+          ? "เพิ่มไม่ได้: จำกัดรวมสูงสุด 5 คน (รวมผู้จอง)"
+          : msg === "ALREADY_ADDED"
+          ? "ผู้ใช้นี้ถูกเพิ่มแล้ว"
+          : msg === "CANNOT_ADD_SELF"
+          ? "ไม่สามารถเพิ่มตัวเองได้"
+          : msg === "STUDENT_NOT_FOUND"
+          ? "ไม่พบผู้ใช้งานนี้"
+          : msg;
+      setError(friendly);
       return;
     }
 
-    setStudentId("");
+    setQuery("");
+    setResults([]);
     await load();
   }
 
@@ -80,9 +108,9 @@ export default function ParticipantsPage() {
   return (
     <div className="space-y-5 max-w-3xl">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">Borrow (Ad-hoc)</h1>
+        <h1 className="text-2xl font-semibold">ผู้ร่วมใช้ (AD_HOC)</h1>
         <p className="text-sm text-muted-foreground">
-          เพิ่มผู้ร่วมใช้สำหรับการจองนี้ (ให้ผู้ร่วมใช้สแกน QR/Token ตอนรับ-คืนกุญแจได้)
+          เพิ่มผู้ร่วมใช้สำหรับการจองนี้ (ผู้ร่วมใช้สามารถสแกน QR/Token ตอนรับ-คืนกุญแจได้)
         </p>
       </div>
 
@@ -97,18 +125,31 @@ export default function ParticipantsPage() {
       )}
 
       <div className="rounded-2xl border p-4 space-y-3">
-        <div className="text-sm font-medium">AddCodeStudent</div>
-        <div className="flex gap-2">
+        <div className="text-sm font-medium">ค้นหาและเพิ่มผู้ร่วมใช้</div>
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Input
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
-            placeholder="65000000001"
-            inputMode="numeric"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="พิมพ์รหัสนักศึกษา หรือชื่อ"
           />
-          <Button onClick={add} disabled={busy}>
-            {busy ? "กำลังเพิ่ม..." : "เพิ่ม"}
+          <Button onClick={search} disabled={busy || searching}>
+            {searching ? "กำลังค้นหา..." : "ค้นหา"}
           </Button>
         </div>
+        {results.length ? (
+          <div className="rounded-lg border p-2 space-y-1">
+            {results.map((u) => (
+              <div key={u.id} className="flex items-center justify-between gap-2 text-sm">
+                <div>
+                  {u.firstName} {u.lastName} {u.studentId ? `• ${u.studentId}` : ""}
+                </div>
+                <Button size="sm" variant="outline" onClick={() => addUser(u)} disabled={busy}>
+                  เพิ่ม
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : null}
         <div className="text-xs text-muted-foreground">
           สามารถเพิ่มผู้ร่วมใช้ได้สูงสุด 4 คน (รวมผู้จองเป็น 5 คน)
         </div>
@@ -118,8 +159,8 @@ export default function ParticipantsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>CodeStudent</TableHead>
+              <TableHead>ชื่อ</TableHead>
+              <TableHead>รหัสนักศึกษา</TableHead>
               <TableHead className="text-right">จัดการ</TableHead>
             </TableRow>
           </TableHeader>
@@ -137,7 +178,7 @@ export default function ParticipantsPage() {
                   <TableCell className="font-mono text-sm">{p.studentId ?? "-"}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="outline" size="sm" onClick={() => remove(p.id)} disabled={busy}>
-                      Remove
+                      ลบ
                     </Button>
                   </TableCell>
                 </TableRow>

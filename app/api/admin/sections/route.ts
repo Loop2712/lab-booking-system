@@ -21,11 +21,10 @@ const createSchema = z.object({
   courseId: z.string().min(1),
   teacherId: z.string().min(1),
   roomId: z.string().min(1),
+  termId: z.string().min(1),
   dayOfWeek: z.enum(["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]),
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   endTime: z.string().regex(/^\d{2}:\d{2}$/),
-  term: z.string().optional(),
-  year: z.number().int().optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -35,10 +34,16 @@ export async function GET() {
   if (!guard.ok) return guard.response;
 
   const items = await prisma.section.findMany({
-    orderBy: [{ year: "desc" }, { term: "desc" }, { createdAt: "desc" }],
+    where: { isActive: true },
+    orderBy: [
+      { term: { year: "desc" } },
+      { term: { term: "desc" } },
+      { createdAt: "desc" },
+    ],
     include: {
       course: true,
       room: true,
+      term: true,
       teacher: { select: { id: true, firstName: true, lastName: true, email: true } },
       _count: { select: { enrollments: true, reservations: true } },
     },
@@ -71,11 +76,10 @@ export async function POST(req: Request) {
       courseId: body.courseId,
       teacherId: body.teacherId,
       roomId: body.roomId,
+      termId: body.termId,
       dayOfWeek: body.dayOfWeek,
       startTime: body.startTime,
       endTime: body.endTime,
-      term: body.term ?? null,
-      year: body.year ?? null,
       isActive: body.isActive ?? true,
     },
   });

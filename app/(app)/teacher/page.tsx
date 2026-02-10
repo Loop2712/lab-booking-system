@@ -35,7 +35,7 @@ export default async function TeacherDashboard() {
 
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">Key</CardTitle>
+            <CardTitle className="text-sm">รอรับกุญแจ</CardTitle>
             <Badge variant="secondary">APPROVED</Badge>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{pendingCheckin}</CardContent>
@@ -43,7 +43,7 @@ export default async function TeacherDashboard() {
 
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">Borrow</CardTitle>
+            <CardTitle className="text-sm">กำลังยืม</CardTitle>
             <Badge variant="secondary">CHECKED_IN</Badge>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{activeLoans}</CardContent>
@@ -55,10 +55,10 @@ export default async function TeacherDashboard() {
           <Link href="/teacher/requests">คำขอจอง</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/teacher/loans">ยืม-คืนกุญแจ</Link>
+          <Link href="/teacher/check">ยืม-คืนกุญแจ</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/teacher/qr">QR / Token ของฉัน</Link>
+          <Link href="/teacher/qr">QR / Token สำหรับยืม-คืน</Link>
         </Button>
       </div>
     </div>

@@ -31,6 +31,8 @@ type Item = {
   id: string;
   type: string;
   status: string;
+  statusLabel?: string;
+  nextAction?: string | null;
   date: string;
   slot: string;
   startAt: string;
@@ -38,6 +40,13 @@ type Item = {
   note: string | null;
   createdAt: string;
   room: { code: string; name: string; roomNumber: string; floor: number };
+};
+
+type FilterType = "ALL" | "AD_HOC" | "IN_CLASS";
+type Props = {
+  refreshKey?: number;
+  filterType?: FilterType;
+  showParticipants?: boolean;
 };
 
 function formatDate(iso: string) {
@@ -51,23 +60,49 @@ function formatDate(iso: string) {
 function statusVariant(status: string) {
   if (status === "PENDING") return "secondary";
   if (status === "APPROVED") return "default";
+  if (status === "CHECKED_IN") return "default";
   if (status === "REJECTED") return "destructive";
   if (status === "CANCELLED") return "outline";
+  if (status === "NO_SHOW") return "destructive";
+  if (status === "COMPLETED") return "outline";
   return "secondary";
 }
 
-const STATUS_OPTIONS = ["ALL", "PENDING", "APPROVED", "REJECTED", "CANCELLED"] as const;
+const STATUS_OPTIONS = [
+  "ALL",
+  "PENDING",
+  "APPROVED",
+  "CHECKED_IN",
+  "COMPLETED",
+  "REJECTED",
+  "CANCELLED",
+  "NO_SHOW",
+] as const;
 type StatusFilter = (typeof STATUS_OPTIONS)[number];
+
+const STATUS_LABELS: Record<StatusFilter, string> = {
+  ALL: "ทั้งหมด",
+  PENDING: "รออนุมัติ",
+  APPROVED: "อนุมัติแล้ว",
+  CHECKED_IN: "ยืมกุญแจแล้ว",
+  COMPLETED: "คืนกุญแจแล้ว",
+  REJECTED: "ไม่อนุมัติ",
+  CANCELLED: "ยกเลิกแล้ว",
+  NO_SHOW: "ไม่มารับกุญแจ",
+};
 
 type SortOrder = "ASC" | "DESC";
 
-export default function MyReservationsTable() {
+export default function MyReservationsTable({
+  refreshKey,
+  filterType = "ALL",
+  showParticipants = true,
+}: Props) {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ NEW: filter + sort controls
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [sortOrder, setSortOrder] = useState<SortOrder>("DESC");
 
@@ -89,7 +124,7 @@ export default function MyReservationsTable() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [refreshKey]);
 
   async function cancel(id: string) {
     setBusyId(id);
@@ -114,21 +149,23 @@ export default function MyReservationsTable() {
     await load();
   }
 
-  // ✅ NEW: filter + sort by startAt
   const rows = useMemo(() => {
-    const filtered =
-      statusFilter === "ALL"
-        ? items
-        : items.filter((r) => r.status === statusFilter);
+    const typeFiltered =
+      filterType === "ALL" ? items : items.filter((r) => r.type === filterType);
 
-    const sorted = [...filtered].sort((a, b) => {
+    const statusFiltered =
+      statusFilter === "ALL"
+        ? typeFiltered
+        : typeFiltered.filter((r) => r.status === statusFilter);
+
+    const sorted = [...statusFiltered].sort((a, b) => {
       const ta = new Date(a.startAt).getTime();
       const tb = new Date(b.startAt).getTime();
       return sortOrder === "ASC" ? ta - tb : tb - ta;
     });
 
     return sorted;
-  }, [items, statusFilter, sortOrder]);
+  }, [items, filterType, statusFilter, sortOrder]);
 
   if (loading) return <div className="text-sm text-muted-foreground">กำลังโหลด...</div>;
 
@@ -141,7 +178,6 @@ export default function MyReservationsTable() {
           </div>
         )}
 
-        {/* ✅ NEW: controls */}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="w-full sm:w-56">
@@ -152,7 +188,7 @@ export default function MyReservationsTable() {
                 <SelectContent>
                   {STATUS_OPTIONS.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {s === "ALL" ? "ALL (ทั้งหมด)" : s}
+                      {s === "ALL" ? `ALL (${STATUS_LABELS[s]})` : STATUS_LABELS[s]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -184,19 +220,17 @@ export default function MyReservationsTable() {
                 <TableHead>ห้อง</TableHead>
                 <TableHead>วันที่</TableHead>
                 <TableHead>ช่วงเวลา</TableHead>
-
-                {/* ✅ NEW: note column */}
                 <TableHead>หมายเหตุ</TableHead>
-
                 <TableHead>สถานะ</TableHead>
-                <TableHead className="text-right">การทำรายการ</TableHead>
-</TableRow>
+                <TableHead>ผู้ร่วมใช้</TableHead>
+                <TableHead className="text-right">ยกเลิก</TableHead>
+              </TableRow>
             </TableHeader>
 
             <TableBody>
               {rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-sm text-muted-foreground">
+                  <TableCell colSpan={7} className="text-sm text-muted-foreground">
                     ยังไม่มีรายการจอง
                   </TableCell>
                 </TableRow>
@@ -208,18 +242,16 @@ export default function MyReservationsTable() {
                         {r.room.code} • {r.room.name}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {`ห้อง ${r.room.roomNumber} • ชั้น ${r.room.floor}` }
+                        {`ห้อง ${r.room.roomNumber} • ชั้น ${r.room.floor}`}
                       </div>
                     </TableCell>
 
-                    {/* ✅ sort uses startAt; display uses date */}
                     <TableCell>{formatDate(r.startAt)}</TableCell>
 
                     <TableCell>
                       <span className="font-mono text-sm">{r.slot}</span>
                     </TableCell>
 
-                    {/* ✅ tooltip note */}
                     <TableCell>
                       {r.note ? (
                         <Tooltip>
@@ -242,10 +274,19 @@ export default function MyReservationsTable() {
                     </TableCell>
 
                     <TableCell>
-                      <Badge variant={statusVariant(r.status) as any}>{r.status}</Badge>
+                      <div className="space-y-1">
+                        <Badge variant={statusVariant(r.status) as any}>
+                          {r.statusLabel ?? r.status}
+                        </Badge>
+                        {r.nextAction ? (
+                          <div className="text-xs text-muted-foreground">{r.nextAction}</div>
+                        ) : null}
+                      </div>
                     </TableCell>
+
                     <TableCell>
-                      {r.type === "AD_HOC" &&
+                      {showParticipants &&
+                        r.type === "AD_HOC" &&
                         !["CHECKED_IN", "COMPLETED", "CANCELLED", "REJECTED", "NO_SHOW"].includes(r.status) && (
                           <Button asChild variant="outline" size="sm">
                             <Link href={`/student/reservations/${r.id}/participants`}>ผู้ร่วมใช้</Link>
@@ -263,8 +304,6 @@ export default function MyReservationsTable() {
                         {busyId === r.id ? "กำลังยกเลิก..." : "ยกเลิก"}
                       </Button>
                     </TableCell>
-
-
                   </TableRow>
                 ))
               )}

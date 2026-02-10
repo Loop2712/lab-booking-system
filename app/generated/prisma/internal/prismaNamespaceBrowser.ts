@@ -55,6 +55,7 @@ export const ModelName = {
   Room: 'Room',
   Key: 'Key',
   Course: 'Course',
+  Term: 'Term',
   Section: 'Section',
   Enrollment: 'Enrollment',
   Reservation: 'Reservation',
@@ -141,6 +142,20 @@ export const CourseScalarFieldEnum = {
 export type CourseScalarFieldEnum = (typeof CourseScalarFieldEnum)[keyof typeof CourseScalarFieldEnum]
 
 
+export const TermScalarFieldEnum = {
+  id: 'id',
+  term: 'term',
+  year: 'year',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TermScalarFieldEnum = (typeof TermScalarFieldEnum)[keyof typeof TermScalarFieldEnum]
+
+
 export const SectionScalarFieldEnum = {
   id: 'id',
   courseId: 'courseId',
@@ -149,8 +164,7 @@ export const SectionScalarFieldEnum = {
   dayOfWeek: 'dayOfWeek',
   startTime: 'startTime',
   endTime: 'endTime',
-  term: 'term',
-  year: 'year',
+  termId: 'termId',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

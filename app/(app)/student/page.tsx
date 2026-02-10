@@ -51,7 +51,7 @@ export default async function StudentDashboard() {
 
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">รายการทั้งหมด</CardTitle>
+            <CardTitle className="text-sm">อนุมัติแล้ว</CardTitle>
             <Badge variant="secondary">APPROVED</Badge>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{approved}</CardContent>
@@ -93,13 +93,13 @@ export default async function StudentDashboard() {
 
       <div className="flex flex-wrap gap-2">
         <Button asChild>
-          <Link href="/student/reserve">BookingRoom</Link>
+          <Link href="/student/reserve">ศูนย์จองห้อง</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/student/reservations">ListBooking</Link>
+          <Link href="/student/reservations">รายการจองของฉัน</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/student/check">QR / Token ของฉัน</Link>
+          <Link href="/student/check">QR / Token สำหรับยืม-คืน</Link>
         </Button>
       </div>
     </div>

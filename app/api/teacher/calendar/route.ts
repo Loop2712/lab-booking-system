@@ -26,8 +26,16 @@ export async function GET(req: Request) {
   const fromDate = startOfDayUTC(from);
   const toDate = startOfDayUTC(to);
 
+  const now = new Date();
   const sections = await prisma.section.findMany({
-    where: { teacherId: uid, isActive: true },
+    where: {
+      teacherId: uid,
+      isActive: true,
+      term: {
+        isActive: true,
+        endDate: { gte: now },
+      },
+    },
     include: {
       course: true,
       room: true,

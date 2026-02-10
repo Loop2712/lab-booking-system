@@ -26,6 +26,7 @@ export async function GET(req: Request) {
   const fromDate = startOfDayUTC(from);
   const toDate = startOfDayUTC(to);
 
+  const now = new Date();
   const enrollments = await prisma.enrollment.findMany({
     where: { studentId: uid },
     select: { sectionId: true },
@@ -34,7 +35,14 @@ export async function GET(req: Request) {
 
   // 1) คาบเรียน (จาก Section ของที่ลงทะเบียน)
   const sections = await prisma.section.findMany({
-    where: { id: { in: sectionIds }, isActive: true },
+    where: {
+      id: { in: sectionIds },
+      isActive: true,
+      term: {
+        isActive: true,
+        endDate: { gte: now },
+      },
+    },
     include: {
       course: true,
       room: true,

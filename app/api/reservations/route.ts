@@ -7,7 +7,9 @@ import type { ReservationStatus } from "@/app/generated/prisma/enums";
 import { z } from "zod";
 import { areConsecutiveSlots, findSlot } from "@/lib/reserve/slots";
 import { todayYmdBkk, addDaysYmd, isYmdBetweenInclusive  } from "@/lib/date/index";
+import { startOfBangkokDay } from "@/lib/date/bangkok";
 import type { DayName } from "@/lib/date/toDayName";
+import { getReservationStatusInfo } from "@/lib/reservations/status";
 
 export const runtime = "nodejs";
 
@@ -18,6 +20,7 @@ const bodySchema = z.object({
   endTime: z.string().min(1).optional(),
   slotId: z.string().min(1).optional(),
   slotIds: z.array(z.string().min(1)).optional(),
+  participantIds: z.array(z.string().min(1)).optional(),
   note: z.string().optional().nullable(),
 });
 
@@ -97,12 +100,14 @@ export async function POST(req: Request) {
     );
   }
 
-  const { roomId, date, slotId, slotIds, note } = parsed.data;
+  const { roomId, date, slotId, slotIds, note, participantIds } = parsed.data;
   const { startTime, endTime } = parsed.data;
   const useCustomTime = !!startTime && !!endTime;
   const selectedSlots = Array.from(
     new Set([...(slotIds ?? []), ...(slotId ? [slotId] : [])])
   );
+  const uniqueParticipants = Array.from(new Set(participantIds ?? []))
+    .filter((pid) => pid !== uid);
 
   if (!useCustomTime && selectedSlots.length === 0) {
     return NextResponse.json(
@@ -176,10 +181,41 @@ export async function POST(req: Request) {
     );
   }
 
+  if (uniqueParticipants.length > 4) {
+    return NextResponse.json(
+      { ok: false, message: "PARTICIPANT_LIMIT_EXCEEDED" },
+      { status: 400 }
+    );
+  }
+
+  if (uniqueParticipants.length > 0) {
+    const users = await prisma.user.findMany({
+      where: { id: { in: uniqueParticipants }, role: "STUDENT", isActive: true },
+      select: { id: true },
+    });
+
+    if (users.length !== uniqueParticipants.length) {
+      return NextResponse.json(
+        { ok: false, message: "INVALID_PARTICIPANTS" },
+        { status: 400 }
+      );
+    }
+  }
+
   // เช็คชนตารางเรียนของห้อง (section ที่ยังไม่ถูก generate ก็ต้องกันไว้)
   const dayName = bkkDayName(date);
+  const dayStart = startOfBangkokDay(date);
   const sections = await prisma.section.findMany({
-    where: { roomId, dayOfWeek: dayName, isActive: true },
+    where: {
+      roomId,
+      dayOfWeek: dayName,
+      isActive: true,
+      term: {
+        isActive: true,
+        startDate: { lte: dayStart },
+        endDate: { gte: dayStart },
+      },
+    },
     select: { startTime: true, endTime: true },
   });
   if (sections.length > 0) {
@@ -249,14 +285,47 @@ export async function POST(req: Request) {
       }));
 
       await tx.reservation.createMany({ data });
-      return { ok: true as const, status: 200, count: data.length };
+
+      const created = await tx.reservation.findMany({
+        where: {
+          requesterId: uid,
+          roomId,
+          date: dateOnly,
+          slot: { in: data.map((d) => d.slot) },
+        },
+        select: { id: true },
+      });
+
+      if (uniqueParticipants.length > 0 && created.length > 0) {
+        for (const resv of created) {
+          await tx.reservationParticipant.createMany({
+            data: uniqueParticipants.map((userId) => ({ reservationId: resv.id, userId })),
+            skipDuplicates: true,
+          });
+        }
+      }
+
+      return {
+        ok: true as const,
+        status: 200,
+        count: data.length,
+        reservationIds: created.map((r) => r.id),
+      };
     });
 
     if (!result.ok) {
       return NextResponse.json({ ok: false, message: result.message }, { status: result.status });
     }
 
-    return NextResponse.json({ ok: true, count: result.count });
+    const statusInfo = getReservationStatusInfo(status);
+    return NextResponse.json({
+      ok: true,
+      count: result.count,
+      reservationIds: result.reservationIds ?? [],
+      status,
+      statusLabel: statusInfo.statusLabel,
+      nextAction: statusInfo.nextAction,
+    });
   } catch (e: any) {
     // ✅ unique collision -> UI expects ROOM_ALREADY_RESERVED
     if (

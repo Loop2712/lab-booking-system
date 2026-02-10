@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import Link from "next/link";
+import ImportForm from "@/components/admin/ImportForm";
 
 
 export default function AdminUsersPage() {
@@ -351,58 +351,30 @@ export default function AdminUsersPage() {
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="text-sm font-semibold">Import Student (XLSX/CSV)</div>
-              <div className="text-sm text-muted-foreground">
-                รูปแบบไฟล์: <span className="font-mono">studentId, firstName, lastName</span>
-                {" "} (ถ้าไม่ระบุ birthDate ระบบจะตั้งเป็น <span className="font-mono">2000-01-01</span> | รหัสผ่านเริ่มต้นนักศึกษา = <span className="font-mono">studentId</span>)
-              </div>
-
-              <Input
-                type="file"
-                accept=".xlsx,.xls,.csv,text/csv"
-                onChange={(e) => {
-                  const f = e.target.files?.[0] ?? null;
-                  setCsvFile(f);
-                  setImportPreview(null);
-                  setImportMsg(null);
-                  setImportErr(null);
-                }}
-              />
-
-              <div className="flex flex-wrap gap-2">
-                <Button disabled={!csvFile || importBusy} onClick={() => runImport(true)}>
-                  {importBusy ? "กำลังทำงาน..." : "ตรวจสอบไฟล์ (Dry-run)"}
-                </Button>
-                <Button
-                  variant="secondary"
-                  disabled={!csvFile || importBusy || !importPreview}
-                  onClick={() => runImport(false)}
-                  title={!importPreview ? "ต้องกด Dry-run ให้ผ่านก่อน" : ""}
-                >
-                  {importBusy ? "กำลังนำเข้า..." : "นำเข้า (Upsert)"}
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href="/api/admin/users/template?format=xlsx">ดาวน์โหลดเทมเพลต (XLSX)</Link>
-                </Button>
-              </div>
-
-              {importMsg && <div className="text-sm text-green-600">{importMsg}</div>}
-              {importErr && (
-                <div className="text-sm text-red-600 whitespace-pre-wrap">
-                  {importErr}
-                </div>
-              )}
-
-              {importPreview?.sample?.length ? (
-                <div className="pt-2">
-                  <div className="text-sm font-semibold mb-2">ตัวอย่าง 10 แถวแรก (ผลการอ่านไฟล์)</div>
-                  <div className="overflow-auto border rounded-md">
-                    <pre className="text-xs p-3">{JSON.stringify(importPreview.sample, null, 2)}</pre>
-                  </div>
-                </div>
-              ) : null}
-            </div>
+            <ImportForm
+              title="Import Student (XLSX/CSV)"
+              formatHint={
+                <>
+                  รูปแบบไฟล์: <span className="font-mono">studentId, firstName, lastName</span>{" "}
+                  (ถ้าไม่ระบุ birthDate ระบบจะตั้งเป็น <span className="font-mono">2000-01-01</span> |
+                  รหัสผ่านเริ่มต้นนักศึกษา = <span className="font-mono">studentId</span>)
+                </>
+              }
+              templateHref="/api/admin/users/template?format=xlsx"
+              file={csvFile}
+              onFileChange={(f) => {
+                setCsvFile(f);
+                setImportPreview(null);
+                setImportMsg(null);
+                setImportErr(null);
+              }}
+              onDryRun={() => runImport(true)}
+              onImport={() => runImport(false)}
+              busy={importBusy}
+              preview={importPreview}
+              message={importMsg}
+              error={importErr}
+            />
           </div>
         </CardContent>
       </Card>

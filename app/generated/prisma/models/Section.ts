@@ -20,18 +20,8 @@ export type SectionModel = runtime.Types.Result.DefaultSelection<Prisma.$Section
 
 export type AggregateSection = {
   _count: SectionCountAggregateOutputType | null
-  _avg: SectionAvgAggregateOutputType | null
-  _sum: SectionSumAggregateOutputType | null
   _min: SectionMinAggregateOutputType | null
   _max: SectionMaxAggregateOutputType | null
-}
-
-export type SectionAvgAggregateOutputType = {
-  year: number | null
-}
-
-export type SectionSumAggregateOutputType = {
-  year: number | null
 }
 
 export type SectionMinAggregateOutputType = {
@@ -42,8 +32,7 @@ export type SectionMinAggregateOutputType = {
   dayOfWeek: $Enums.DayOfWeek | null
   startTime: string | null
   endTime: string | null
-  term: string | null
-  year: number | null
+  termId: string | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -57,8 +46,7 @@ export type SectionMaxAggregateOutputType = {
   dayOfWeek: $Enums.DayOfWeek | null
   startTime: string | null
   endTime: string | null
-  term: string | null
-  year: number | null
+  termId: string | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -72,22 +60,13 @@ export type SectionCountAggregateOutputType = {
   dayOfWeek: number
   startTime: number
   endTime: number
-  term: number
-  year: number
+  termId: number
   isActive: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
-
-export type SectionAvgAggregateInputType = {
-  year?: true
-}
-
-export type SectionSumAggregateInputType = {
-  year?: true
-}
 
 export type SectionMinAggregateInputType = {
   id?: true
@@ -97,8 +76,7 @@ export type SectionMinAggregateInputType = {
   dayOfWeek?: true
   startTime?: true
   endTime?: true
-  term?: true
-  year?: true
+  termId?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -112,8 +90,7 @@ export type SectionMaxAggregateInputType = {
   dayOfWeek?: true
   startTime?: true
   endTime?: true
-  term?: true
-  year?: true
+  termId?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -127,8 +104,7 @@ export type SectionCountAggregateInputType = {
   dayOfWeek?: true
   startTime?: true
   endTime?: true
-  term?: true
-  year?: true
+  termId?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -173,18 +149,6 @@ export type SectionAggregateArgs<ExtArgs extends runtime.Types.Extensions.Intern
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
-   * Select which fields to average
-  **/
-  _avg?: SectionAvgAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
-   * Select which fields to sum
-  **/
-  _sum?: SectionSumAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
    * Select which fields to find the minimum value
   **/
   _min?: SectionMinAggregateInputType
@@ -215,8 +179,6 @@ export type SectionGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   _count?: SectionCountAggregateInputType | true
-  _avg?: SectionAvgAggregateInputType
-  _sum?: SectionSumAggregateInputType
   _min?: SectionMinAggregateInputType
   _max?: SectionMaxAggregateInputType
 }
@@ -229,14 +191,11 @@ export type SectionGroupByOutputType = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term: string | null
-  year: number | null
+  termId: string | null
   isActive: boolean
   createdAt: Date
   updatedAt: Date
   _count: SectionCountAggregateOutputType | null
-  _avg: SectionAvgAggregateOutputType | null
-  _sum: SectionSumAggregateOutputType | null
   _min: SectionMinAggregateOutputType | null
   _max: SectionMaxAggregateOutputType | null
 }
@@ -267,14 +226,14 @@ export type SectionWhereInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFilter<"Section"> | $Enums.DayOfWeek
   startTime?: Prisma.StringFilter<"Section"> | string
   endTime?: Prisma.StringFilter<"Section"> | string
-  term?: Prisma.StringNullableFilter<"Section"> | string | null
-  year?: Prisma.IntNullableFilter<"Section"> | number | null
+  termId?: Prisma.StringNullableFilter<"Section"> | string | null
   isActive?: Prisma.BoolFilter<"Section"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Section"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Section"> | Date | string
   course?: Prisma.XOR<Prisma.CourseScalarRelationFilter, Prisma.CourseWhereInput>
   teacher?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   room?: Prisma.XOR<Prisma.RoomScalarRelationFilter, Prisma.RoomWhereInput>
+  term?: Prisma.XOR<Prisma.TermNullableScalarRelationFilter, Prisma.TermWhereInput> | null
   enrollments?: Prisma.EnrollmentListRelationFilter
   reservations?: Prisma.ReservationListRelationFilter
 }
@@ -287,14 +246,14 @@ export type SectionOrderByWithRelationInput = {
   dayOfWeek?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
-  term?: Prisma.SortOrderInput | Prisma.SortOrder
-  year?: Prisma.SortOrderInput | Prisma.SortOrder
+  termId?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   course?: Prisma.CourseOrderByWithRelationInput
   teacher?: Prisma.UserOrderByWithRelationInput
   room?: Prisma.RoomOrderByWithRelationInput
+  term?: Prisma.TermOrderByWithRelationInput
   enrollments?: Prisma.EnrollmentOrderByRelationAggregateInput
   reservations?: Prisma.ReservationOrderByRelationAggregateInput
 }
@@ -310,14 +269,14 @@ export type SectionWhereUniqueInput = Prisma.AtLeast<{
   dayOfWeek?: Prisma.EnumDayOfWeekFilter<"Section"> | $Enums.DayOfWeek
   startTime?: Prisma.StringFilter<"Section"> | string
   endTime?: Prisma.StringFilter<"Section"> | string
-  term?: Prisma.StringNullableFilter<"Section"> | string | null
-  year?: Prisma.IntNullableFilter<"Section"> | number | null
+  termId?: Prisma.StringNullableFilter<"Section"> | string | null
   isActive?: Prisma.BoolFilter<"Section"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Section"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Section"> | Date | string
   course?: Prisma.XOR<Prisma.CourseScalarRelationFilter, Prisma.CourseWhereInput>
   teacher?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   room?: Prisma.XOR<Prisma.RoomScalarRelationFilter, Prisma.RoomWhereInput>
+  term?: Prisma.XOR<Prisma.TermNullableScalarRelationFilter, Prisma.TermWhereInput> | null
   enrollments?: Prisma.EnrollmentListRelationFilter
   reservations?: Prisma.ReservationListRelationFilter
 }, "id">
@@ -330,16 +289,13 @@ export type SectionOrderByWithAggregationInput = {
   dayOfWeek?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
-  term?: Prisma.SortOrderInput | Prisma.SortOrder
-  year?: Prisma.SortOrderInput | Prisma.SortOrder
+  termId?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SectionCountOrderByAggregateInput
-  _avg?: Prisma.SectionAvgOrderByAggregateInput
   _max?: Prisma.SectionMaxOrderByAggregateInput
   _min?: Prisma.SectionMinOrderByAggregateInput
-  _sum?: Prisma.SectionSumOrderByAggregateInput
 }
 
 export type SectionScalarWhereWithAggregatesInput = {
@@ -353,8 +309,7 @@ export type SectionScalarWhereWithAggregatesInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekWithAggregatesFilter<"Section"> | $Enums.DayOfWeek
   startTime?: Prisma.StringWithAggregatesFilter<"Section"> | string
   endTime?: Prisma.StringWithAggregatesFilter<"Section"> | string
-  term?: Prisma.StringNullableWithAggregatesFilter<"Section"> | string | null
-  year?: Prisma.IntNullableWithAggregatesFilter<"Section"> | number | null
+  termId?: Prisma.StringNullableWithAggregatesFilter<"Section"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Section"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Section"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Section"> | Date | string
@@ -365,14 +320,13 @@ export type SectionCreateInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   course: Prisma.CourseCreateNestedOneWithoutSectionsInput
   teacher: Prisma.UserCreateNestedOneWithoutTaughtSectionsInput
   room: Prisma.RoomCreateNestedOneWithoutSectionsInput
+  term?: Prisma.TermCreateNestedOneWithoutSectionsInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutSectionInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutSectionInput
 }
@@ -385,8 +339,7 @@ export type SectionUncheckedCreateInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
+  termId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -399,14 +352,13 @@ export type SectionUpdateInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   course?: Prisma.CourseUpdateOneRequiredWithoutSectionsNestedInput
   teacher?: Prisma.UserUpdateOneRequiredWithoutTaughtSectionsNestedInput
   room?: Prisma.RoomUpdateOneRequiredWithoutSectionsNestedInput
+  term?: Prisma.TermUpdateOneWithoutSectionsNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutSectionNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutSectionNestedInput
 }
@@ -419,8 +371,7 @@ export type SectionUncheckedUpdateInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  termId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -436,8 +387,7 @@ export type SectionCreateManyInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
+  termId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -448,8 +398,6 @@ export type SectionUpdateManyMutationInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -463,8 +411,7 @@ export type SectionUncheckedUpdateManyInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  termId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -488,15 +435,10 @@ export type SectionCountOrderByAggregateInput = {
   dayOfWeek?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
-  term?: Prisma.SortOrder
-  year?: Prisma.SortOrder
+  termId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type SectionAvgOrderByAggregateInput = {
-  year?: Prisma.SortOrder
 }
 
 export type SectionMaxOrderByAggregateInput = {
@@ -507,8 +449,7 @@ export type SectionMaxOrderByAggregateInput = {
   dayOfWeek?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
-  term?: Prisma.SortOrder
-  year?: Prisma.SortOrder
+  termId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -522,15 +463,10 @@ export type SectionMinOrderByAggregateInput = {
   dayOfWeek?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
-  term?: Prisma.SortOrder
-  year?: Prisma.SortOrder
+  termId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type SectionSumOrderByAggregateInput = {
-  year?: Prisma.SortOrder
 }
 
 export type SectionScalarRelationFilter = {
@@ -669,16 +605,50 @@ export type SectionUncheckedUpdateManyWithoutCourseNestedInput = {
   deleteMany?: Prisma.SectionScalarWhereInput | Prisma.SectionScalarWhereInput[]
 }
 
-export type EnumDayOfWeekFieldUpdateOperationsInput = {
-  set?: $Enums.DayOfWeek
+export type SectionCreateNestedManyWithoutTermInput = {
+  create?: Prisma.XOR<Prisma.SectionCreateWithoutTermInput, Prisma.SectionUncheckedCreateWithoutTermInput> | Prisma.SectionCreateWithoutTermInput[] | Prisma.SectionUncheckedCreateWithoutTermInput[]
+  connectOrCreate?: Prisma.SectionCreateOrConnectWithoutTermInput | Prisma.SectionCreateOrConnectWithoutTermInput[]
+  createMany?: Prisma.SectionCreateManyTermInputEnvelope
+  connect?: Prisma.SectionWhereUniqueInput | Prisma.SectionWhereUniqueInput[]
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
+export type SectionUncheckedCreateNestedManyWithoutTermInput = {
+  create?: Prisma.XOR<Prisma.SectionCreateWithoutTermInput, Prisma.SectionUncheckedCreateWithoutTermInput> | Prisma.SectionCreateWithoutTermInput[] | Prisma.SectionUncheckedCreateWithoutTermInput[]
+  connectOrCreate?: Prisma.SectionCreateOrConnectWithoutTermInput | Prisma.SectionCreateOrConnectWithoutTermInput[]
+  createMany?: Prisma.SectionCreateManyTermInputEnvelope
+  connect?: Prisma.SectionWhereUniqueInput | Prisma.SectionWhereUniqueInput[]
+}
+
+export type SectionUpdateManyWithoutTermNestedInput = {
+  create?: Prisma.XOR<Prisma.SectionCreateWithoutTermInput, Prisma.SectionUncheckedCreateWithoutTermInput> | Prisma.SectionCreateWithoutTermInput[] | Prisma.SectionUncheckedCreateWithoutTermInput[]
+  connectOrCreate?: Prisma.SectionCreateOrConnectWithoutTermInput | Prisma.SectionCreateOrConnectWithoutTermInput[]
+  upsert?: Prisma.SectionUpsertWithWhereUniqueWithoutTermInput | Prisma.SectionUpsertWithWhereUniqueWithoutTermInput[]
+  createMany?: Prisma.SectionCreateManyTermInputEnvelope
+  set?: Prisma.SectionWhereUniqueInput | Prisma.SectionWhereUniqueInput[]
+  disconnect?: Prisma.SectionWhereUniqueInput | Prisma.SectionWhereUniqueInput[]
+  delete?: Prisma.SectionWhereUniqueInput | Prisma.SectionWhereUniqueInput[]
+  connect?: Prisma.SectionWhereUniqueInput | Prisma.SectionWhereUniqueInput[]
+  update?: Prisma.SectionUpdateWithWhereUniqueWithoutTermInput | Prisma.SectionUpdateWithWhereUniqueWithoutTermInput[]
+  updateMany?: Prisma.SectionUpdateManyWithWhereWithoutTermInput | Prisma.SectionUpdateManyWithWhereWithoutTermInput[]
+  deleteMany?: Prisma.SectionScalarWhereInput | Prisma.SectionScalarWhereInput[]
+}
+
+export type SectionUncheckedUpdateManyWithoutTermNestedInput = {
+  create?: Prisma.XOR<Prisma.SectionCreateWithoutTermInput, Prisma.SectionUncheckedCreateWithoutTermInput> | Prisma.SectionCreateWithoutTermInput[] | Prisma.SectionUncheckedCreateWithoutTermInput[]
+  connectOrCreate?: Prisma.SectionCreateOrConnectWithoutTermInput | Prisma.SectionCreateOrConnectWithoutTermInput[]
+  upsert?: Prisma.SectionUpsertWithWhereUniqueWithoutTermInput | Prisma.SectionUpsertWithWhereUniqueWithoutTermInput[]
+  createMany?: Prisma.SectionCreateManyTermInputEnvelope
+  set?: Prisma.SectionWhereUniqueInput | Prisma.SectionWhereUniqueInput[]
+  disconnect?: Prisma.SectionWhereUniqueInput | Prisma.SectionWhereUniqueInput[]
+  delete?: Prisma.SectionWhereUniqueInput | Prisma.SectionWhereUniqueInput[]
+  connect?: Prisma.SectionWhereUniqueInput | Prisma.SectionWhereUniqueInput[]
+  update?: Prisma.SectionUpdateWithWhereUniqueWithoutTermInput | Prisma.SectionUpdateWithWhereUniqueWithoutTermInput[]
+  updateMany?: Prisma.SectionUpdateManyWithWhereWithoutTermInput | Prisma.SectionUpdateManyWithWhereWithoutTermInput[]
+  deleteMany?: Prisma.SectionScalarWhereInput | Prisma.SectionScalarWhereInput[]
+}
+
+export type EnumDayOfWeekFieldUpdateOperationsInput = {
+  set?: $Enums.DayOfWeek
 }
 
 export type SectionCreateNestedOneWithoutEnrollmentsInput = {
@@ -716,13 +686,12 @@ export type SectionCreateWithoutTeacherInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   course: Prisma.CourseCreateNestedOneWithoutSectionsInput
   room: Prisma.RoomCreateNestedOneWithoutSectionsInput
+  term?: Prisma.TermCreateNestedOneWithoutSectionsInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutSectionInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutSectionInput
 }
@@ -734,8 +703,7 @@ export type SectionUncheckedCreateWithoutTeacherInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
+  termId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -780,8 +748,7 @@ export type SectionScalarWhereInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFilter<"Section"> | $Enums.DayOfWeek
   startTime?: Prisma.StringFilter<"Section"> | string
   endTime?: Prisma.StringFilter<"Section"> | string
-  term?: Prisma.StringNullableFilter<"Section"> | string | null
-  year?: Prisma.IntNullableFilter<"Section"> | number | null
+  termId?: Prisma.StringNullableFilter<"Section"> | string | null
   isActive?: Prisma.BoolFilter<"Section"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Section"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Section"> | Date | string
@@ -792,13 +759,12 @@ export type SectionCreateWithoutRoomInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   course: Prisma.CourseCreateNestedOneWithoutSectionsInput
   teacher: Prisma.UserCreateNestedOneWithoutTaughtSectionsInput
+  term?: Prisma.TermCreateNestedOneWithoutSectionsInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutSectionInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutSectionInput
 }
@@ -810,8 +776,7 @@ export type SectionUncheckedCreateWithoutRoomInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
+  termId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -850,13 +815,12 @@ export type SectionCreateWithoutCourseInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   teacher: Prisma.UserCreateNestedOneWithoutTaughtSectionsInput
   room: Prisma.RoomCreateNestedOneWithoutSectionsInput
+  term?: Prisma.TermCreateNestedOneWithoutSectionsInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutSectionInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutSectionInput
 }
@@ -868,8 +832,7 @@ export type SectionUncheckedCreateWithoutCourseInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
+  termId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -903,19 +866,74 @@ export type SectionUpdateManyWithWhereWithoutCourseInput = {
   data: Prisma.XOR<Prisma.SectionUpdateManyMutationInput, Prisma.SectionUncheckedUpdateManyWithoutCourseInput>
 }
 
-export type SectionCreateWithoutEnrollmentsInput = {
+export type SectionCreateWithoutTermInput = {
   id?: string
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   course: Prisma.CourseCreateNestedOneWithoutSectionsInput
   teacher: Prisma.UserCreateNestedOneWithoutTaughtSectionsInput
   room: Prisma.RoomCreateNestedOneWithoutSectionsInput
+  enrollments?: Prisma.EnrollmentCreateNestedManyWithoutSectionInput
+  reservations?: Prisma.ReservationCreateNestedManyWithoutSectionInput
+}
+
+export type SectionUncheckedCreateWithoutTermInput = {
+  id?: string
+  courseId: string
+  teacherId: string
+  roomId: string
+  dayOfWeek: $Enums.DayOfWeek
+  startTime: string
+  endTime: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutSectionInput
+  reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutSectionInput
+}
+
+export type SectionCreateOrConnectWithoutTermInput = {
+  where: Prisma.SectionWhereUniqueInput
+  create: Prisma.XOR<Prisma.SectionCreateWithoutTermInput, Prisma.SectionUncheckedCreateWithoutTermInput>
+}
+
+export type SectionCreateManyTermInputEnvelope = {
+  data: Prisma.SectionCreateManyTermInput | Prisma.SectionCreateManyTermInput[]
+  skipDuplicates?: boolean
+}
+
+export type SectionUpsertWithWhereUniqueWithoutTermInput = {
+  where: Prisma.SectionWhereUniqueInput
+  update: Prisma.XOR<Prisma.SectionUpdateWithoutTermInput, Prisma.SectionUncheckedUpdateWithoutTermInput>
+  create: Prisma.XOR<Prisma.SectionCreateWithoutTermInput, Prisma.SectionUncheckedCreateWithoutTermInput>
+}
+
+export type SectionUpdateWithWhereUniqueWithoutTermInput = {
+  where: Prisma.SectionWhereUniqueInput
+  data: Prisma.XOR<Prisma.SectionUpdateWithoutTermInput, Prisma.SectionUncheckedUpdateWithoutTermInput>
+}
+
+export type SectionUpdateManyWithWhereWithoutTermInput = {
+  where: Prisma.SectionScalarWhereInput
+  data: Prisma.XOR<Prisma.SectionUpdateManyMutationInput, Prisma.SectionUncheckedUpdateManyWithoutTermInput>
+}
+
+export type SectionCreateWithoutEnrollmentsInput = {
+  id?: string
+  dayOfWeek: $Enums.DayOfWeek
+  startTime: string
+  endTime: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  course: Prisma.CourseCreateNestedOneWithoutSectionsInput
+  teacher: Prisma.UserCreateNestedOneWithoutTaughtSectionsInput
+  room: Prisma.RoomCreateNestedOneWithoutSectionsInput
+  term?: Prisma.TermCreateNestedOneWithoutSectionsInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutSectionInput
 }
 
@@ -927,8 +945,7 @@ export type SectionUncheckedCreateWithoutEnrollmentsInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
+  termId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -956,14 +973,13 @@ export type SectionUpdateWithoutEnrollmentsInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   course?: Prisma.CourseUpdateOneRequiredWithoutSectionsNestedInput
   teacher?: Prisma.UserUpdateOneRequiredWithoutTaughtSectionsNestedInput
   room?: Prisma.RoomUpdateOneRequiredWithoutSectionsNestedInput
+  term?: Prisma.TermUpdateOneWithoutSectionsNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutSectionNestedInput
 }
 
@@ -975,8 +991,7 @@ export type SectionUncheckedUpdateWithoutEnrollmentsInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  termId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -988,14 +1003,13 @@ export type SectionCreateWithoutReservationsInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   course: Prisma.CourseCreateNestedOneWithoutSectionsInput
   teacher: Prisma.UserCreateNestedOneWithoutTaughtSectionsInput
   room: Prisma.RoomCreateNestedOneWithoutSectionsInput
+  term?: Prisma.TermCreateNestedOneWithoutSectionsInput
   enrollments?: Prisma.EnrollmentCreateNestedManyWithoutSectionInput
 }
 
@@ -1007,8 +1021,7 @@ export type SectionUncheckedCreateWithoutReservationsInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
+  termId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1036,14 +1049,13 @@ export type SectionUpdateWithoutReservationsInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   course?: Prisma.CourseUpdateOneRequiredWithoutSectionsNestedInput
   teacher?: Prisma.UserUpdateOneRequiredWithoutTaughtSectionsNestedInput
   room?: Prisma.RoomUpdateOneRequiredWithoutSectionsNestedInput
+  term?: Prisma.TermUpdateOneWithoutSectionsNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutSectionNestedInput
 }
 
@@ -1055,8 +1067,7 @@ export type SectionUncheckedUpdateWithoutReservationsInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  termId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1070,8 +1081,7 @@ export type SectionCreateManyTeacherInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
+  termId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1082,13 +1092,12 @@ export type SectionUpdateWithoutTeacherInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   course?: Prisma.CourseUpdateOneRequiredWithoutSectionsNestedInput
   room?: Prisma.RoomUpdateOneRequiredWithoutSectionsNestedInput
+  term?: Prisma.TermUpdateOneWithoutSectionsNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutSectionNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutSectionNestedInput
 }
@@ -1100,8 +1109,7 @@ export type SectionUncheckedUpdateWithoutTeacherInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  termId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1116,8 +1124,7 @@ export type SectionUncheckedUpdateManyWithoutTeacherInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  termId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1130,8 +1137,7 @@ export type SectionCreateManyRoomInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
+  termId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1142,13 +1148,12 @@ export type SectionUpdateWithoutRoomInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   course?: Prisma.CourseUpdateOneRequiredWithoutSectionsNestedInput
   teacher?: Prisma.UserUpdateOneRequiredWithoutTaughtSectionsNestedInput
+  term?: Prisma.TermUpdateOneWithoutSectionsNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutSectionNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutSectionNestedInput
 }
@@ -1160,8 +1165,7 @@ export type SectionUncheckedUpdateWithoutRoomInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  termId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1176,8 +1180,7 @@ export type SectionUncheckedUpdateManyWithoutRoomInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  termId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1190,8 +1193,7 @@ export type SectionCreateManyCourseInput = {
   dayOfWeek: $Enums.DayOfWeek
   startTime: string
   endTime: string
-  term?: string | null
-  year?: number | null
+  termId?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1202,13 +1204,12 @@ export type SectionUpdateWithoutCourseInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacher?: Prisma.UserUpdateOneRequiredWithoutTaughtSectionsNestedInput
   room?: Prisma.RoomUpdateOneRequiredWithoutSectionsNestedInput
+  term?: Prisma.TermUpdateOneWithoutSectionsNestedInput
   enrollments?: Prisma.EnrollmentUpdateManyWithoutSectionNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutSectionNestedInput
 }
@@ -1220,8 +1221,7 @@ export type SectionUncheckedUpdateWithoutCourseInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  termId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1236,8 +1236,63 @@ export type SectionUncheckedUpdateManyWithoutCourseInput = {
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  term?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  year?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  termId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type SectionCreateManyTermInput = {
+  id?: string
+  courseId: string
+  teacherId: string
+  roomId: string
+  dayOfWeek: $Enums.DayOfWeek
+  startTime: string
+  endTime: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type SectionUpdateWithoutTermInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
+  startTime?: Prisma.StringFieldUpdateOperationsInput | string
+  endTime?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  course?: Prisma.CourseUpdateOneRequiredWithoutSectionsNestedInput
+  teacher?: Prisma.UserUpdateOneRequiredWithoutTaughtSectionsNestedInput
+  room?: Prisma.RoomUpdateOneRequiredWithoutSectionsNestedInput
+  enrollments?: Prisma.EnrollmentUpdateManyWithoutSectionNestedInput
+  reservations?: Prisma.ReservationUpdateManyWithoutSectionNestedInput
+}
+
+export type SectionUncheckedUpdateWithoutTermInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  courseId?: Prisma.StringFieldUpdateOperationsInput | string
+  teacherId?: Prisma.StringFieldUpdateOperationsInput | string
+  roomId?: Prisma.StringFieldUpdateOperationsInput | string
+  dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
+  startTime?: Prisma.StringFieldUpdateOperationsInput | string
+  endTime?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutSectionNestedInput
+  reservations?: Prisma.ReservationUncheckedUpdateManyWithoutSectionNestedInput
+}
+
+export type SectionUncheckedUpdateManyWithoutTermInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  courseId?: Prisma.StringFieldUpdateOperationsInput | string
+  teacherId?: Prisma.StringFieldUpdateOperationsInput | string
+  roomId?: Prisma.StringFieldUpdateOperationsInput | string
+  dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
+  startTime?: Prisma.StringFieldUpdateOperationsInput | string
+  endTime?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1291,14 +1346,14 @@ export type SectionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   dayOfWeek?: boolean
   startTime?: boolean
   endTime?: boolean
-  term?: boolean
-  year?: boolean
+  termId?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   course?: boolean | Prisma.CourseDefaultArgs<ExtArgs>
   teacher?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   room?: boolean | Prisma.RoomDefaultArgs<ExtArgs>
+  term?: boolean | Prisma.Section$termArgs<ExtArgs>
   enrollments?: boolean | Prisma.Section$enrollmentsArgs<ExtArgs>
   reservations?: boolean | Prisma.Section$reservationsArgs<ExtArgs>
   _count?: boolean | Prisma.SectionCountOutputTypeDefaultArgs<ExtArgs>
@@ -1312,14 +1367,14 @@ export type SectionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   dayOfWeek?: boolean
   startTime?: boolean
   endTime?: boolean
-  term?: boolean
-  year?: boolean
+  termId?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   course?: boolean | Prisma.CourseDefaultArgs<ExtArgs>
   teacher?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   room?: boolean | Prisma.RoomDefaultArgs<ExtArgs>
+  term?: boolean | Prisma.Section$termArgs<ExtArgs>
 }, ExtArgs["result"]["section"]>
 
 export type SectionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1330,14 +1385,14 @@ export type SectionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   dayOfWeek?: boolean
   startTime?: boolean
   endTime?: boolean
-  term?: boolean
-  year?: boolean
+  termId?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   course?: boolean | Prisma.CourseDefaultArgs<ExtArgs>
   teacher?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   room?: boolean | Prisma.RoomDefaultArgs<ExtArgs>
+  term?: boolean | Prisma.Section$termArgs<ExtArgs>
 }, ExtArgs["result"]["section"]>
 
 export type SectionSelectScalar = {
@@ -1348,18 +1403,18 @@ export type SectionSelectScalar = {
   dayOfWeek?: boolean
   startTime?: boolean
   endTime?: boolean
-  term?: boolean
-  year?: boolean
+  termId?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SectionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "courseId" | "teacherId" | "roomId" | "dayOfWeek" | "startTime" | "endTime" | "term" | "year" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["section"]>
+export type SectionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "courseId" | "teacherId" | "roomId" | "dayOfWeek" | "startTime" | "endTime" | "termId" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["section"]>
 export type SectionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   course?: boolean | Prisma.CourseDefaultArgs<ExtArgs>
   teacher?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   room?: boolean | Prisma.RoomDefaultArgs<ExtArgs>
+  term?: boolean | Prisma.Section$termArgs<ExtArgs>
   enrollments?: boolean | Prisma.Section$enrollmentsArgs<ExtArgs>
   reservations?: boolean | Prisma.Section$reservationsArgs<ExtArgs>
   _count?: boolean | Prisma.SectionCountOutputTypeDefaultArgs<ExtArgs>
@@ -1368,11 +1423,13 @@ export type SectionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   course?: boolean | Prisma.CourseDefaultArgs<ExtArgs>
   teacher?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   room?: boolean | Prisma.RoomDefaultArgs<ExtArgs>
+  term?: boolean | Prisma.Section$termArgs<ExtArgs>
 }
 export type SectionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   course?: boolean | Prisma.CourseDefaultArgs<ExtArgs>
   teacher?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   room?: boolean | Prisma.RoomDefaultArgs<ExtArgs>
+  term?: boolean | Prisma.Section$termArgs<ExtArgs>
 }
 
 export type $SectionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1381,6 +1438,7 @@ export type $SectionPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     course: Prisma.$CoursePayload<ExtArgs>
     teacher: Prisma.$UserPayload<ExtArgs>
     room: Prisma.$RoomPayload<ExtArgs>
+    term: Prisma.$TermPayload<ExtArgs> | null
     enrollments: Prisma.$EnrollmentPayload<ExtArgs>[]
     reservations: Prisma.$ReservationPayload<ExtArgs>[]
   }
@@ -1392,8 +1450,7 @@ export type $SectionPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     dayOfWeek: $Enums.DayOfWeek
     startTime: string
     endTime: string
-    term: string | null
-    year: number | null
+    termId: string | null
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -1794,6 +1851,7 @@ export interface Prisma__SectionClient<T, Null = never, ExtArgs extends runtime.
   course<T extends Prisma.CourseDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CourseDefaultArgs<ExtArgs>>): Prisma.Prisma__CourseClient<runtime.Types.Result.GetResult<Prisma.$CoursePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   teacher<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   room<T extends Prisma.RoomDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RoomDefaultArgs<ExtArgs>>): Prisma.Prisma__RoomClient<runtime.Types.Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  term<T extends Prisma.Section$termArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Section$termArgs<ExtArgs>>): Prisma.Prisma__TermClient<runtime.Types.Result.GetResult<Prisma.$TermPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   enrollments<T extends Prisma.Section$enrollmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Section$enrollmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EnrollmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reservations<T extends Prisma.Section$reservationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Section$reservationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReservationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1832,8 +1890,7 @@ export interface SectionFieldRefs {
   readonly dayOfWeek: Prisma.FieldRef<"Section", 'DayOfWeek'>
   readonly startTime: Prisma.FieldRef<"Section", 'String'>
   readonly endTime: Prisma.FieldRef<"Section", 'String'>
-  readonly term: Prisma.FieldRef<"Section", 'String'>
-  readonly year: Prisma.FieldRef<"Section", 'Int'>
+  readonly termId: Prisma.FieldRef<"Section", 'String'>
   readonly isActive: Prisma.FieldRef<"Section", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Section", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Section", 'DateTime'>
@@ -2230,6 +2287,25 @@ export type SectionDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Limit how many Sections to delete.
    */
   limit?: number
+}
+
+/**
+ * Section.term
+ */
+export type Section$termArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Term
+   */
+  select?: Prisma.TermSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Term
+   */
+  omit?: Prisma.TermOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TermInclude<ExtArgs> | null
+  where?: Prisma.TermWhereInput
 }
 
 /**

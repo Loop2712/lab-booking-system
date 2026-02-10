@@ -146,6 +146,25 @@ model Course {
   sections Section[]
 }
 
+model Term {
+  id String @id @default(cuid())
+
+  term String
+  year Int
+  startDate DateTime
+  endDate DateTime
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sections Section[]
+
+  @@unique([term, year])
+  @@index([isActive])
+  @@index([year, term])
+}
+
 model Section {
   id String @id @default(cuid())
 
@@ -162,8 +181,8 @@ model Section {
   startTime String // "08:00"
   endTime   String // "12:00"
 
-  term     String?
-  year     Int?
+  termId String?
+  term   Term? @relation(fields: [termId], references: [id])
   isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
@@ -175,6 +194,7 @@ model Section {
   @@index([teacherId])
   @@index([roomId])
   @@index([courseId])
+  @@index([termId])
 }
 
 model Enrollment {

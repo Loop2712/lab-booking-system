@@ -1,0 +1,3 @@
+﻿const fs = require('fs');
+const text = fs.readFileSync('app/api/admin/term/import/route.ts','utf8');
+const stack=[]; const pairs={')':'(',']':'[','}':'{'}; for (let i=0;i<text.length;i++){const ch=text[i]; if('{[('.includes(ch)) stack.push({ch,i}); else if(')]}'.includes(ch)){ if(!stack.length){console.log('extra closing',ch,'at',i); process.exit(0);} const last=stack.pop(); if(pairs[ch]!==last.ch){console.log('mismatch', last, 'closed by', ch, 'at', i); process.exit(0);} }} if(stack.length){const last=stack[stack.length-1]; const upto=text.slice(0,last.i); const line=upto.split(/\n/).length; const col=upto.length-upto.lastIndexOf('\n'); console.log('unclosed', last, 'line', line, 'col', col);} else console.log('balanced');

@@ -30,6 +30,30 @@ function ymd(iso: string) {
   return new Date(iso).toISOString().slice(0, 10);
 }
 
+function formatTime(iso: string) {
+  try {
+    return new Date(iso).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return iso;
+  }
+}
+
+type LookupResult = {
+  ok: true;
+  mode: "CHECKIN" | "RETURN";
+  user: { firstName: string; lastName: string; studentId?: string | null; email?: string | null };
+  reservation: {
+    id: string;
+    type: string;
+    status: string;
+    slot: string;
+    startAt: string;
+    endAt: string;
+    room: { code: string; name: string; roomNumber: string; floor: number };
+  };
+  candidatesCount: number;
+};
+
 export default function LoanDesk({ title }: { title: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +61,9 @@ export default function LoanDesk({ title }: { title: string }) {
 
   const [pendingCheckin, setPendingCheckin] = useState<ReservationRow[]>([]);
   const [activeLoans, setActiveLoans] = useState<ReservationRow[]>([]);
+  const [lookup, setLookup] = useState<LookupResult | null>(null);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+  const [lookupLoading, setLookupLoading] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -89,6 +116,9 @@ export default function LoanDesk({ title }: { title: string }) {
     }
 
     await load();
+    setLookup(null);
+    setLookupError(null);
+    setScanToken("");
   }
 
   async function returnKey(reservationId: string) {
@@ -118,8 +148,47 @@ export default function LoanDesk({ title }: { title: string }) {
       return;
     }
     await load();
+    setLookup(null);
+    setLookupError(null);
+    setScanToken("");
   }
   const [scanToken, setScanToken] = useState("");
+
+  async function lookupReservation() {
+    const token = scanToken.trim();
+    if (token.length < 10) {
+      setLookupError("กรุณาสแกน/วาง QR Token ก่อน");
+      return;
+    }
+    setLookupLoading(true);
+    setLookupError(null);
+    setLookup(null);
+
+    const res = await fetch("/api/loans/lookup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userToken: token }),
+    });
+    const json = await res.json().catch(() => ({}));
+    setLookupLoading(false);
+
+    if (!res.ok || !json?.ok) {
+      const msg =
+        json?.message === "NO_MATCHING_RESERVATION"
+          ? "ไม่พบรายการที่ตรงกับผู้ใช้"
+          : json?.message === "NO_MATCHING_CHECKEDIN_RESERVATION"
+          ? "ไม่พบรายการที่กำลังยืมอยู่"
+          : json?.message === "NO_MATCHING_APPROVED_RESERVATION"
+          ? "ไม่พบรายการที่อนุมัติแล้วสำหรับวันนี้"
+          : json?.message === "BAD_QR_TOKEN"
+          ? "QR Token ไม่ถูกต้อง"
+          : "ค้นหาไม่สำเร็จ";
+      setLookupError(msg);
+      return;
+    }
+
+    setLookup(json as LookupResult);
+  }
 
 
   const pendingRows = useMemo(() => pendingCheckin, [pendingCheckin]);
@@ -136,18 +205,78 @@ export default function LoanDesk({ title }: { title: string }) {
         </p>
       </div>
 
-      <div className="rounded-2xl border p-4 space-y-2">
+      <div className="rounded-2xl border p-4 space-y-3">
         <div className="text-sm font-medium">สแกน/วาง QR Token ของผู้ยืม/ผู้คืน</div>
-        <input
-          className="w-full rounded-lg border bg-background px-3 py-2 text-sm font-mono"
-          placeholder="วาง token ที่ได้จากหน้า /student/qr"
-          value={scanToken}
-          onChange={(e) => setScanToken(e.target.value)}
-        />
-        <div className="text-xs text-muted-foreground">
-          ต้องมี token ก่อนถึงจะกด “รับกุญแจ/คืนกุญแจ” ได้
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            className="w-full rounded-lg border bg-background px-3 py-2 text-sm font-mono"
+            placeholder="วาง token ที่ได้จากหน้า /student/qr"
+            value={scanToken}
+            onChange={(e) => {
+              setScanToken(e.target.value);
+              setLookupError(null);
+            }}
+          />
+          <Button
+            type="button"
+            onClick={lookupReservation}
+            disabled={lookupLoading}
+            variant="secondary"
+          >
+            {lookupLoading ? "กำลังค้นหา..." : "ค้นหารายการอัตโนมัติ"}
+          </Button>
         </div>
+        <div className="text-xs text-muted-foreground">
+          ระบบจะแนะนำรายการที่ตรงกับผู้ใช้โดยอัตโนมัติ เพื่อลดการเลือกผิดรายการ
+        </div>
+        {lookupError ? (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+            {lookupError}
+          </div>
+        ) : null}
       </div>
+
+      {lookup ? (
+        <div className="rounded-2xl border p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-sm font-semibold">รายการที่ระบบแนะนำ</div>
+            <Badge variant="secondary">{lookup.mode === "CHECKIN" ? "รับกุญแจ" : "คืนกุญแจ"}</Badge>
+          </div>
+          <div className="text-sm space-y-1">
+            <div>
+              ผู้ใช้: {lookup.user.firstName} {lookup.user.lastName}
+              {lookup.user.studentId ? ` • ${lookup.user.studentId}` : null}
+            </div>
+            <div>
+              ห้อง: {lookup.reservation.room.code} • {lookup.reservation.room.roomNumber} (ชั้น{" "}
+              {lookup.reservation.room.floor})
+            </div>
+            <div>
+              เวลา: {lookup.reservation.slot} ({formatTime(lookup.reservation.startAt)} -{" "}
+              {formatTime(lookup.reservation.endAt)})
+            </div>
+          </div>
+          <Button
+            onClick={() =>
+              lookup.mode === "CHECKIN"
+                ? checkIn(lookup.reservation.id)
+                : returnKey(lookup.reservation.id)
+            }
+            disabled={busyId === lookup.reservation.id}
+          >
+            {busyId === lookup.reservation.id
+              ? "กำลังทำรายการ..."
+              : lookup.mode === "CHECKIN"
+              ? "ยืนยันรับกุญแจ"
+              : "ยืนยันคืนกุญแจ"}
+          </Button>
+          {lookup.candidatesCount > 1 ? (
+            <div className="text-xs text-muted-foreground">
+              พบหลายรายการ ระบบเลือกช่วงเวลาที่ใกล้ปัจจุบันที่สุด
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
 
       {error && (

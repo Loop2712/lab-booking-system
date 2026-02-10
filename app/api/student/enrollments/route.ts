@@ -26,8 +26,17 @@ export async function GET() {
     return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
   }
 
+  const now = new Date();
   const items = await prisma.enrollment.findMany({
-    where: { studentId: uid },
+    where: {
+      studentId: uid,
+      section: {
+        term: {
+          isActive: true,
+          endDate: { gte: now },
+        },
+      },
+    },
     include: {
       section: {
         include: {
@@ -56,12 +65,20 @@ export async function POST(req: Request) {
 
   const section = await prisma.section.findUnique({
     where: { id: body.sectionId },
-    select: { id: true, isActive: true },
+    select: {
+      id: true,
+      isActive: true,
+      term: { select: { isActive: true, endDate: true } },
+    },
   });
   if (!section) {
     return NextResponse.json({ ok: false, message: "SECTION_NOT_FOUND" }, { status: 404 });
   }
   if (!section.isActive) {
+    return NextResponse.json({ ok: false, message: "SECTION_INACTIVE" }, { status: 400 });
+  }
+  const now = new Date();
+  if (!section.term || !section.term.isActive || section.term.endDate < now) {
     return NextResponse.json({ ok: false, message: "SECTION_INACTIVE" }, { status: 400 });
   }
 

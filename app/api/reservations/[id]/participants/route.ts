@@ -6,9 +6,15 @@ import { prisma } from "@/lib/db/prisma";
 
 export const runtime = "nodejs";
 
-const addSchema = z.object({
-  studentId: z.string().min(11).max(11), // 11 หลัก
-});
+const addSchema = z
+  .object({
+    studentId: z.string().min(11).max(11).optional(), // 11 หลัก
+    userId: z.string().min(1).optional(),
+  })
+  .refine((data) => data.studentId || data.userId, {
+    message: "MISSING_ID",
+    path: ["studentId"],
+  });
 
 function mustBeStudent(session: any) {
   return session?.role === "STUDENT" && typeof session?.uid === "string";
@@ -91,11 +97,15 @@ export async function POST(
 
   const body = addSchema.parse(await req.json());
 
-  // หา user จาก studentId
-  const user = await prisma.user.findUnique({
-    where: { studentId: body.studentId },
-    select: { id: true, role: true, isActive: true, firstName: true, lastName: true, studentId: true },
-  });
+  const user = body.userId
+    ? await prisma.user.findUnique({
+        where: { id: body.userId },
+        select: { id: true, role: true, isActive: true, firstName: true, lastName: true, studentId: true },
+      })
+    : await prisma.user.findUnique({
+        where: { studentId: body.studentId ?? "" },
+        select: { id: true, role: true, isActive: true, firstName: true, lastName: true, studentId: true },
+      });
 
   if (!user || user.role !== "STUDENT") {
     return NextResponse.json({ ok: false, message: "STUDENT_NOT_FOUND" }, { status: 404 });

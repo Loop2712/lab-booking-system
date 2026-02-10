@@ -1,19 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import WeekTimelineTable, { type WeekTimelineRow } from "@/components/rooms/week-timeline-table";
 import { parseTimeRangeToMinutes } from "@/lib/date/time";
 import { Skeleton } from "@/components/ui/skeleton";
+import MyReservationsTable from "@/components/reservations/MyReservationsTable";
 
 type Item = {
   id: string;
@@ -74,27 +65,10 @@ function bkkMinutes(iso: string) {
   return h * 60 + m;
 }
 
-function formatDateBkk(iso: string) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Bangkok",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date(iso));
-}
-
-function statusVariant(status: string) {
-  if (status === "PENDING") return "secondary";
-  if (status === "APPROVED") return "default";
-  if (status === "REJECTED") return "destructive";
-  if (status === "CANCELLED") return "outline";
-  return "secondary";
-}
 
 export default function TeacherReservationsClient() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
-  const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
@@ -115,29 +89,7 @@ export default function TeacherReservationsClient() {
     load();
   }, []);
 
-  async function cancel(id: string) {
-    setBusyId(id);
-    setError(null);
-    const res = await fetch(`/api/reservations/${id}/cancel`, { method: "POST" });
-    const json = await res.json().catch(() => ({}));
-    setBusyId(null);
-
-    if (!res.ok || !json?.ok) {
-      const msg =
-        json?.message === "CANNOT_CANCEL_STATUS"
-          ? "ยกเลิกได้เฉพาะสถานะ PENDING หรือ APPROVED"
-          : json?.message === "CANCEL_TOO_LATE"
-          ? "ยกเลิกไม่ได้ เนื่องจากใกล้เวลาเริ่มใช้งานแล้ว"
-          : "ยกเลิกไม่สำเร็จ";
-      setError(msg);
-      return;
-    }
-
-    await load();
-  }
-
   const inClassItems = useMemo(() => items.filter((r) => r.type === "IN_CLASS"), [items]);
-  const adHocItems = useMemo(() => items.filter((r) => r.type !== "IN_CLASS"), [items]);
 
   const inClassUnique = useMemo(() => {
     const map = new Map<string, Item>();
@@ -247,56 +199,7 @@ export default function TeacherReservationsClient() {
 
       <div className="space-y-3">
         <div className="text-sm font-semibold">รายการจองอื่นๆ (AD_HOC)</div>
-        {adHocItems.length === 0 ? (
-          <div className="text-sm text-muted-foreground">ไม่มีรายการจองอื่นๆ</div>
-        ) : (
-          <div className="rounded-2xl border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ห้อง</TableHead>
-                  <TableHead>วันที่</TableHead>
-                  <TableHead>ช่วงเวลา</TableHead>
-                  <TableHead>หมายเหตุ</TableHead>
-                  <TableHead>สถานะ</TableHead>
-                  <TableHead className="text-right">ยกเลิก</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {adHocItems.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell>
-                      <div className="font-medium">
-                        {r.room.code} — {r.room.name}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        ห้อง {r.room.roomNumber} — ชั้น {r.room.floor}
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatDateBkk(r.startAt)}</TableCell>
-                    <TableCell>
-                      <span className="font-mono text-sm">{r.slot}</span>
-                    </TableCell>
-                    <TableCell>{r.note ?? "-"}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant(r.status) as any}>{r.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={!["PENDING", "APPROVED"].includes(r.status) || busyId === r.id}
-                        onClick={() => cancel(r.id)}
-                      >
-                        {busyId === r.id ? "กำลังยกเลิก..." : "ยกเลิก"}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+        <MyReservationsTable filterType="AD_HOC" showParticipants={false} />
       </div>
     </div>
   );

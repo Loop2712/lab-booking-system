@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import Link from "next/link";
+import ImportForm from "@/components/admin/ImportForm";
 
 import type { Room } from "./types";
 import { loadRooms } from "./loadRooms";
@@ -222,58 +222,31 @@ export default function AdminRoomsPage() {
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="text-sm font-semibold">Import Rooms (XLSX/CSV)</div>
-              <div className="text-sm text-muted-foreground">
-                รูปแบบไฟล์: <span className="font-mono">code, name, roomNumber, floor, computerCount, isActive</span>
-                {" "} (isActive รองรับ <span className="font-mono">1/0</span> หรือ <span className="font-mono">true/false</span>)
-              </div>
-
-              <Input
-                type="file"
-                accept=".xlsx,.xls,.csv,text/csv"
-                onChange={(e) => {
-                  const f = e.target.files?.[0] ?? null;
-                  setImportFile(f);
-                  setImportPreview(null);
-                  setImportMsg(null);
-                  setImportErr(null);
-                }}
-              />
-
-              <div className="flex flex-wrap gap-2">
-                <Button disabled={!importFile || importBusy} onClick={() => runImport(true)}>
-                  {importBusy ? "กำลังทำงาน..." : "ตรวจสอบไฟล์ (Dry-run)"}
-                </Button>
-                <Button
-                  variant="secondary"
-                  disabled={!importFile || importBusy || !importPreview}
-                  onClick={() => runImport(false)}
-                  title={!importPreview ? "ต้องกด Dry-run ให้ผ่านก่อน" : ""}
-                >
-                  {importBusy ? "กำลังนำเข้า..." : "นำเข้า (Upsert)"}
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href="/api/admin/rooms/template?format=xlsx">ดาวน์โหลดเทมเพลต (XLSX)</Link>
-                </Button>
-              </div>
-
-              {importMsg && <div className="text-sm text-green-600">{importMsg}</div>}
-              {importErr && (
-                <div className="text-sm text-red-600 whitespace-pre-wrap">
-                  {importErr}
-                </div>
-              )}
-
-              {importPreview?.sample?.length ? (
-                <div className="pt-2">
-                  <div className="text-sm font-semibold mb-2">ตัวอย่าง 10 แถวแรก (ผลการอ่านไฟล์)</div>
-                  <div className="overflow-auto border rounded-md">
-                    <pre className="text-xs p-3">{JSON.stringify(importPreview.sample, null, 2)}</pre>
-                  </div>
-                </div>
-              ) : null}
-            </div>
+            <ImportForm
+              title="Import Rooms (XLSX/CSV)"
+              formatHint={
+                <>
+                  รูปแบบไฟล์:{" "}
+                  <span className="font-mono">code, name, roomNumber, floor, computerCount, isActive</span>{" "}
+                  (isActive รองรับ <span className="font-mono">1/0</span> หรือ{" "}
+                  <span className="font-mono">true/false</span>)
+                </>
+              }
+              templateHref="/api/admin/rooms/template?format=xlsx"
+              file={importFile}
+              onFileChange={(f) => {
+                setImportFile(f);
+                setImportPreview(null);
+                setImportMsg(null);
+                setImportErr(null);
+              }}
+              onDryRun={() => runImport(true)}
+              onImport={() => runImport(false)}
+              busy={importBusy}
+              preview={importPreview}
+              message={importMsg}
+              error={importErr}
+            />
           </div>
         </CardContent>
       </Card>

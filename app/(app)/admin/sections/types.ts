@@ -21,13 +21,22 @@ export type User = {
   isActive?: boolean;
 };
 
+export type Term = {
+  id: string;
+  term: string;
+  year: number;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+};
+
 export type Section = {
   id: string;
   dayOfWeek: string;
   startTime: string;
   endTime: string;
-  term?: string | null;
-  year?: number | null;
+  termId?: string | null;
+  term?: Term | null;
   isActive: boolean;
   course: Course;
   room: Room;

@@ -106,7 +106,7 @@ export default function AdminSelfCheckPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">Kiosk Device</h1>
+        <h1 className="text-2xl font-semibold">อุปกรณ์ Kiosk</h1>
         <p className="text-sm text-muted-foreground">
           จัดการอุปกรณ์ที่จับคู่สำหรับหน้า /self-check
         </p>

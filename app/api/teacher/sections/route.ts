@@ -12,8 +12,16 @@ export async function GET() {
   if (!guard.ok) return guard.response;
   const uid = guard.uid;
 
+  const now = new Date();
   const items = await prisma.section.findMany({
-    where: { teacherId: uid, isActive: true },
+    where: {
+      teacherId: uid,
+      isActive: true,
+      term: {
+        isActive: true,
+        endDate: { gte: now },
+      },
+    },
     include: {
       course: true,
       room: true,

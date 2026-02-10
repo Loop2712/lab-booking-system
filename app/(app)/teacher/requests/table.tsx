@@ -25,7 +25,7 @@ type Item = {
 };
 
 function statusBadge() {
-  return <Badge variant="secondary">PENDING</Badge>;
+  return <Badge variant="secondary">รออนุมัติ</Badge>;
 }
 
 export default function TeacherRequestsTable() {

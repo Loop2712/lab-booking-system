@@ -11,8 +11,15 @@ export async function GET() {
   const guard = requireApiRole(session, ["STUDENT"]);
   if (!guard.ok) return guard.response;
 
+  const now = new Date();
   const items = await prisma.section.findMany({
-    where: { isActive: true },
+    where: {
+      isActive: true,
+      term: {
+        isActive: true,
+        endDate: { gte: now },
+      },
+    },
     include: {
       course: true,
       room: true,

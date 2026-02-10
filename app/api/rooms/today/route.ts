@@ -5,6 +5,40 @@ import { prisma } from "@/lib/db/prisma";
 import { addDays } from "@/lib/date/addDays";
 import { getBangkokYMD, startOfBangkokDay } from "@/lib/date/bangkok";
 
+function bkkDayName(ymd: string) {
+  const d = new Date(`${ymd}T00:00:00.000Z`);
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Bangkok",
+    weekday: "short",
+  }).format(d);
+  const map: Record<string, "SUN" | "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT"> = {
+    Sun: "SUN",
+    Mon: "MON",
+    Tue: "TUE",
+    Wed: "WED",
+    Thu: "THU",
+    Fri: "FRI",
+    Sat: "SAT",
+  };
+  return map[weekday] ?? "MON";
+}
+
+function normalizeTime(value: string) {
+  const match = String(value ?? "").trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  return `${String(hour).padStart(2, "0")}:${match[2]}`;
+}
+
+function buildBangkokDateTime(ymd: string, time: string) {
+  const normalized = normalizeTime(time);
+  if (!normalized) return null;
+  return new Date(`${ymd}T${normalized}:00+07:00`);
+}
+
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
@@ -37,6 +71,7 @@ export async function GET(req: Request) {
       select: {
         id: true,
         roomId: true,
+        sectionId: true,
         slot: true,
         type: true,
         status: true,
@@ -59,6 +94,33 @@ export async function GET(req: Request) {
       },
     });
 
+    const inClassSectionIds = new Set(
+      reservations
+        .filter((r) => r.type === "IN_CLASS" && r.sectionId)
+        .map((r) => r.sectionId as string)
+    );
+
+    const sections = await prisma.section.findMany({
+      where: {
+        isActive: true,
+        dayOfWeek: bkkDayName(ymd),
+        ...(inClassSectionIds.size ? { id: { notIn: Array.from(inClassSectionIds) } } : {}),
+        term: {
+          isActive: true,
+          startDate: { lte: dayStart },
+          endDate: { gte: dayStart },
+        },
+      },
+      select: {
+        id: true,
+        roomId: true,
+        startTime: true,
+        endTime: true,
+        course: { select: { code: true, name: true } },
+        teacher: { select: { firstName: true, lastName: true } },
+      },
+    });
+
     const booked: Record<string, any[]> = {};
     for (const r of reservations) {
       if (!booked[r.roomId]) booked[r.roomId] = [];
@@ -73,12 +135,32 @@ export async function GET(req: Request) {
         borrowerLabel: isAuthed && r.loan?.borrower
           ? `${r.loan.borrower.firstName} ${r.loan.borrower.lastName}`
           : null,
-        courseLabel: isAuthed && r.section?.course
+        courseLabel: r.section?.course
           ? `${r.section.course.code} ${r.section.course.name}`
           : null,
         note: isAuthed ? r.note ?? null : null,
         startAt: r.startAt,
         endAt: r.endAt,
+      });
+    }
+
+    for (const s of sections) {
+      const startAt = buildBangkokDateTime(ymd, s.startTime);
+      const endAt = buildBangkokDateTime(ymd, s.endTime);
+      if (!startAt || !endAt) continue;
+      if (!booked[s.roomId]) booked[s.roomId] = [];
+
+      booked[s.roomId].push({
+        reservationId: `section-${s.id}-${ymd}`,
+        slot: `${normalizeTime(s.startTime)}-${normalizeTime(s.endTime)}`,
+        type: "IN_CLASS",
+        status: "APPROVED",
+        requesterLabel: isAuthed ? `${s.teacher.firstName} ${s.teacher.lastName}` : null,
+        borrowerLabel: isAuthed ? `${s.teacher.firstName} ${s.teacher.lastName}` : null,
+        courseLabel: `${s.course.code} ${s.course.name}`,
+        note: null,
+        startAt,
+        endAt,
       });
     }
 

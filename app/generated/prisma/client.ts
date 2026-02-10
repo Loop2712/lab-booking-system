@@ -60,6 +60,11 @@ export type Key = Prisma.KeyModel
  */
 export type Course = Prisma.CourseModel
 /**
+ * Model Term
+ * 
+ */
+export type Term = Prisma.TermModel
+/**
  * Model Section
  * 
  */

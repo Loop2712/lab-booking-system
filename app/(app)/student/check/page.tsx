@@ -49,7 +49,7 @@ export default function StudentCheckPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Check-in / Check-out</h1>
+        <h1 className="text-2xl font-semibold">ยืม-คืนกุญแจ</h1>
         <p className="text-sm text-muted-foreground">
           แสดง QR/Token ของคุณสำหรับให้เจ้าหน้าที่/อาจารย์ใช้ทำรายการเช็คอิน/เช็คเอาท์
         </p>
@@ -69,7 +69,7 @@ export default function StudentCheckPage() {
           {loading ? <div className="text-sm text-muted-foreground">กำลังโหลด...</div> : null}
 
           {!loading && !events.length ? (
-            <div className="text-sm text-muted-foreground">List</div>
+            <div className="text-sm text-muted-foreground">ยังไม่มีรายการวันนี้</div>
           ) : null}
 
           {events.map((e, idx) => {
