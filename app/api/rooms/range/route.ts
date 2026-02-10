@@ -95,7 +95,7 @@ export async function GET(req: Request) {
         roomId,
         startAt: { lt: endExclusive },
         endAt: { gt: fromStart },
-        NOT: [{ status: "CANCELLED" }, { status: "REJECTED" }],
+        status: { in: ["APPROVED", "CHECKED_IN", "COMPLETED", "NO_SHOW"] },
       },
       orderBy: { startAt: "asc" },
       select: {

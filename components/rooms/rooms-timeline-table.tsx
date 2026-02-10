@@ -139,50 +139,57 @@ export default function RoomsTimelineTable({ rooms, emptyMessage }: RoomsTimelin
                   })
                   .filter((r): r is { booking: TimelineBooking; startMin: number; endMin: number } => !!r);
 
-                const cells: { booking: TimelineBooking | null; isStart: boolean; isEnd: boolean }[] = [];
+                const cellBookings: (TimelineBooking | null)[] = [];
 
                 for (const h of HOURS) {
                   const cellStart = h * 60;
                   const cellEnd = (h + 1) * 60;
                   const hit = ranges.find((r) => r.startMin < cellEnd && r.endMin > cellStart);
-                  const booking = hit?.booking ?? null;
-                  const prev = cells[cells.length - 1]?.booking ?? null;
-                  const isStart = booking ? !prev || prev.reservationId !== booking.reservationId : false;
-                  cells.push({ booking, isStart, isEnd: false });
+                  cellBookings.push(hit?.booking ?? null);
                 }
 
-                for (let i = 0; i < cells.length; i++) {
-                  const current = cells[i];
-                  if (!current.booking) continue;
-                  const next = cells[i + 1]?.booking ?? null;
-                  current.isEnd = !next || next.reservationId !== current.booking.reservationId;
+                const segments: Array<
+                  | { kind: "empty"; span: number; hourIndex: number }
+                  | { kind: "booking"; span: number; booking: TimelineBooking; hourIndex: number }
+                > = [];
+
+                for (let i = 0; i < cellBookings.length; i++) {
+                  const booking = cellBookings[i];
+                  if (!booking) {
+                    segments.push({ kind: "empty", span: 1, hourIndex: i });
+                    continue;
+                  }
+
+                  let j = i + 1;
+                  while (j < cellBookings.length && cellBookings[j]?.reservationId === booking.reservationId) {
+                    j++;
+                  }
+                  segments.push({ kind: "booking", span: j - i, booking, hourIndex: i });
+                  i = j - 1;
                 }
 
-                return cells.map((cell, idx) => {
-                  const stripe = idx % 2 === 0 ? "bg-muted/5" : "bg-muted/10";
+                return segments.map((segment, idx) => {
+                  if (segment.kind === "empty") {
+                    const stripe = segment.hourIndex % 2 === 0 ? "bg-muted/5" : "bg-muted/10";
+                    return (
+                      <TableCell key={`e-${idx}`} className="p-0">
+                        <div className={cn("min-h-12 px-2 py-1 text-[11px] text-muted-foreground", stripe)} />
+                      </TableCell>
+                    );
+                  }
+
                   return (
-                    <TableCell key={idx} className="p-0">
-                      {cell.booking ? (
-                        <div
-                          className={cn(
-                            "h-12 px-1 py-1 text-[10px] leading-tight",
-                            bookingColor(cell.booking),
-                            cell.isStart ? "border-l-4 border-black/20" : "",
-                            cell.isEnd ? "border-r-4 border-black/20" : ""
-                          )}
-                        >
-                          {cell.isStart ? (
-                            <>
-                          <div className="font-medium truncate">{bookingLabel(cell.booking)}</div>
-                              {cell.booking.borrowerLabel ? (
-                                <div className="truncate">{cell.booking.borrowerLabel}</div>
-                              ) : null}
-                            </>
-                          ) : null}
-                        </div>
-                      ) : (
-                        <div className={cn("h-12 px-2 py-1 text-[11px] text-muted-foreground", stripe)} />
-                      )}
+                    <TableCell key={`b-${idx}`} className="p-0" colSpan={segment.span}>
+                      <div
+                        className={cn(
+                          "min-h-12 px-2 py-1 text-[10px] leading-tight whitespace-normal break-words",
+                          bookingColor(segment.booking),
+                          "border-l-4 border-black/20 border-r-4 border-black/20"
+                        )}
+                      >
+                        <div className="font-medium">{bookingLabel(segment.booking)}</div>
+                        {segment.booking.borrowerLabel ? <div>{segment.booking.borrowerLabel}</div> : null}
+                      </div>
                     </TableCell>
                   );
                 });

@@ -66,7 +66,7 @@ export async function GET(req: Request) {
       where: {
         startAt: { lt: dayEnd },
         endAt: { gt: dayStart },
-        NOT: [{ status: "CANCELLED" }, { status: "REJECTED" }],
+        status: { in: ["APPROVED", "CHECKED_IN", "COMPLETED", "NO_SHOW"] },
       },
       select: {
         id: true,
