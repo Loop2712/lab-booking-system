@@ -1,36 +1,16 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
-type Room = {
-  id: string;
-  code: string;
-  name: string;
-  roomNumber: string;
-  floor: number;
-  isBorrowed: boolean;
-};
-
-type LookupResponse =
-  | { ok: true; user: any; room: any; reservation: any; mode: "CHECKIN" | "RETURN" }
-  | { ok: false; message: string; detail?: any };
+import type { LookupResponse, LookupSuccess, Mode, Room } from "./types";
+import SelfCheckConfirmCard from "./_components/SelfCheckConfirmCard";
+import SelfCheckModeStep from "./_components/SelfCheckModeStep";
+import SelfCheckRoomStep from "./_components/SelfCheckRoomStep";
+import SelfCheckScanDialog from "./_components/SelfCheckScanDialog";
+import SelfCheckStatusSummary from "./_components/SelfCheckStatusSummary";
 
 const API_BASE = "/api/kiosk";
-
-function formatTime(dt: string) {
-  try {
-    return new Date(dt).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
-  } catch {
-    return dt;
-  }
-}
 
 function redirectNotAllowed() {
   if (typeof window !== "undefined") {
@@ -41,7 +21,7 @@ function redirectNotAllowed() {
 export default function SelfCheckClient() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomId, setRoomId] = useState<string>("");
-  const [mode, setMode] = useState<"CHECKIN" | "RETURN" | "">("");
+  const [mode, setMode] = useState<Mode | "">("");
   const [scanOpen, setScanOpen] = useState(false);
 
   const [token, setToken] = useState<string>("");
@@ -90,28 +70,27 @@ export default function SelfCheckClient() {
         }
         setErr(json?.message || "โหลดรายชื่อห้องไม่สำเร็จ");
         setRooms([]);
-        setLoadingRooms(false);
         return;
       }
       setRooms(Array.isArray(json.rooms) ? json.rooms : []);
-      setLoadingRooms(false);
     } catch (e: any) {
       setErr(e?.message || "ERROR");
       setRooms([]);
+    } finally {
       setLoadingRooms(false);
     }
   }
 
   async function doLookup(scannedToken?: string) {
-    const t = (scannedToken ?? token).trim();
-    if (!mode || !t) return;
+    const value = (scannedToken ?? token).trim();
+    if (!mode || !value) return;
 
     setLoadingLookup(true);
     setErr(null);
     setLookup(null);
 
     try {
-      const payload: any = { token: t, mode };
+      const payload: any = { token: value, mode };
       if (roomId) payload.roomId = roomId;
 
       const res = await fetch(`${API_BASE}/lookup`, {
@@ -128,25 +107,23 @@ export default function SelfCheckClient() {
         }
         setLookup(json);
         setErr((json as any)?.message || "ค้นหาไม่สำเร็จ");
-        setLoadingLookup(false);
         return;
       }
 
       setLookup(json);
-      setLoadingLookup(false);
       setScanOpen(false);
     } catch (e: any) {
       setErr(e?.message || "ERROR");
+    } finally {
       setLoadingLookup(false);
     }
   }
 
   async function confirm() {
     if (!lookup || !lookup.ok) return;
-    const t = token.trim();
+    const value = token.trim();
     const reservationId = lookup.reservation?.id;
-
-    if (!t || !reservationId) return;
+    if (!value || !reservationId) return;
 
     setConfirming(true);
     setErr(null);
@@ -156,7 +133,7 @@ export default function SelfCheckClient() {
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ reservationId, userToken: t }),
+        body: JSON.stringify({ reservationId, userToken: value }),
       });
 
       const json = await res.json().catch(() => ({}));
@@ -166,16 +143,15 @@ export default function SelfCheckClient() {
           return;
         }
         setErr(json?.message || "ยืนยันไม่สำเร็จ");
-        setConfirming(false);
         return;
       }
 
       setLookup(null);
       setToken("");
-      setConfirming(false);
       if (scanOpen) tokenRef.current?.focus();
     } catch (e: any) {
       setErr(e?.message || "ERROR");
+    } finally {
       setConfirming(false);
     }
   }
@@ -206,237 +182,63 @@ export default function SelfCheckClient() {
           <CardTitle className="text-base">ยืม-คืนกุญแจ</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="rounded-lg border bg-muted/20 p-3 text-sm">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline">
-                โหมด: {mode ? (mode === "CHECKIN" ? "ยืมกุญแจ" : "คืนกุญแจ") : "-"}
-              </Badge>
-              <Badge variant="outline">
-                ห้อง:{" "}
-                {selectedRoom
-                  ? `${selectedRoom.code} • ${selectedRoom.roomNumber} • ชั้น ${selectedRoom.floor}`
-                  : "ทุกห้อง"}
-              </Badge>
-              <Badge variant="outline">สถานะ: {mode ? "พร้อมทำรายการ" : "-"}</Badge>
-            </div>
-          </div>
+          <SelfCheckStatusSummary mode={mode} selectedRoom={selectedRoom} />
 
-          <div className="space-y-3">
-            <div className="text-sm font-semibold">ขั้นตอน 1: เลือกโหมด</div>
-            <ToggleGroup
-              type="single"
-              value={mode}
-              onValueChange={(v) => {
-                setMode(v as any);
-                setRoomId("");
-                setLookup(null);
-                setErr(null);
-                setToken("");
-                setScanOpen(false);
-              }}
-              variant="outline"
-              size="sm"
-              className="grid w-full grid-cols-2"
-            >
-              <ToggleGroupItem value="CHECKIN" className="w-full">
-                ยืมกุญแจ (Check-in)
-              </ToggleGroupItem>
-              <ToggleGroupItem value="RETURN" className="w-full">
-                คืนกุญแจ (Check-out)
-              </ToggleGroupItem>
-            </ToggleGroup>
-            {!mode ? (
-              <div className="text-xs text-muted-foreground">กรุณาเลือกโหมดก่อนจึงจะสแกนผู้ใช้ได้</div>
-            ) : null}
-          </div>
+          <SelfCheckModeStep
+            mode={mode}
+            onModeChange={(nextMode) => {
+              setMode(nextMode);
+              setRoomId("");
+              setLookup(null);
+              setErr(null);
+              setToken("");
+              setScanOpen(false);
+            }}
+          />
 
-          <div className="space-y-3">
-            <div className="text-sm font-semibold">ขั้นตอน 2: เลือกห้อง (ไม่บังคับ)</div>
-            <div className="text-xs text-muted-foreground">
-              เลือกห้องเพื่อกรองรายการให้แคบลง หากไม่เลือก ระบบจะค้นหาห้องที่ตรงให้โดยอัตโนมัติ
-            </div>
-            {loadingRooms ? (
-              <div className="text-sm text-muted-foreground">กำลังโหลดรายชื่อห้อง...</div>
-            ) : roomsByFloor.length === 0 ? (
-              <div className="text-sm text-muted-foreground">ไม่พบข้อมูลห้อง</div>
-            ) : (
-              roomsByFloor.map((group) => (
-                <div key={group.floor} className="space-y-2">
-                  <div className="text-sm font-semibold">ชั้น {group.floor}</div>
-                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {group.rooms.map((room) => (
-                      <Button
-                        key={room.id}
-                        type="button"
-                        variant={roomId === room.id ? "default" : "outline"}
-                        onClick={() => {
-                          setRoomId((prev) => (prev === room.id ? "" : room.id));
-                          setLookup(null);
-                          setErr(null);
-                        }}
-                        disabled={!mode || (mode === "CHECKIN" && room.isBorrowed)}
-                        className="h-auto items-start justify-start gap-1 px-3 py-3 text-left"
-                      >
-                        <div className="text-sm font-semibold">
-                          {room.code} • {room.roomNumber}
-                        </div>
-                        <div className="text-xs text-muted-foreground">ชั้น {room.floor}</div>
-                        <div
-                          className={`text-[10px] ${
-                            room.isBorrowed ? "text-rose-600" : "text-emerald-700"
-                          }`}
-                        >
-                          {room.isBorrowed ? "กำลังใช้งาน" : "พร้อมใช้งาน"}
-                        </div>
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                ))
-              )}
-          </div>
+          <SelfCheckRoomStep
+            mode={mode}
+            roomId={roomId}
+            roomsByFloor={roomsByFloor}
+            loadingRooms={loadingRooms}
+            onRoomToggle={(nextRoomId) => {
+              setRoomId((prev) => (prev === nextRoomId ? "" : nextRoomId));
+              setLookup(null);
+              setErr(null);
+            }}
+          />
 
           <div className="space-y-3">
             <div className="text-sm font-semibold">ขั้นตอน 3: สแกนผู้ใช้</div>
             <Button onClick={() => openScan()} disabled={!mode}>
               เปิดหน้าสแกน
             </Button>
-            <div className="text-xs text-muted-foreground">
-              สแกน QR/ใส่ Token ของผู้ใช้ ระบบจะแนะนำรายการให้ทันที
-            </div>
+            <div className="text-xs text-muted-foreground">สแกน QR/ใส่ Token ของผู้ใช้ ระบบจะแนะนำรายการให้ทันที</div>
           </div>
 
           {!scanOpen && err ? (
-            <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
-              {err}
-            </div>
+            <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">{err}</div>
           ) : null}
         </CardContent>
       </Card>
 
-      <Dialog
+      <SelfCheckScanDialog
         open={scanOpen}
         onOpenChange={(open) => {
           setScanOpen(open);
           if (!open) setErr(null);
         }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>สแกน QR ผู้ใช้</DialogTitle>
-          </DialogHeader>
+        selectedRoom={selectedRoom}
+        ready={ready}
+        token={token}
+        tokenRef={tokenRef}
+        loadingLookup={loadingLookup}
+        err={err}
+        onTokenChange={setToken}
+        onLookup={doLookup}
+      />
 
-          {selectedRoom ? (
-            <div className="rounded-lg border p-3 text-sm">
-              <div className="font-medium">
-                {selectedRoom.code} • {selectedRoom.roomNumber}
-              </div>
-              <div className="text-xs text-muted-foreground">ชั้น {selectedRoom.floor}</div>
-            </div>
-          ) : (
-            <div className="rounded-lg border p-3 text-sm text-muted-foreground">
-              ไม่ได้ระบุห้อง ระบบจะค้นหาห้องที่ตรงให้โดยอัตโนมัติ
-            </div>
-          )}
-
-          <div className="space-y-1">
-            <Label>สแกน QR / ใส่ Token</Label>
-            <Input
-              ref={tokenRef}
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="สแกน token เพื่อค้นหา"
-              disabled={!ready}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") doLookup(e.currentTarget.value);
-              }}
-            />
-            <div className="text-xs text-muted-foreground">กด Enter เพื่อค้นหา หรือกดปุ่ม “ค้นหา”</div>
-          </div>
-
-          {scanOpen && err ? (
-            <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
-              {err}
-            </div>
-          ) : null}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setScanOpen(false)}>
-              ปิด
-            </Button>
-            <Button onClick={() => doLookup()} disabled={!ready || !token.trim() || loadingLookup}>
-              {loadingLookup ? "กำลังค้นหา..." : "ค้นหา"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {lookup?.ok ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">ขั้นตอน 3: ยืนยันการทำรายการ</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="font-semibold">ยืนยัน</div>
-              <Badge variant="secondary">
-                {lookup.mode === "CHECKIN" ? "ยืมกุญแจ" : "คืนกุญแจ"}
-              </Badge>
-            </div>
-
-            <div className="text-sm space-y-1">
-              <div>
-                <span className="text-muted-foreground">ผู้ใช้: </span>
-                <span className="font-medium">
-                  {lookup.user.firstName} {lookup.user.lastName}
-                </span>
-                {lookup.user.studentId ? (
-                  <span className="text-muted-foreground"> • {lookup.user.studentId}</span>
-                ) : null}
-              </div>
-
-              <div>
-                <span className="text-muted-foreground">ห้อง: </span>
-                <span className="font-medium">
-                  {lookup.room.code} • {lookup.room.roomNumber} • ชั้น {lookup.room.floor}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-muted-foreground">รายการจอง: </span>
-                <span className="font-mono text-xs">{lookup.reservation.id}</span>
-              </div>
-
-              <div>
-                <span className="text-muted-foreground">ช่วงเวลา: </span>
-                <span className="font-medium">
-                  {lookup.reservation.slot} ({formatTime(lookup.reservation.startAt)} -{" "}
-                  {formatTime(lookup.reservation.endAt)})
-                </span>
-              </div>
-
-              <div>
-                <span className="text-muted-foreground">สถานะ: </span>
-                <Badge variant="outline">{lookup.reservation.status}</Badge>
-                <span className="text-muted-foreground"> • </span>
-                <Badge variant="secondary">{lookup.reservation.type}</Badge>
-              </div>
-            </div>
-
-            <Button onClick={confirm} disabled={confirming} className="w-full">
-              {confirming
-                ? "กำลังยืนยัน..."
-                : lookup.mode === "CHECKIN"
-                ? "ยืนยัน “ยืมกุญแจ”"
-                : "ยืนยัน “คืนกุญแจ”"}
-            </Button>
-
-            <div className="text-xs text-muted-foreground">
-              ระบบจะบันทึกตามรายการจองและสถานะล่าสุด
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
+      {lookup?.ok ? <SelfCheckConfirmCard lookup={lookup as LookupSuccess} confirming={confirming} onConfirm={confirm} /> : null}
     </div>
   );
 }

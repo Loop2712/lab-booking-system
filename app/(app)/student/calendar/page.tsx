@@ -1,5 +1,5 @@
 "use client";
-import type { UIEvent } from "./types";
+
 import { ymd } from "@/lib/date/ymd";
 import { addDays } from "@/lib/date/addDays";
 import { startOfWeek } from "@/lib/date/startOfWeek";
@@ -7,16 +7,13 @@ import { toDayName } from "@/lib/date/toDayName";
 import { prettyDate } from "@/lib/date/prettyDate";
 import { chipClass } from "./chipClass";
 import { fetchStudentCalendar } from "@/lib/services/student-calendar";
-
 import { useEffect, useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-// ✅ fix locale+timezone (ลด hydration mismatch)
-
+import EventDetailDialog from "@/components/calendar/EventDetailDialog";
+import WeekEventGrid from "@/components/calendar/WeekEventGrid";
+import WeekRangeHeader from "@/components/calendar/WeekRangeHeader";
+import type { CalendarGridDay, CalendarGridEvent } from "@/components/calendar/types";
 
 export default function StudentCalendarPage() {
-  // ✅ hooks ต้องอยู่ “ใน component” เท่านั้น
   const [mounted, setMounted] = useState(false);
   const [weekStart, setWeekStart] = useState<Date | null>(null);
 
@@ -26,14 +23,13 @@ export default function StudentCalendarPage() {
   const [inClass, setInClass] = useState<any[]>([]);
 
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<UIEvent | null>(null);
+  const [selected, setSelected] = useState<CalendarGridEvent | null>(null);
 
   useEffect(() => {
     setMounted(true);
-    setWeekStart(startOfWeek(new Date())); // set หลัง mount
+    setWeekStart(startOfWeek(new Date()));
   }, []);
 
-  // ✅ hooks ทั้งหมดต้องอยู่ก่อน return เสมอ
   const from = useMemo(() => (weekStart ? ymd(weekStart) : ""), [weekStart]);
   const to = useMemo(() => (weekStart ? ymd(addDays(weekStart, 6)) : ""), [weekStart]);
 
@@ -46,6 +42,53 @@ export default function StudentCalendarPage() {
     if (!weekStart) return "";
     return `${prettyDate(weekStart)} – ${prettyDate(addDays(weekStart, 6))}`;
   }, [weekStart]);
+
+  const calendarDays = useMemo<CalendarGridDay[]>(() => {
+    return days.map((day) => {
+      const key = ymd(day);
+      const dow = toDayName(day.getDay());
+
+      const classEvents: CalendarGridEvent[] = sections
+        .filter((section) => section.dayOfWeek === dow)
+        .map((section) => ({
+          id: section.id,
+          title: `${section.course.code} ${section.course.name}`,
+          time: `${section.startTime}-${section.endTime}`,
+          meta: `Room ${section.room.code} • ${section.teacher.firstName} ${section.teacher.lastName}`,
+          badge: "CLASS",
+          badgeClassName: chipClass("CLASS"),
+        }));
+
+      const inClassEvents: CalendarGridEvent[] = inClass
+        .filter((reservation) => (reservation.date ? ymd(new Date(reservation.date)) : "") === key)
+        .map((reservation) => ({
+          id: reservation.id,
+          title: `${reservation.section.course.code} ${reservation.section.course.name}`,
+          time: reservation.slot,
+          meta: `Room ${reservation.room.code} • ${reservation.status}`,
+          badge: "IN_CLASS",
+          badgeClassName: chipClass("IN_CLASS"),
+        }));
+
+      const adHocEvents: CalendarGridEvent[] = adhoc
+        .filter((reservation) => (reservation.date ? ymd(new Date(reservation.date)) : "") === key)
+        .map((reservation) => ({
+          id: reservation.id,
+          title: "AD_HOC Reservation",
+          time: reservation.slot,
+          meta: `Room ${reservation.room.code} • ${reservation.status}`,
+          badge: "AD_HOC",
+          badgeClassName: chipClass("AD_HOC"),
+        }));
+
+      return {
+        key,
+        title: prettyDate(day),
+        subtitle: toDayName(day.getDay()),
+        events: [...classEvents, ...inClassEvents, ...adHocEvents],
+      };
+    });
+  }, [days, sections, inClass, adhoc]);
 
   async function load() {
     if (!from || !to) return;
@@ -69,175 +112,48 @@ export default function StudentCalendarPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted, from, to]);
 
-  // ✅ early return หลัง hooks: ปลอดภัย และ placeholder ต้อง “คงที่”
   if (!mounted || !weekStart) {
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">My Calendar</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">Loading...</CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  function eventsForDate(date: Date) {
-    const key = ymd(date);
-    const dow = toDayName(date.getDay());
-
-    const classes: UIEvent[] = sections
-      .filter((s) => s.dayOfWeek === dow)
-      .map((s) => ({
-        kind: "CLASS",
-        title: `${s.course.code} ${s.course.name}`,
-        time: `${s.startTime}-${s.endTime}`,
-        meta: `Room ${s.room.code} • ${s.teacher.firstName} ${s.teacher.lastName}`,
-        raw: s,
-      }));
-
-    const inclassEvents: UIEvent[] = inClass
-      .filter((r) => (r.date ? ymd(new Date(r.date)) : "") === key)
-      .map((r) => ({
-        kind: "IN_CLASS",
-        title: `${r.section.course.code} ${r.section.course.name}`,
-        time: r.slot,
-        meta: `Room ${r.room.code} • ${r.status}`,
-        raw: r,
-      }));
-
-    const adhocEvents: UIEvent[] = adhoc
-      .filter((r) => (r.date ? ymd(new Date(r.date)) : "") === key)
-      .map((r) => ({
-        kind: "AD_HOC",
-        title: `AD_HOC Reservation`,
-        time: r.slot,
-        meta: `Room ${r.room.code} • ${r.status}`,
-        raw: r,
-      }));
-
-    return [...classes, ...inclassEvents, ...adhocEvents];
+    return <div className="text-sm text-muted-foreground">Loading...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-2">
-          <div>
-            <CardTitle className="text-lg">My Calendar</CardTitle>
-            <div className="text-sm text-muted-foreground">{weekLabel}</div>
+      <WeekRangeHeader
+        title="My Calendar"
+        weekLabel={weekLabel}
+        loading={loading}
+        onPrev={() => setWeekStart((d) => (d ? addDays(d, -7) : d))}
+        onToday={() => setWeekStart(startOfWeek(new Date()))}
+        onNext={() => setWeekStart((d) => (d ? addDays(d, 7) : d))}
+        onRefresh={load}
+        summary={
+          <div className="flex flex-wrap gap-2 text-sm">
+            <span className="inline-flex items-center gap-2 border rounded-full px-3 py-1">
+              <span className="h-2 w-2 rounded-full bg-blue-500" />
+              CLASS
+            </span>
+            <span className="inline-flex items-center gap-2 border rounded-full px-3 py-1">
+              <span className="h-2 w-2 rounded-full bg-green-500" />
+              IN_CLASS
+            </span>
+            <span className="inline-flex items-center gap-2 border rounded-full px-3 py-1">
+              <span className="h-2 w-2 rounded-full bg-purple-500" />
+              AD_HOC
+            </span>
           </div>
+        }
+      />
 
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setWeekStart((d) => (d ? addDays(d, -7) : d))} disabled={loading}>
-              ←
-            </Button>
-            <Button variant="secondary" onClick={() => setWeekStart(startOfWeek(new Date()))} disabled={loading}>
-              Today
-            </Button>
-            <Button variant="outline" onClick={() => setWeekStart((d) => (d ? addDays(d, 7) : d))} disabled={loading}>
-              →
-            </Button>
-            <Button variant="default" onClick={load} disabled={loading}>
-              {loading ? "Loading..." : "Refresh"}
-            </Button>
-          </div>
-        </CardHeader>
+      <WeekEventGrid
+        days={calendarDays}
+        loading={loading}
+        onSelect={(event) => {
+          setSelected(event);
+          setOpen(true);
+        }}
+      />
 
-        <CardContent className="flex flex-wrap gap-2 text-sm">
-          <span className="inline-flex items-center gap-2 border rounded-full px-3 py-1">
-            <span className="h-2 w-2 rounded-full bg-blue-500" />
-            CLASS
-          </span>
-          <span className="inline-flex items-center gap-2 border rounded-full px-3 py-1">
-            <span className="h-2 w-2 rounded-full bg-green-500" />
-            IN_CLASS
-          </span>
-          <span className="inline-flex items-center gap-2 border rounded-full px-3 py-1">
-            <span className="h-2 w-2 rounded-full bg-purple-500" />
-            AD_HOC
-          </span>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {days.map((d) => {
-          const items = eventsForDate(d);
-          const dayKey = ymd(d);
-
-          return (
-            <Card key={dayKey} className="overflow-hidden">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center justify-between">
-                  <span>{prettyDate(d)}</span>
-                  <span className="text-xs text-muted-foreground">{toDayName(d.getDay())}</span>
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent className="space-y-2">
-                {items.map((e, idx) => (
-                  <button
-                    key={idx}
-                    className="w-full text-left border rounded-md p-2 hover:bg-muted transition"
-                    onClick={() => {
-                      setSelected(e);
-                      setOpen(true);
-                    }}
-                    type="button"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="font-medium truncate">{e.title}</div>
-                        <div className="text-sm text-muted-foreground">{e.time}</div>
-                        <div className="text-xs text-muted-foreground truncate">{e.meta}</div>
-                      </div>
-                      <span className={`shrink-0 border text-xs rounded-full px-2 py-0.5 ${chipClass(e.kind)}`}>
-                        {e.kind}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-
-                {items.length === 0 && <div className="text-sm text-muted-foreground">List</div>}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Event details</DialogTitle>
-          </DialogHeader>
-
-          {selected ? (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="font-semibold">{selected.title}</div>
-                <span className={`border text-xs rounded-full px-2 py-0.5 ${chipClass(selected.kind)}`}>
-                  {selected.kind}
-                </span>
-              </div>
-
-              <div className="text-sm">
-                <div className="text-muted-foreground">Time</div>
-                <div>{selected.time}</div>
-              </div>
-
-              <div className="text-sm">
-                <div className="text-muted-foreground">Info</div>
-                <div>{selected.meta}</div>
-              </div>
-
-              {selected.raw?.id && <div className="text-xs text-muted-foreground break-all">id: {selected.raw.id}</div>}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">No selection</div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <EventDetailDialog open={open} onOpenChange={setOpen} event={selected} />
     </div>
   );
 }
