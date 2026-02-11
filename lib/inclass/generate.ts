@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
-import { toDayName } from "@/lib/date/toDayName";
+import type { DayName } from "@/lib/date/toDayName";
+import { startOfBangkokDay } from "@/lib/date/bangkok";
+import { addDaysYmd } from "@/lib/date";
 function toMinutes(value: string) {
   const [h, m] = value.split(":").map((x) => parseInt(x, 10));
   return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
@@ -11,19 +13,35 @@ function isValidTime(value: string) {
   return h >= 0 && h <= 23 && m >= 0 && m <= 59;
 }
 
-function startOfDay(d: Date) {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0));
+function isYmd(value: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
-function addDays(d: Date, days: number) {
-  const x = new Date(d);
-  x.setUTCDate(x.getUTCDate() + days);
-  return x;
+function bkkDayName(ymd: string): DayName {
+  const d = new Date(`${ymd}T00:00:00.000Z`);
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Bangkok",
+    weekday: "short",
+  }).format(d);
+  const map: Record<string, DayName> = {
+    Sun: "SUN",
+    Mon: "MON",
+    Tue: "TUE",
+    Wed: "WED",
+    Thu: "THU",
+    Fri: "FRI",
+    Sat: "SAT",
+  };
+  return map[weekday] ?? "MON";
 }
 
-function combineUTC(date: Date, timeHHmm: string) {
+function buildBangkokDateTime(ymd: string, timeHHmm: string) {
   const [hh, mm] = timeHHmm.split(":").map((x) => parseInt(x, 10));
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hh || 0, mm || 0, 0));
+  const h = Number.isFinite(hh) ? hh : 0;
+  const m = Number.isFinite(mm) ? mm : 0;
+  return new Date(
+    `${ymd}T${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00+07:00`
+  );
 }
 
 export async function generateInClassReservations(args: {
@@ -55,23 +73,22 @@ export async function generateInClassReservations(args: {
     return { ok: false as const, message: "INVALID_TIME_RANGE" };
   }
 
-  const fromDate = startOfDay(new Date(`${args.from}T00:00:00Z`));
-  const toDate = startOfDay(new Date(`${args.to}T00:00:00Z`));
-
-  if (toDate < fromDate) {
+  if (!isYmd(args.from) || !isYmd(args.to) || args.to < args.from) {
     return { ok: false as const, message: "BAD_RANGE" };
   }
 
   const slot = slotId;
 
   const data: any[] = [];
-  for (let d = fromDate; d <= toDate; d = addDays(d, 1)) {
-    const dayName = toDayName(d.getUTCDay());
-    if (dayName !== section.dayOfWeek) continue;
+  for (let ymd = args.from; ; ymd = addDaysYmd(ymd, 1)) {
+    if (bkkDayName(ymd) !== section.dayOfWeek) {
+      if (ymd === args.to) break;
+      continue;
+    }
 
-    const dateOnly = startOfDay(d);
-    const startAt = combineUTC(d, section.startTime);
-    const endAt = combineUTC(d, section.endTime);
+    const dateOnly = startOfBangkokDay(ymd);
+    const startAt = buildBangkokDateTime(ymd, section.startTime);
+    const endAt = buildBangkokDateTime(ymd, section.endTime);
 
     data.push({
       type: "IN_CLASS",
@@ -86,6 +103,8 @@ export async function generateInClassReservations(args: {
       endAt,
       note: null,
     });
+
+    if (ymd === args.to) break;
   }
 
   if (data.length === 0) {

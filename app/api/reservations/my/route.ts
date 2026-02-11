@@ -3,17 +3,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 import { getReservationStatusInfo } from "@/lib/reservations/status";
+import { requireApiRole } from "@/lib/auth/api-guard";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const requesterId = (session as any)?.uid as string | undefined;
-  const role = (session as any)?.role as string | undefined;
-
-  if (!requesterId || !["STUDENT", "TEACHER", "ADMIN"].includes(role || "")) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
+  const guard = requireApiRole(session, ["STUDENT", "TEACHER", "ADMIN"], { requireUid: true });
+  if (!guard.ok) return guard.response;
+  const requesterId = guard.uid;
 
   const rows = await prisma.reservation.findMany({
     where: { requesterId },

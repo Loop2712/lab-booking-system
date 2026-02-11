@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
-
-type Role = "ADMIN" | "TEACHER" | "STUDENT";
+import { isRole } from "@/lib/auth/session";
 
 export async function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
@@ -14,7 +13,7 @@ export async function proxy(req: NextRequest) {
   if (!isAdmin && !isTeacher && !isStudent) return NextResponse.next();
 
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  const role = (token?.role as Role | undefined) ?? undefined;
+  const role = isRole(token?.role) ? token?.role : undefined;
 
   if (!role) {
     const url = req.nextUrl.clone();

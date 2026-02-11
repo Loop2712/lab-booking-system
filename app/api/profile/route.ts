@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireApiRole } from "@/lib/auth/api-guard";
 
 export const runtime = "nodejs";
 
@@ -22,10 +23,9 @@ function toYmdUTC(d: Date) {
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const uid = (session as any)?.uid as string | undefined;
-  if (!uid) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
+  const guard = requireApiRole(session, ["ADMIN", "TEACHER", "STUDENT"], { requireUid: true });
+  if (!guard.ok) return guard.response;
+  const uid = guard.uid;
 
   const user = await prisma.user.findUnique({
     where: { id: uid },
@@ -60,10 +60,9 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   const session = await getServerSession(authOptions);
-  const uid = (session as any)?.uid as string | undefined;
-  if (!uid) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
+  const guard = requireApiRole(session, ["ADMIN", "TEACHER", "STUDENT"], { requireUid: true });
+  if (!guard.ok) return guard.response;
+  const uid = guard.uid;
 
   const json = await req.json().catch(() => null);
   const parsed = patchSchema.safeParse(json);

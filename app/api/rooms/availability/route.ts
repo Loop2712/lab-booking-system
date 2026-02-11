@@ -7,6 +7,7 @@ import { addDays } from "@/lib/date/addDays";
 import { todayYmdBkk, addDaysYmd, isYmdBetweenInclusive } from "@/lib/date";
 import { startOfBangkokDay } from "@/lib/date/bangkok";
 import type { DayName } from "@/lib/date/toDayName";
+import { requireApiRole } from "@/lib/auth/api-guard";
 
 export const runtime = "nodejs";
 
@@ -55,10 +56,8 @@ function timeBkk(dt: Date) {
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
-  if (!session || !["STUDENT", "TEACHER", "ADMIN"].includes(role || "")) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
+  const guard = requireApiRole(session, ["STUDENT", "TEACHER", "ADMIN"]);
+  if (!guard.ok) return guard.response;
 
   const url = new URL(req.url);
   const roomId = url.searchParams.get("roomId");

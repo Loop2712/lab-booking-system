@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 import { addDays } from "@/lib/date/addDays";
 import { getBangkokYMD, startOfBangkokDay } from "@/lib/date/bangkok";
+import { getSessionRole } from "@/lib/auth/session";
 
 function bkkDayName(ymd: string) {
   const d = new Date(`${ymd}T00:00:00.000Z`);
@@ -44,7 +45,7 @@ export const runtime = "nodejs";
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const role = (session as any)?.role as string | undefined;
+    const role = getSessionRole(session);
 
     // ✅ publicAllowed: ถ้าไม่ login ก็ยังดูได้ แต่จะ "ซ่อนชื่อผู้จอง"
     const isAuthed = !!session && !!role;

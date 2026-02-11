@@ -1,22 +1,30 @@
 import { NextResponse } from "next/server";
-
-export type ApiRole = "ADMIN" | "TEACHER" | "STUDENT";
+import type { Session } from "next-auth";
+import { getAppSession, type Role } from "@/lib/auth/session";
 
 export function requireApiRole(
-  session: any,
-  roles: ApiRole[],
+  session: Session | null,
+  roles: Role[],
   options: { requireUid?: boolean } = {}
 ) {
-  const role = session?.role as ApiRole | undefined;
-  const uid = session?.uid as string | undefined;
+  const appSession = getAppSession(session);
+  const role = appSession?.role;
+  const uid = appSession?.uid;
   const requireUid = options.requireUid ?? false;
 
-  if (!session || !role || !roles.includes(role) || (requireUid && !uid)) {
+  if (!appSession || !role || (requireUid && !uid)) {
     return {
       ok: false as const,
       response: NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 }),
     };
   }
 
-  return { ok: true as const, session, role, uid };
+  if (!roles.includes(role)) {
+    return {
+      ok: false as const,
+      response: NextResponse.json({ ok: false, message: "FORBIDDEN" }, { status: 403 }),
+    };
+  }
+
+  return { ok: true as const, session: appSession, role, uid };
 }

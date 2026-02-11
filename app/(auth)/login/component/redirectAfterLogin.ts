@@ -1,6 +1,5 @@
 import type { Session } from "next-auth";
-
-type Role = "ADMIN" | "TEACHER" | "STUDENT";
+import { getSessionRole, type Role } from "@/lib/auth/session";
 
 function roleToDashboard(role: Role | undefined) {
   if (role === "ADMIN") return "/admin";
@@ -43,7 +42,7 @@ export async function redirectAfterLogin(args: {
   const { callbackUrl, updateSession } = args;
 
   const newSession = await updateSession();
-  const role = (newSession as any)?.role as Role | undefined;
+  const role = getSessionRole(newSession);
 
   const normalized = normalizeCallbackUrl(callbackUrl);
   const target =

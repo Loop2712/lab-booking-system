@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { dashboardHref } from "../dashboardHref";
 import SelfCheckClient from "./self-check-client";
 import { requireKioskDevice } from "@/lib/kiosk-device";
+import { getSessionRole } from "@/lib/auth/session";
 
 const kanit = Kanit({
   subsets: ["latin", "thai"],
@@ -16,7 +17,7 @@ const kanit = Kanit({
 export default async function SelfCheckPage() {
   await requireKioskDevice("page");
   const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
+  const role = getSessionRole(session);
 
   const isLoggedIn = !!session;
   const buttonHref = isLoggedIn ? dashboardHref(role) : "/login";

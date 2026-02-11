@@ -1,8 +1,4 @@
-export type Role = "ADMIN" | "TEACHER" | "STUDENT";
-
-export type Gender = "MALE" | "FEMALE" | "OTHER";
-
-export type StudentType = "REGULAR" | "SPECIAL";
+import type { Gender, Role, StudentType } from "@/app/generated/prisma/enums";
 
 export type UserRow = {
   id: string;

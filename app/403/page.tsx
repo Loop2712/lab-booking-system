@@ -2,11 +2,12 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { roleToDashboard } from "./roleToDashboard";
+import { getSessionRole } from "@/lib/auth/session";
 
 
 export default async function ForbiddenPage() {
   const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
+  const role = getSessionRole(session);
 
   const dash = roleToDashboard(role);
 

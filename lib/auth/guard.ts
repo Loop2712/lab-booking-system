@@ -1,23 +1,25 @@
 // lib/auth/guard.ts
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth/options";
+import {
+  getSession,
+  getAppSession,
+  type AppSessionWithRoleAndUid,
+  type Role,
+} from "@/lib/auth/session";
 
-export type Role = "ADMIN" | "TEACHER" | "STUDENT";
+export async function requireRole(roles: Role[]): Promise<AppSessionWithRoleAndUid> {
+  const session = await getSession();
+  const appSession = getAppSession(session);
+  const role = appSession?.role;
+  const uid = appSession?.uid;
 
-export async function requireRole(roles: Role[]) {
-  const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as Role | undefined;
-
-  if (!session || !role) {
+  if (!appSession || !role || !uid) {
     redirect("/login");
-    
   }
 
   if (!roles.includes(role)) {
     redirect("/forbidden");
-
   }
 
-  return session as any;
+  return appSession as AppSessionWithRoleAndUid;
 }

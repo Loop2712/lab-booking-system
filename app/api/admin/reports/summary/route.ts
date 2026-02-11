@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { requireAdmin } from "@/lib/auth/requireAdmin";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth/options";
+import { requireApiRole } from "@/lib/auth/api-guard";
 import {
   buildReservationWhere,
   getReportDateRange,
@@ -18,7 +20,8 @@ function getGroupCount(
 }
 
 export async function GET(req: Request) {
-  const guard = await requireAdmin();
+  const session = await getServerSession(authOptions);
+  const guard = requireApiRole(session, ["ADMIN"]);
   if (!guard.ok) return guard.response;
 
   const url = new URL(req.url);

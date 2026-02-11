@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth/options";
 import { Button } from "@/components/ui/button";
 import RoomsTodayClient from "./rooms-today/rooms-today-client";
 import { dashboardHref } from "./dashboardHref";
+import { getSessionRole } from "@/lib/auth/session";
 
 const kanit = Kanit({
   subsets: ["latin", "thai"],
@@ -14,7 +15,7 @@ const kanit = Kanit({
 
 export default async function PublicHomePage() {
   const session = await getServerSession(authOptions);
-  const role = (session as any)?.role as string | undefined;
+  const role = getSessionRole(session);
 
   const isLoggedIn = !!session;
 

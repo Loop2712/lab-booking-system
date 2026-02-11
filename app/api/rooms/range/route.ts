@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 import { addDays } from "@/lib/date/addDays";
 import { getBangkokYMD, startOfBangkokDay } from "@/lib/date/bangkok";
+import { getSessionRole } from "@/lib/auth/session";
 
 function bkkDayName(ymd: string) {
   const d = new Date(`${ymd}T00:00:00.000Z`);
@@ -56,7 +57,7 @@ function isYmd(value: string | null): value is string {
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const role = (session as any)?.role as string | undefined;
+    const role = getSessionRole(session);
     const isAuthed = !!session && !!role;
 
     const url = new URL(req.url);

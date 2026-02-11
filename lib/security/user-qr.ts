@@ -32,7 +32,9 @@ function sign(payloadB64: string, secret: string) {
 
 export function makeUserQrToken(uid: string, ttlSeconds = QR_TOKEN_TTL_SECONDS) {
   const secret = process.env.QR_TOKEN_SECRET;
-  if (!secret) throw new Error("QR_TOKEN_SECRET is missing");
+  if (!secret || secret === "change-this-to-a-long-random-string") {
+    throw new Error("QR_TOKEN_SECRET is missing");
+  }
 
   const payload: Payload = { uid, exp: Math.floor(Date.now() / 1000) + ttlSeconds };
   const payloadB64 = b64url(JSON.stringify(payload));
@@ -42,7 +44,9 @@ export function makeUserQrToken(uid: string, ttlSeconds = QR_TOKEN_TTL_SECONDS) 
 
 export function verifyUserQrToken(token: string) {
   const secret = process.env.QR_TOKEN_SECRET;
-  if (!secret) throw new Error("QR_TOKEN_SECRET is missing");
+  if (!secret || secret === "change-this-to-a-long-random-string") {
+    throw new Error("QR_TOKEN_SECRET is missing");
+  }
 
   const parts = token.split(".");
   if (parts.length !== 2) return { ok: false as const, reason: "BAD_FORMAT" };

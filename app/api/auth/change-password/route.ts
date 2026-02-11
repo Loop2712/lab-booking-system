@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireApiRole } from "@/lib/auth/api-guard";
 
 export const runtime = "nodejs";
 
@@ -21,10 +22,9 @@ const schema = z
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const uid = (session as any)?.uid as string | undefined;
-    if (!uid) {
-      return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-    }
+    const guard = requireApiRole(session, ["ADMIN", "TEACHER", "STUDENT"], { requireUid: true });
+    if (!guard.ok) return guard.response;
+    const uid = guard.uid;
 
     const body = schema.parse(await req.json());
 

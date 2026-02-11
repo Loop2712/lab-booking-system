@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { requireApiRole } from "@/lib/auth/api-guard";
 
 export const runtime = "nodejs";
 
@@ -15,10 +16,6 @@ const addSchema = z
     message: "MISSING_ID",
     path: ["studentId"],
   });
-
-function mustBeStudent(session: any) {
-  return session?.role === "STUDENT" && typeof session?.uid === "string";
-}
 
 async function assertOwner(reservationId: string, uid: string) {
   const resv = await prisma.reservation.findUnique({
@@ -51,10 +48,9 @@ export async function GET(
   const { id } = await params;
 
   const session = await getServerSession(authOptions);
-  if (!mustBeStudent(session)) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  const uid = (session as any).uid as string;
+  const guard = requireApiRole(session, ["STUDENT"], { requireUid: true });
+  if (!guard.ok) return guard.response;
+  const uid = guard.uid;
 
   const check = await assertOwner(id, uid);
   if (!check.ok) return NextResponse.json({ ok: false, message: check.message }, { status: check.status });
@@ -87,10 +83,9 @@ export async function POST(
   const { id } = await params;
 
   const session = await getServerSession(authOptions);
-  if (!mustBeStudent(session)) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  const uid = (session as any).uid as string;
+  const guard = requireApiRole(session, ["STUDENT"], { requireUid: true });
+  if (!guard.ok) return guard.response;
+  const uid = guard.uid;
 
   const check = await assertOwner(id, uid);
   if (!check.ok) return NextResponse.json({ ok: false, message: check.message }, { status: check.status });
@@ -166,10 +161,9 @@ export async function DELETE(
   const { id } = await params;
 
   const session = await getServerSession(authOptions);
-  if (!mustBeStudent(session)) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
-  const uid = (session as any).uid as string;
+  const guard = requireApiRole(session, ["STUDENT"], { requireUid: true });
+  if (!guard.ok) return guard.response;
+  const uid = guard.uid;
 
   const check = await assertOwner(id, uid);
   if (!check.ok) return NextResponse.json({ ok: false, message: check.message }, { status: check.status });

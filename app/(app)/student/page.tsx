@@ -5,10 +5,14 @@ import { prisma } from "@/lib/db/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getSessionUid } from "@/lib/auth/session";
 
 export default async function StudentDashboard() {
   const session = await getServerSession(authOptions);
-  const uid = (session as any)?.uid as string;
+  const uid = getSessionUid(session);
+  if (!uid) {
+    return null;
+  }
 
   const groups = await prisma.reservation.groupBy({
     by: ["status"],

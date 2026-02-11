@@ -10,6 +10,7 @@ import { todayYmdBkk, addDaysYmd, isYmdBetweenInclusive  } from "@/lib/date/inde
 import { startOfBangkokDay } from "@/lib/date/bangkok";
 import type { DayName } from "@/lib/date/toDayName";
 import { getReservationStatusInfo } from "@/lib/reservations/status";
+import { requireApiRole } from "@/lib/auth/api-guard";
 
 export const runtime = "nodejs";
 
@@ -74,22 +75,10 @@ function rangesOverlap(aStart: string, aEnd: string, bStart: string, bEnd: strin
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  const role = (session as any)?.role;
-  const uid = (session as any)?.uid || (session as any)?.user?.id;
-
-  if (!uid || !role) {
-    return NextResponse.json(
-      { ok: false, message: "UNAUTHORIZED" },
-      { status: 401 }
-    );
-  }
-
-  if (!["STUDENT", "TEACHER", "ADMIN"].includes(role)) {
-    return NextResponse.json(
-      { ok: false, message: "FORBIDDEN" },
-      { status: 403 }
-    );
-  }
+  const guard = requireApiRole(session, ["STUDENT", "TEACHER", "ADMIN"], { requireUid: true });
+  if (!guard.ok) return guard.response;
+  const role = guard.role;
+  const uid = guard.uid;
 
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);

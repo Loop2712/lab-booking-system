@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 import { z } from "zod";
+import { requireApiRole } from "@/lib/auth/api-guard";
 
 export const runtime = "nodejs";
 
@@ -17,15 +18,9 @@ export async function PATCH(
   const { id } = await params;
 
   const session = await getServerSession(authOptions);
-  const role = (session as any)?.role;
-  const approverId = (session as any)?.uid as string | undefined;
-
-  if (role !== "TEACHER") {
-    return NextResponse.json({ ok: false, message: "FORBIDDEN" }, { status: 403 });
-  }
-  if (!approverId) {
-    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
-  }
+  const guard = requireApiRole(session, ["TEACHER"], { requireUid: true });
+  if (!guard.ok) return guard.response;
+  const approverId = guard.uid;
 
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
