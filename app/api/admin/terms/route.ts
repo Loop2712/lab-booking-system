@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
+import { startOfBangkokDay } from "@/lib/date/bangkok";
 
 export const runtime = "nodejs";
 
@@ -16,10 +17,6 @@ const createSchema = z.object({
   endDate: dateSchema,
   isActive: z.boolean().optional(),
 });
-
-function startOfBangkokDay(ymd: string) {
-  return new Date(`${ymd}T00:00:00.000+07:00`);
-}
 
 function endOfBangkokDay(ymd: string) {
   return new Date(`${ymd}T23:59:59.999+07:00`);
@@ -53,7 +50,14 @@ export async function POST(req: Request) {
   if (!guard.ok) return guard.response;
 
   try {
-    const body = createSchema.parse(await req.json());
+    const parsed = createSchema.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+      return NextResponse.json(
+        { ok: false, message: "BAD_BODY", detail: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+    const body = parsed.data;
     const termText = body.term.trim();
     if (!termText) {
       return NextResponse.json(

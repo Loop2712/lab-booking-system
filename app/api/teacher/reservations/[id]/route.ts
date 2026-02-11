@@ -21,6 +21,9 @@ export async function PATCH(
   const guard = requireApiRole(session, ["TEACHER"], { requireUid: true });
   if (!guard.ok) return guard.response;
   const approverId = guard.uid;
+  if (!approverId) {
+    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  }
 
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
@@ -31,6 +34,10 @@ export async function PATCH(
   const found = await prisma.reservation.findUnique({ where: { id } });
   if (!found) {
     return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
+  }
+
+  if (found.approverId !== approverId) {
+    return NextResponse.json({ ok: false, message: "NOT_ASSIGNED_APPROVER" }, { status: 403 });
   }
 
   if (found.status !== "PENDING") {

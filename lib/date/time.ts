@@ -11,6 +11,23 @@ export function parseTimeToMinutes(value?: string | null) {
   return hour * 60 + minute;
 }
 
+export function timeToMinutesOrZero(value?: string | null) {
+  return parseTimeToMinutes(value) ?? 0;
+}
+
+export function rangesOverlapByTimeText(
+  aStart: string,
+  aEnd: string,
+  bStart: string,
+  bEnd: string
+) {
+  const aS = timeToMinutesOrZero(aStart);
+  const aE = timeToMinutesOrZero(aEnd);
+  const bS = timeToMinutesOrZero(bStart);
+  const bE = timeToMinutesOrZero(bEnd);
+  return aS < bE && aE > bS;
+}
+
 export function parseTimeRangeToMinutes(value?: string | null) {
   if (!value) return null;
   const [start, end] = value.split("-");

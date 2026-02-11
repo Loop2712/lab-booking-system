@@ -22,7 +22,14 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const guard = requireApiRole(session, ["ADMIN"]);
   if (!guard.ok) return guard.response;
 
-  const body = bodySchema.parse(await req.json());
+  const parsed = bodySchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, message: "BAD_BODY", detail: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+  const body = parsed.data;
   const minYmd = todayYmdBkk();
   const maxYmd = addDaysYmd(minYmd, MAX_RANGE_DAYS);
   if (

@@ -1,7 +1,9 @@
 import type { Session } from "next-auth";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
-import { Role as RoleEnum, type Role } from "@/app/generated/prisma/enums";
+import { Role as RoleEnum, type Role as PrismaRole } from "@/app/generated/prisma/enums";
+
+export type Role = PrismaRole;
 
 export const ROLES = Object.values(RoleEnum) as Role[];
 
@@ -38,7 +40,7 @@ export function getSessionUid(session: Session | null): string | undefined {
   const rawUid = (session as { uid?: unknown }).uid;
   if (typeof rawUid === "string" && rawUid.length > 0) return rawUid;
 
-  const userId = session.user?.id;
+  const userId = (session.user as { id?: unknown } | undefined)?.id;
   return typeof userId === "string" && userId.length > 0 ? userId : undefined;
 }
 

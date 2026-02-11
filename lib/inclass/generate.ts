@@ -1,11 +1,8 @@
 import { prisma } from "@/lib/db/prisma";
-import type { DayName } from "@/lib/date/toDayName";
 import { startOfBangkokDay } from "@/lib/date/bangkok";
 import { addDaysYmd } from "@/lib/date";
-function toMinutes(value: string) {
-  const [h, m] = value.split(":").map((x) => parseInt(x, 10));
-  return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
-}
+import { bkkDayName } from "@/lib/date/bkkDayName";
+import { timeToMinutesOrZero } from "@/lib/date/time";
 
 function isValidTime(value: string) {
   if (!/^\d{2}:\d{2}$/.test(value)) return false;
@@ -15,24 +12,6 @@ function isValidTime(value: string) {
 
 function isYmd(value: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
-}
-
-function bkkDayName(ymd: string): DayName {
-  const d = new Date(`${ymd}T00:00:00.000Z`);
-  const weekday = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Bangkok",
-    weekday: "short",
-  }).format(d);
-  const map: Record<string, DayName> = {
-    Sun: "SUN",
-    Mon: "MON",
-    Tue: "TUE",
-    Wed: "WED",
-    Thu: "THU",
-    Fri: "FRI",
-    Sat: "SAT",
-  };
-  return map[weekday] ?? "MON";
 }
 
 function buildBangkokDateTime(ymd: string, timeHHmm: string) {
@@ -69,7 +48,7 @@ export async function generateInClassReservations(args: {
   if (!isValidTime(section.startTime) || !isValidTime(section.endTime)) {
     return { ok: false as const, message: "INVALID_TIME_FORMAT" };
   }
-  if (toMinutes(section.endTime) <= toMinutes(section.startTime)) {
+  if (timeToMinutesOrZero(section.endTime) <= timeToMinutesOrZero(section.startTime)) {
     return { ok: false as const, message: "INVALID_TIME_RANGE" };
   }
 

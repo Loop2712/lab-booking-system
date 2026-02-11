@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
+import type { DayOfWeek } from "@/app/generated/prisma/enums";
 import * as XLSX from "xlsx";
 
 export const runtime = "nodejs";
@@ -17,7 +18,7 @@ const REQUIRED_HEADERS = [
   "end_time",
 ];
 
-const DOW = new Set(["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]);
+const DOW = new Set<DayOfWeek>(["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]);
 
 function normalizeKey(k: string) {
   return String(k ?? "").trim().toLowerCase();
@@ -146,7 +147,7 @@ function makeSectionKey(input: {
   courseId: string;
   teacherId: string;
   roomId: string;
-  dayOfWeek: string;
+  dayOfWeek: DayOfWeek;
   startTime: string;
   endTime: string;
   termId: string | null;
@@ -168,7 +169,7 @@ type ParsedRow = {
   courseName: string;
   teacherEmail: string;
   roomCode: string;
-  dayOfWeek: string;
+  dayOfWeek: DayOfWeek;
   startTime: string;
   endTime: string;
   term: string;
@@ -242,7 +243,7 @@ export async function POST(req: Request) {
       const courseName = get("course_name");
       const teacherEmail = get("teacher_email");
       const roomCode = get("room_code");
-      const dayOfWeek = get("day_of_week").toUpperCase();
+      const dayOfWeekRaw = get("day_of_week").toUpperCase();
       const startTimeRaw = get("start_time");
       const endTimeRaw = get("end_time");
       const startParsed = normalizeTimeInput(startTimeRaw);
@@ -273,10 +274,11 @@ export async function POST(req: Request) {
         errors.push({ line: i + 2, message: "room_code ห้ามว่าง" });
         continue;
       }
-      if (!DOW.has(dayOfWeek)) {
+      if (!DOW.has(dayOfWeekRaw as DayOfWeek)) {
         errors.push({ line: i + 2, message: "day_of_week ต้องเป็น MON|TUE|WED|THU|FRI|SAT|SUN" });
         continue;
       }
+      const dayOfWeek = dayOfWeekRaw as DayOfWeek;
       if (!startParsed.ok || !endParsed.ok) {
         errors.push({ line: i + 2, message: "รูปแบบเวลาไม่ถูกต้อง (H:MM หรือ HH:MM)" });
         continue;

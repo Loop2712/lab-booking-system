@@ -15,7 +15,7 @@ const bodySchema = z.object({
   mode: z.enum(["CHECKIN", "RETURN"]).optional(),
 });
 
-function pickClosestToNow(list: Array<{ startAt: Date }>) {
+function pickClosestToNow<T extends { startAt: Date }>(list: T[]) {
   if (!list.length) return null;
   const now = Date.now();
   const sorted = [...list].sort(

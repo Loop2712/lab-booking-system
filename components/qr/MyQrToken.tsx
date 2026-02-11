@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,11 @@ export default function MyQrToken() {
     const res = await fetch("/api/qr/me", { cache: "no-store" });
     const json = await res.json().catch(() => ({}));
     if (!res.ok || !json?.ok) {
-      setError("โหลด QR token ไม่สำเร็จ");
+      if (json?.message === "QR_CONFIG_ERROR") {
+        setError("ระบบ QR ยังไม่ถูกตั้งค่า กรุณาติดต่อผู้ดูแลระบบ");
+      } else {
+        setError("โหลด QR token ไม่สำเร็จ");
+      }
       setToken("");
       return;
     }

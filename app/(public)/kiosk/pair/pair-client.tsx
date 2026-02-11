@@ -17,7 +17,7 @@ export default function PairClient() {
     setError(null);
 
     try {
-      const res = await fetch("/self-check/api/pair", {
+      const res = await fetch("/api/kiosk/pair", {
         method: "POST",
         headers: { "content-type": "application/json" },
         credentials: "include",

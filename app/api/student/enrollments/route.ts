@@ -61,7 +61,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
   }
 
-  const body = addSchema.parse(await req.json());
+  const parsed = addSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, message: "BAD_BODY", detail: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+  const body = parsed.data;
 
   const section = await prisma.section.findUnique({
     where: { id: body.sectionId },
@@ -111,7 +118,14 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
   }
 
-  const body = delSchema.parse(await req.json());
+  const parsed = delSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, message: "BAD_BODY", detail: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+  const body = parsed.data;
 
   await prisma.enrollment.delete({
     where: {

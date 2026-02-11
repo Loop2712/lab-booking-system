@@ -22,7 +22,7 @@ type LookupResponse =
   | { ok: true; user: any; room: any; reservation: any; mode: "CHECKIN" | "RETURN" }
   | { ok: false; message: string; detail?: any };
 
-const API_BASE = "/self-check/api";
+const API_BASE = "/api/kiosk";
 
 function formatTime(dt: string) {
   try {

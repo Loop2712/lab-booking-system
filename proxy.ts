@@ -21,10 +21,6 @@ export async function proxy(req: NextRequest) {
     url.searchParams.set("callbackUrl", pathname + search);
     return NextResponse.redirect(url);
   }
-  
-  const isSettings = pathname.startsWith("/settings");
-  if (!isAdmin && !isTeacher && !isStudent && !isSettings) return NextResponse.next();
-
 
   const forbidden = req.nextUrl.clone();
   forbidden.pathname = "/403";

@@ -81,7 +81,14 @@ export async function POST(req: Request) {
   const guard = requireApiRole(session, ["ADMIN"]);
   if (!guard.ok) return guard.response;
 
-  const body = createRoomSchema.parse(await req.json());
+  const parsed = createRoomSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, message: "BAD_BODY", detail: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+  const body = parsed.data;
 
   try {
     const room = await prisma.room.create({ data: body });

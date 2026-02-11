@@ -4,25 +4,8 @@ import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 import { addDays } from "@/lib/date/addDays";
 import { getBangkokYMD, startOfBangkokDay } from "@/lib/date/bangkok";
+import { bkkDayName } from "@/lib/date/bkkDayName";
 import { getSessionRole } from "@/lib/auth/session";
-
-function bkkDayName(ymd: string) {
-  const d = new Date(`${ymd}T00:00:00.000Z`);
-  const weekday = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Bangkok",
-    weekday: "short",
-  }).format(d);
-  const map: Record<string, "SUN" | "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT"> = {
-    Sun: "SUN",
-    Mon: "MON",
-    Tue: "TUE",
-    Wed: "WED",
-    Thu: "THU",
-    Fri: "FRI",
-    Sat: "SAT",
-  };
-  return map[weekday] ?? "MON";
-}
 
 function normalizeTime(value: string) {
   const match = String(value ?? "").trim().match(/^(\d{1,2}):(\d{2})$/);

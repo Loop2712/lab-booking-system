@@ -51,6 +51,7 @@ export async function GET(
   const guard = requireApiRole(session, ["STUDENT"], { requireUid: true });
   if (!guard.ok) return guard.response;
   const uid = guard.uid;
+  if (!uid) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
 
   const check = await assertOwner(id, uid);
   if (!check.ok) return NextResponse.json({ ok: false, message: check.message }, { status: check.status });
@@ -86,11 +87,19 @@ export async function POST(
   const guard = requireApiRole(session, ["STUDENT"], { requireUid: true });
   if (!guard.ok) return guard.response;
   const uid = guard.uid;
+  if (!uid) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
 
   const check = await assertOwner(id, uid);
   if (!check.ok) return NextResponse.json({ ok: false, message: check.message }, { status: check.status });
 
-  const body = addSchema.parse(await req.json());
+  const parsed = addSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, message: "BAD_BODY", detail: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+  const body = parsed.data;
 
   const user = body.userId
     ? await prisma.user.findUnique({
@@ -164,11 +173,19 @@ export async function DELETE(
   const guard = requireApiRole(session, ["STUDENT"], { requireUid: true });
   if (!guard.ok) return guard.response;
   const uid = guard.uid;
+  if (!uid) return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
 
   const check = await assertOwner(id, uid);
   if (!check.ok) return NextResponse.json({ ok: false, message: check.message }, { status: check.status });
 
-  const body = delSchema.parse(await req.json());
+  const parsed = delSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, message: "BAD_BODY", detail: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+  const body = parsed.data;
 
   // ลบได้เฉพาะ participant ที่อยู่ใน reservation นี้
   const p = await prisma.reservationParticipant.findUnique({

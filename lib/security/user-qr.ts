@@ -6,6 +6,17 @@ type Payload = {
 };
 
 export const QR_TOKEN_TTL_SECONDS = 60 * 3;
+const PLACEHOLDER_SECRET = "change-this-to-a-long-random-string";
+
+function resolveQrSecret() {
+  const qrSecret = process.env.QR_TOKEN_SECRET?.trim();
+  if (qrSecret && qrSecret !== PLACEHOLDER_SECRET) return qrSecret;
+
+  const fallback = process.env.NEXTAUTH_SECRET?.trim();
+  if (fallback && fallback !== PLACEHOLDER_SECRET) return fallback;
+
+  return null;
+}
 
 function b64url(input: Buffer | string) {
   const buf = Buffer.isBuffer(input) ? input : Buffer.from(input);
@@ -31,8 +42,8 @@ function sign(payloadB64: string, secret: string) {
 }
 
 export function makeUserQrToken(uid: string, ttlSeconds = QR_TOKEN_TTL_SECONDS) {
-  const secret = process.env.QR_TOKEN_SECRET;
-  if (!secret || secret === "change-this-to-a-long-random-string") {
+  const secret = resolveQrSecret();
+  if (!secret) {
     throw new Error("QR_TOKEN_SECRET is missing");
   }
 
@@ -43,9 +54,9 @@ export function makeUserQrToken(uid: string, ttlSeconds = QR_TOKEN_TTL_SECONDS) 
 }
 
 export function verifyUserQrToken(token: string) {
-  const secret = process.env.QR_TOKEN_SECRET;
-  if (!secret || secret === "change-this-to-a-long-random-string") {
-    throw new Error("QR_TOKEN_SECRET is missing");
+  const secret = resolveQrSecret();
+  if (!secret) {
+    return { ok: false as const, reason: "CONFIG_ERROR" };
   }
 
   const parts = token.split(".");

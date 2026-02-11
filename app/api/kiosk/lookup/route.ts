@@ -62,6 +62,7 @@ export async function POST(req: Request) {
     startAt: Date;
     endAt: Date;
     requesterId: string;
+    room: { id: string; code: string; name: string; roomNumber: string; floor: number };
   }> = [];
 
   if (body.data.mode === "CHECKIN") {

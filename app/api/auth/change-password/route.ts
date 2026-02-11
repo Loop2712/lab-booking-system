@@ -26,7 +26,14 @@ export async function POST(req: Request) {
     if (!guard.ok) return guard.response;
     const uid = guard.uid;
 
-    const body = schema.parse(await req.json());
+    const parsed = schema.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+      return NextResponse.json(
+        { ok: false, message: "VALIDATION_ERROR", details: parsed.error.issues },
+        { status: 400 }
+      );
+    }
+    const body = parsed.data;
 
     const user = await prisma.user.findUnique({
       where: { id: uid },

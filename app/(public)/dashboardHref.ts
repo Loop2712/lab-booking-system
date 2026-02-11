@@ -1,7 +1,6 @@
 import type { Role } from "@/lib/auth/session";
+import { roleToDashboardPath } from "@/lib/auth/role-dashboard";
 
 export function dashboardHref(role?: Role) {
-  if (role === "ADMIN") return "/admin";
-  if (role === "TEACHER") return "/teacher";
-  return "/student";
+  return roleToDashboardPath(role, "/student");
 }

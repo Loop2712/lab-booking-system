@@ -1,11 +1,15 @@
 import type { Session } from "next-auth";
-import { getSessionRole, type Role } from "@/lib/auth/session";
+import type { Role } from "@/app/generated/prisma/enums";
+import { roleToDashboardPath } from "@/lib/auth/role-dashboard";
 
-function roleToDashboard(role: Role | undefined) {
-  if (role === "ADMIN") return "/admin";
-  if (role === "TEACHER") return "/teacher";
-  if (role === "STUDENT") return "/student";
-  return "/";
+function isRole(value: unknown): value is Role {
+  return value === "ADMIN" || value === "TEACHER" || value === "STUDENT";
+}
+
+function getSessionRole(session: Session | null): Role | undefined {
+  if (!session) return undefined;
+  const role = (session as { role?: unknown }).role;
+  return isRole(role) ? role : undefined;
 }
 
 function normalizeCallbackUrl(callbackUrl: string | undefined) {
@@ -48,7 +52,7 @@ export async function redirectAfterLogin(args: {
   const target =
     normalized && isCallbackAllowedForRole(normalized, role)
       ? normalized
-      : roleToDashboard(role);
+      : roleToDashboardPath(role, "/");
 
   window.location.href = target;
 }

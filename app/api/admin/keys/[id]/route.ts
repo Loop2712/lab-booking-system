@@ -22,7 +22,14 @@ export async function PATCH(
   const guard = requireApiRole(session, ["ADMIN"]);
   if (!guard.ok) return guard.response;
 
-  const body = patchSchema.parse(await req.json());
+  const parsed = patchSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, message: "BAD_BODY", detail: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+  const body = parsed.data;
 
   try {
     const key = await prisma.key.update({

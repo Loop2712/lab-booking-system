@@ -52,6 +52,13 @@ type UserResult = {
   email?: string | null;
 };
 
+type TeacherOption = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string | null;
+};
+
 export default function BookingCenter({
   rooms,
   role,
@@ -69,6 +76,9 @@ export default function BookingCenter({
   const [limits, setLimits] = useState({ maxSlots: 2, mustConsecutive: true });
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
   const [note, setNote] = useState("");
+  const [approverId, setApproverId] = useState("");
+  const [approvers, setApprovers] = useState<TeacherOption[]>([]);
+  const [loadingApprovers, setLoadingApprovers] = useState(false);
 
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +92,37 @@ export default function BookingCenter({
   const [searchResults, setSearchResults] = useState<UserResult[]>([]);
   const [participants, setParticipants] = useState<UserResult[]>([]);
   const remaining = Math.max(0, 4 - participants.length);
+
+  useEffect(() => {
+    if (role !== "STUDENT") return;
+
+    let mounted = true;
+    setLoadingApprovers(true);
+    fetch("/api/teachers?limit=200", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((json: { ok?: boolean; items?: TeacherOption[] }) => {
+        if (!mounted) return;
+        if (!json?.ok || !Array.isArray(json.items)) {
+          setApprovers([]);
+          setError("โหลดรายชื่ออาจารย์ผู้อนุมัติไม่สำเร็จ");
+          return;
+        }
+        setApprovers(json.items);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setApprovers([]);
+        setError("โหลดรายชื่ออาจารย์ผู้อนุมัติไม่สำเร็จ");
+      })
+      .finally(() => {
+        if (!mounted) return;
+        setLoadingApprovers(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [role]);
 
   useEffect(() => {
     if (!roomId || !date) {
@@ -187,6 +228,11 @@ export default function BookingCenter({
       return;
     }
 
+    if (role === "STUDENT" && !approverId) {
+      setError("กรุณาเลือกอาจารย์ผู้อนุมัติ");
+      return;
+    }
+
     const res = await fetch("/api/reservations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -194,6 +240,7 @@ export default function BookingCenter({
         roomId,
         date,
         slotIds: selectedSlots,
+        approverId: role === "STUDENT" ? approverId : undefined,
         note: note.trim() || undefined,
         participantIds: participants.map((p) => p.id),
       }),
@@ -221,6 +268,10 @@ export default function BookingCenter({
           ? "เพิ่มผู้ร่วมใช้ได้สูงสุด 4 คน (รวมผู้จองเป็น 5 คน)"
           : json?.message === "INVALID_PARTICIPANTS"
           ? "พบผู้ร่วมใช้ที่ไม่ถูกต้อง"
+          : json?.message === "APPROVER_REQUIRED"
+          ? "กรุณาเลือกอาจารย์ผู้อนุมัติก่อนจอง"
+          : json?.message === "INVALID_APPROVER"
+          ? "อาจารย์ผู้อนุมัติไม่ถูกต้องหรือไม่พร้อมใช้งาน"
           : "จองไม่สำเร็จ กรุณาลองใหม่";
       setError(msg);
       return;
@@ -343,6 +394,27 @@ export default function BookingCenter({
                 />
               </div>
 
+              {role === "STUDENT" ? (
+                <div className="space-y-2">
+                  <Label>อาจารย์ผู้อนุมัติ</Label>
+                  <Select value={approverId} onValueChange={setApproverId}>
+                    <SelectTrigger disabled={loadingApprovers || approvers.length === 0}>
+                      <SelectValue
+                        placeholder={loadingApprovers ? "กำลังโหลดรายชื่ออาจารย์..." : "เลือกอาจารย์ผู้อนุมัติ"}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {approvers.map((teacher) => (
+                        <SelectItem key={teacher.id} value={teacher.id}>
+                          {teacher.firstName} {teacher.lastName}
+                          {teacher.email ? ` - ${teacher.email}` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+
               <div className="space-y-2">
                 <Label>ผู้ร่วมใช้ (ไม่เกิน 4 คน)</Label>
                 <div className="flex flex-col gap-2 sm:flex-row">
@@ -411,7 +483,10 @@ export default function BookingCenter({
                 </div>
               ) : null}
 
-              <Button type="submit" disabled={!roomId || !date || selectedSlots.length === 0}>
+              <Button
+                type="submit"
+                disabled={!roomId || !date || selectedSlots.length === 0 || (role === "STUDENT" && !approverId)}
+              >
                 ยืนยันการจอง
               </Button>
             </form>

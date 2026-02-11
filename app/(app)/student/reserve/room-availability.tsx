@@ -21,7 +21,14 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { RoomItem } from "./reserve-form";
+
+type RoomItem = {
+  id: string;
+  code: string;
+  name: string;
+  roomNumber: string;
+  floor: number;
+};
 
 type RangeItem = {
   reservationId: string;

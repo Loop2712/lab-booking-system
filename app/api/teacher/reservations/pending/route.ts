@@ -8,11 +8,18 @@ export const runtime = "nodejs";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const guard = requireApiRole(session, ["TEACHER"]);
+  const guard = requireApiRole(session, ["TEACHER"], { requireUid: true });
   if (!guard.ok) return guard.response;
+  const uid = guard.uid;
+  if (!uid) {
+    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  }
 
   const rows = await prisma.reservation.findMany({
-    where: { status: "PENDING" },
+    where: {
+      status: "PENDING",
+      approverId: uid,
+    },
     orderBy: { createdAt: "asc" },
     include: {
       room: true,

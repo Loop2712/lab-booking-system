@@ -8,7 +8,8 @@ import { z } from "zod";
 import { areConsecutiveSlots, findSlot } from "@/lib/reserve/slots";
 import { todayYmdBkk, addDaysYmd, isYmdBetweenInclusive  } from "@/lib/date/index";
 import { startOfBangkokDay } from "@/lib/date/bangkok";
-import type { DayName } from "@/lib/date/toDayName";
+import { bkkDayName } from "@/lib/date/bkkDayName";
+import { rangesOverlapByTimeText, timeToMinutesOrZero } from "@/lib/date/time";
 import { getReservationStatusInfo } from "@/lib/reservations/status";
 import { requireApiRole } from "@/lib/auth/api-guard";
 
@@ -21,6 +22,7 @@ const bodySchema = z.object({
   endTime: z.string().min(1).optional(),
   slotId: z.string().min(1).optional(),
   slotIds: z.array(z.string().min(1)).optional(),
+  approverId: z.string().min(1).optional(),
   participantIds: z.array(z.string().min(1)).optional(),
   note: z.string().optional().nullable(),
 });
@@ -33,11 +35,6 @@ function slotToTime(slot: string, date: string) {
   return { startAt, endAt };
 }
 
-function timeToMinutes(value: string) {
-  const [h, m] = value.split(":").map((n) => Number(n));
-  return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
-}
-
 const MIN_BOOK_MINUTES = 7 * 60;  // 07:00
 const MAX_BOOK_MINUTES = 21 * 60; // 21:00
 
@@ -47,38 +44,15 @@ function isValidTime(value: string) {
   return h >= 0 && h <= 23 && m >= 0 && m <= 59;
 }
 
-function bkkDayName(ymd: string): DayName {
-  const d = new Date(`${ymd}T00:00:00.000Z`);
-  const weekday = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Bangkok",
-    weekday: "short",
-  }).format(d);
-  const map: Record<string, DayName> = {
-    Sun: "SUN",
-    Mon: "MON",
-    Tue: "TUE",
-    Wed: "WED",
-    Thu: "THU",
-    Fri: "FRI",
-    Sat: "SAT",
-  };
-  return map[weekday] ?? "MON";
-}
-
-function rangesOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string) {
-  const aS = timeToMinutes(aStart);
-  const aE = timeToMinutes(aEnd);
-  const bS = timeToMinutes(bStart);
-  const bE = timeToMinutes(bEnd);
-  return aS < bE && aE > bS;
-}
-
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   const guard = requireApiRole(session, ["STUDENT", "TEACHER", "ADMIN"], { requireUid: true });
   if (!guard.ok) return guard.response;
   const role = guard.role;
   const uid = guard.uid;
+  if (!uid) {
+    return NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 });
+  }
 
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
@@ -89,7 +63,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { roomId, date, slotId, slotIds, note, participantIds } = parsed.data;
+  const { roomId, date, slotId, slotIds, approverId, note, participantIds } = parsed.data;
   const { startTime, endTime } = parsed.data;
   const useCustomTime = !!startTime && !!endTime;
   const selectedSlots = Array.from(
@@ -128,8 +102,8 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    const startMin = timeToMinutes(start);
-    const endMin = timeToMinutes(end);
+    const startMin = timeToMinutesOrZero(start);
+    const endMin = timeToMinutesOrZero(end);
     if (endMin <= startMin) {
       return NextResponse.json(
         { ok: false, message: "INVALID_TIME_RANGE" },
@@ -191,6 +165,31 @@ export async function POST(req: Request) {
     }
   }
 
+  let reservationApproverId: string | null = null;
+  if (role === "STUDENT") {
+    if (!approverId) {
+      return NextResponse.json(
+        { ok: false, message: "APPROVER_REQUIRED" },
+        { status: 400 }
+      );
+    }
+
+    const approverUser = await prisma.user.findFirst({
+      where: { id: approverId, role: "TEACHER", isActive: true },
+      select: { id: true },
+    });
+    if (!approverUser) {
+      return NextResponse.json(
+        { ok: false, message: "INVALID_APPROVER" },
+        { status: 400 }
+      );
+    }
+
+    reservationApproverId = approverUser.id;
+  } else {
+    reservationApproverId = uid;
+  }
+
   // เช็คชนตารางเรียนของห้อง (section ที่ยังไม่ถูก generate ก็ต้องกันไว้)
   const dayName = bkkDayName(date);
   const dayStart = startOfBangkokDay(date);
@@ -217,7 +216,7 @@ export async function POST(req: Request) {
 
     const conflict = sections.some((section) =>
       slotRanges.some((slot) =>
-        rangesOverlap(slot.start, slot.end, section.startTime, section.endTime)
+        rangesOverlapByTimeText(slot.start, slot.end, section.startTime, section.endTime)
       )
     );
 
@@ -263,7 +262,7 @@ export async function POST(req: Request) {
       const data = ranges.map((r) => ({
         type: "AD_HOC" as const,
         status,
-        approverId: isTeacher || isAdmin ? uid : null,
+        approverId: reservationApproverId,
         requesterId: uid,
         roomId,
         date: dateOnly,

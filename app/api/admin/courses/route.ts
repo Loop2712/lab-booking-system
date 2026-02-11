@@ -29,7 +29,14 @@ export async function POST(req: Request) {
   const guard = requireApiRole(session, ["ADMIN"]);
   if (!guard.ok) return guard.response;
 
-  const body = createSchema.parse(await req.json());
+  const parsed = createSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, message: "BAD_BODY", detail: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+  const body = parsed.data;
   const created = await prisma.course.create({ data: body });
 
   return NextResponse.json({ ok: true, item: created });

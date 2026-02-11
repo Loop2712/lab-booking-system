@@ -1,4 +1,5 @@
 import type { Gender, Role, StudentType } from "@/app/generated/prisma/enums";
+export type { Gender, Role, StudentType } from "@/app/generated/prisma/enums";
 
 export type UserRow = {
   id: string;

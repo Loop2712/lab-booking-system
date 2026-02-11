@@ -6,43 +6,14 @@ import { TIME_SLOTS } from "@/lib/reserve/slots";
 import { addDays } from "@/lib/date/addDays";
 import { todayYmdBkk, addDaysYmd, isYmdBetweenInclusive } from "@/lib/date";
 import { startOfBangkokDay } from "@/lib/date/bangkok";
-import type { DayName } from "@/lib/date/toDayName";
+import { bkkDayName } from "@/lib/date/bkkDayName";
+import { rangesOverlapByTimeText } from "@/lib/date/time";
 import { requireApiRole } from "@/lib/auth/api-guard";
 
 export const runtime = "nodejs";
 
 function isYmd(value: string | null): value is string {
   return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
-}
-
-function bkkDayName(ymd: string): DayName {
-  const d = new Date(`${ymd}T00:00:00.000Z`);
-  const weekday = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Bangkok",
-    weekday: "short",
-  }).format(d);
-  const map: Record<string, DayName> = {
-    Sun: "SUN",
-    Mon: "MON",
-    Tue: "TUE",
-    Wed: "WED",
-    Thu: "THU",
-    Fri: "FRI",
-    Sat: "SAT",
-  };
-  return map[weekday] ?? "MON";
-}
-
-function rangesOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string) {
-  const toMin = (value: string) => {
-    const [h, m] = value.split(":").map((n) => Number(n));
-    return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
-  };
-  const aS = toMin(aStart);
-  const aE = toMin(aEnd);
-  const bS = toMin(bStart);
-  const bE = toMin(bEnd);
-  return aS < bE && aE > bS;
 }
 
 function timeBkk(dt: Date) {
@@ -113,10 +84,12 @@ export async function GET(req: Request) {
 
   const slots = TIME_SLOTS.map((slot) => {
     const reserved = reservations.some((r) =>
-      rangesOverlap(slot.start, slot.end, timeBkk(r.startAt), timeBkk(r.endAt))
+      rangesOverlapByTimeText(slot.start, slot.end, timeBkk(r.startAt), timeBkk(r.endAt))
     );
 
-    const conflictWithClass = sections.some((s) => rangesOverlap(slot.start, slot.end, s.startTime, s.endTime));
+    const conflictWithClass = sections.some((s) =>
+      rangesOverlapByTimeText(slot.start, slot.end, s.startTime, s.endTime)
+    );
 
     let reason: string | null = null;
     if (reserved) reason = "ROOM_ALREADY_RESERVED";
