@@ -1,55 +1,41 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import MyQrToken from "@/components/qr/MyQrToken";
 import { Button } from "@/components/ui/button";
-
-const REFRESH_MS = 3 * 60 * 1000;
+import { ArrowRight, Smartphone } from "lucide-react";
 
 export default function StudentQrPage() {
-  const [token, setToken] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setError(null);
-    const res = await fetch("/api/qr/me", { cache: "no-store" });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok || !json?.ok) {
-      setError("โหลด QR token ไม่สำเร็จ");
-      return;
-    }
-    setToken(json.token);
-  }, []);
-
-  useEffect(() => {
-    load();
-    const timer = setInterval(load, REFRESH_MS);
-    return () => clearInterval(timer);
-  }, [load]);
-
-  async function copy() {
-    await navigator.clipboard.writeText(token);
-  }
-
   return (
-    <div className="space-y-4 max-w-2xl">
-      <h1 className="text-2xl font-semibold">QR Token ของฉัน</h1>
-      <p className="text-sm text-muted-foreground">
-        ใช้แสดงให้เจ้าหน้าที่สแกน/คัดลอก เพื่อระบุว่า “ใครเป็นคนยืม/คืนกุญแจ”
-      </p>
+    <div className="mx-auto max-w-2xl space-y-8">
+      <div className="text-center sm:text-left">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">QR Token ของฉัน</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          แสดง QR Code หรือ Token นี้ให้เจ้าหน้าที่สแกน/คัดลอก เพื่อระบุตัวตนเมื่อยืม-คืนกุญแจ
+        </p>
+      </div>
 
-      {error && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
-        </div>
-      )}
+      <MyQrToken />
 
-      <div className="rounded-2xl border p-4 space-y-3">
-        <div className="text-xs text-muted-foreground">TOKEN</div>
-        <div className="font-mono text-sm break-all">{token || "กำลังโหลด..."}</div>
-
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={load}>รีเฟรช</Button>
-          <Button onClick={copy} disabled={!token}>คัดลอก</Button>
+      <div className="overflow-hidden rounded-2xl border bg-gradient-to-br from-muted/50 to-muted/30 p-5 ring-1 ring-black/5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="rounded-xl bg-background/80 p-2.5 shadow-sm ring-1 ring-black/5">
+              <Smartphone className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="font-medium text-foreground">ไปที่จุดยืม-คืนกุญแจ?</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                เปิดหน้า “ยืม-คืนกุญแจ” เพื่อแสดงเฉพาะ QR Code ให้สแกนได้สะดวก
+              </p>
+            </div>
+          </div>
+          <Button asChild className="shrink-0 gap-2" variant="secondary">
+            <Link href="/student/check">
+              เปิดหน้า QR
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

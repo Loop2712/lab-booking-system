@@ -133,23 +133,30 @@ export default function LoanDesk({ title }: { title: string }) {
   const pendingRows = useMemo(() => pendingCheckin, [pendingCheckin]);
   const activeRows = useMemo(() => activeLoans, [activeLoans]);
 
-  if (loading) return <div className="text-sm text-muted-foreground">กำลังโหลด...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        <p className="text-sm text-muted-foreground">กำลังโหลดรายการ...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-5">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">{title}</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         <p className="text-sm text-muted-foreground">
-          จัดการ “รับกุญแจ (Check-in)” และ “คืนกุญแจ (Return)”
+          สแกนหรือวาง QR ของนักศึกษาเพื่อรับกุญแจ หรือคืนกุญแจ
         </p>
       </div>
 
-      <div className="rounded-2xl border p-4 space-y-3">
-        <div className="text-sm font-medium">สแกน/วาง QR Token ของผู้ยืม/ผู้คืน</div>
+      <div className="rounded-2xl border bg-card p-4 space-y-3">
+        <div className="text-sm font-medium">สแกน/วาง QR Token ของผู้ยืมหรือผู้คืน</div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
-            className="w-full rounded-lg border bg-background px-3 py-2 text-sm font-mono"
-            placeholder="วาง token ที่ได้จากหน้า /student/qr"
+            className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm font-mono placeholder:text-muted-foreground"
+            placeholder="วาง QR token จากหน้าจอของนักศึกษา"
             value={scanToken}
             onChange={(e) => {
               setScanToken(e.target.value);

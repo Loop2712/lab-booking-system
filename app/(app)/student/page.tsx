@@ -33,8 +33,8 @@ export default async function StudentDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">Student</h1>
-        <p className="text-sm text-muted-foreground">ภาพรวมรายการจองของคุณ</p>
+        <h1 className="text-2xl font-semibold tracking-tight">หน้าหลัก</h1>
+        <p className="text-sm text-muted-foreground">ภาพรวมรายการจองห้องปฏิบัติการของคุณ</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -95,15 +95,15 @@ export default async function StudentDashboard() {
         </Card>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <Button asChild>
-          <Link href="/student/reserve">ศูนย์จองห้อง</Link>
+      <div className="flex flex-wrap gap-3">
+        <Button asChild size="lg">
+          <Link href="/student/reserve">จองห้อง</Link>
         </Button>
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" size="lg">
           <Link href="/student/reservations">รายการจองของฉัน</Link>
         </Button>
-        <Button asChild variant="outline">
-          <Link href="/student/check">QR / Token สำหรับยืม-คืน</Link>
+        <Button asChild variant="outline" size="lg">
+          <Link href="/student/check">แสดง QR ยืม-คืนกุญแจ</Link>
         </Button>
       </div>
     </div>
