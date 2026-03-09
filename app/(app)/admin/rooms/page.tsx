@@ -18,8 +18,7 @@ import {
 import ImportForm from "@/components/admin/ImportForm";
 
 import type { Room } from "./types";
-import { loadRooms } from "./loadRooms";
-import { createRoom } from "./createRoom";
+import { fetchAdminRooms, createRoom, importRooms } from "@/lib/services/rooms";
 import { toggleRoomActive } from "./toggleRoomActive";
 
 export default function AdminRoomsPage() {
@@ -45,7 +44,13 @@ export default function AdminRoomsPage() {
   });
 
   const load = async () => {
-    await loadRooms({ setError, setRooms });
+    setError(null);
+    try {
+      const list = await fetchAdminRooms();
+      setRooms(list);
+    } catch (e: unknown) {
+      setError((e as Error)?.message || "โหลดห้องไม่สำเร็จ");
+    }
   };
 
   useEffect(() => {
@@ -75,25 +80,8 @@ export default function AdminRoomsPage() {
     setImportBusy(true);
     setImportMsg(null);
     setImportErr(null);
-
     try {
-      const fd = new FormData();
-      fd.append("file", importFile);
-
-      const res = await fetch(`/api/admin/rooms/import?dryRun=${dryRun ? "1" : "0"}`, {
-        method: "POST",
-        body: fd,
-      });
-      const text = await res.text();
-      let data: any = null;
-      try { data = JSON.parse(text); } catch {}
-
-      if (!res.ok || !data?.ok) {
-        console.error("API ERROR RAW:", text);
-        setImportErr(data?.message ?? `HTTP ${res.status}`);
-        return;
-      }
-
+      const data = await importRooms(importFile, dryRun);
       if (dryRun) {
         setImportPreview(data);
         setImportMsg(`ตรวจสอบผ่าน: ทั้งหมด ${data.total} แถว | จะสร้างใหม่ ${data.wouldCreate} | จะอัปเดต ${data.wouldUpdate}`);
@@ -102,9 +90,9 @@ export default function AdminRoomsPage() {
         setImportMsg(`นำเข้าสำเร็จ: ทั้งหมด ${data.total} แถว | สร้างใหม่ ${data.created} | อัปเดต ${data.updated}`);
         await load();
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       setImportPreview(null);
-      setImportErr(e?.message || "เกิดข้อผิดพลาด");
+      setImportErr((e as Error)?.message || "เกิดข้อผิดพลาด");
     } finally {
       setImportBusy(false);
     }
@@ -164,15 +152,22 @@ export default function AdminRoomsPage() {
               </Button>
               <Button
                 onClick={async () => {
-                  const ok = await createRoom({
-                    form,
-                    setBusy,
-                    setError,
-                    resetForm: () =>
-                      setForm({ roomNumber: "", floor: "1", computerCount: "0", code: "", name: "", isActive: true }),
-                    refresh: load,
-                  });
-                  if (ok) setOpenCreate(false);
+                  setBusy(true);
+                  setError(null);
+                  try {
+                    await createRoom({
+                      ...form,
+                      floor: Number(form.floor),
+                      computerCount: Number(form.computerCount),
+                    });
+                    setForm({ roomNumber: "", floor: "1", computerCount: "0", code: "", name: "", isActive: true });
+                    await load();
+                    setOpenCreate(false);
+                  } catch (e: unknown) {
+                    setError((e as Error)?.message || "เพิ่มห้องไม่สำเร็จ");
+                  } finally {
+                    setBusy(false);
+                  }
                 }}
                 disabled={busy}
               >

@@ -6,24 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import {
+  fetchLoansQueue,
+  checkIn as checkInService,
+  returnKey as returnKeyService,
+  lookupReservation as lookupReservationService,
+} from "@/lib/services/loans";
+import type { ReservationRow, LookupResult } from "@/lib/services/loans";
 
-type ReservationRow = {
-  id: string;
-  type: string;
-  status: string;
-  slot: string;
-  startAt: string;
-  endAt: string;
-  note: string | null;
-  room: { code: string; name: string; roomNumber: string; floor: number };
-  requester: { firstName: string; lastName: string; studentId?: string | null; email?: string | null };
-  approver?: { firstName?: string | null; lastName?: string | null; email?: string | null } | null;
-  loan?: {
-    id: string;
-    createdAt: string;
-    updatedAt: string;
-    borrower?: { firstName: string; lastName: string; studentId?: string | null; email?: string | null } | null;
-  } | null;
+const LOOKUP_ERROR_MESSAGES: Record<string, string> = {
+  NO_MATCHING_RESERVATION: "ไม่พบรายการที่ตรงกับผู้ใช้",
+  NO_MATCHING_CHECKEDIN_RESERVATION: "ไม่พบรายการที่กำลังยืมอยู่",
+  NO_MATCHING_APPROVED_RESERVATION: "ไม่พบรายการที่อนุมัติแล้วสำหรับวันนี้",
+  BAD_QR_TOKEN: "QR Token ไม่ถูกต้อง",
 };
 
 function ymd(iso: string) {
@@ -38,22 +33,6 @@ function formatTime(iso: string) {
   }
 }
 
-type LookupResult = {
-  ok: true;
-  mode: "CHECKIN" | "RETURN";
-  user: { firstName: string; lastName: string; studentId?: string | null; email?: string | null };
-  reservation: {
-    id: string;
-    type: string;
-    status: string;
-    slot: string;
-    startAt: string;
-    endAt: string;
-    room: { code: string; name: string; roomNumber: string; floor: number };
-  };
-  candidatesCount: number;
-};
-
 export default function LoanDesk({ title }: { title: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +40,7 @@ export default function LoanDesk({ title }: { title: string }) {
 
   const [pendingCheckin, setPendingCheckin] = useState<ReservationRow[]>([]);
   const [activeLoans, setActiveLoans] = useState<ReservationRow[]>([]);
+  const [scanToken, setScanToken] = useState("");
   const [lookup, setLookup] = useState<LookupResult | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [lookupLoading, setLookupLoading] = useState(false);
@@ -68,21 +48,20 @@ export default function LoanDesk({ title }: { title: string }) {
   async function load() {
     setLoading(true);
     setError(null);
-    const res = await fetch("/api/loans/queue", { cache: "no-store" });
-    const json = await res.json().catch(() => ({}));
-    setLoading(false);
-
-    if (!res.ok || !json?.ok) {
+    try {
+      const data = await fetchLoansQueue();
+      setPendingCheckin(data.pendingCheckin ?? []);
+      setActiveLoans(data.activeLoans ?? []);
+    } catch (e: unknown) {
+      const msg = (e as Error)?.message ?? "";
       setError(
-        res.status === 401
+        msg.includes("401") || msg.includes("UNAUTHORIZED")
           ? "ไม่มีสิทธิ์ใช้งาน (ต้องเป็น TEACHER หรือ ADMIN)"
-          : "โหลดข้อมูลไม่สำเร็จ"
+          : msg || "โหลดข้อมูลไม่สำเร็จ"
       );
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    setPendingCheckin(json.pendingCheckin ?? []);
-    setActiveLoans(json.activeLoans ?? []);
   }
 
   useEffect(() => { load(); }, []);
@@ -93,32 +72,19 @@ export default function LoanDesk({ title }: { title: string }) {
       setError("กรุณาสแกน/วาง QR Token ก่อน");
       return;
     }
-
     setBusyId(reservationId);
     setError(null);
-
-    const res = await fetch("/api/loans/check-in", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reservationId, userToken: token }),
-    });
-
-    const json = await res.json().catch(() => ({}));
-    setBusyId(null);
-
-    if (!res.ok || !json?.ok) {
-      setError(
-        json?.message
-          ? `เช็คอินไม่สำเร็จ: ${json.message}`
-          : `เช็คอินไม่สำเร็จ (${res.status})`
-      );
-      return;
+    try {
+      await checkInService(reservationId, token);
+      await load();
+      setLookup(null);
+      setLookupError(null);
+      setScanToken("");
+    } catch (e: unknown) {
+      setError(`เช็คอินไม่สำเร็จ: ${(e as Error)?.message ?? ""}`);
+    } finally {
+      setBusyId(null);
     }
-
-    await load();
-    setLookup(null);
-    setLookupError(null);
-    setScanToken("");
   }
 
   async function returnKey(reservationId: string) {
@@ -127,32 +93,20 @@ export default function LoanDesk({ title }: { title: string }) {
       setError("กรุณาสแกน/วาง QR Token ก่อน");
       return;
     }
-
     setBusyId(reservationId);
     setError(null);
-    const res = await fetch("/api/loans/return", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reservationId, userToken: token }),
-    });
-
-    const json = await res.json().catch(() => ({}));
-    setBusyId(null);
-
-    if (!res.ok || !json?.ok) {
-      setError(
-        json?.message
-          ? `คืนกุญแจไม่สำเร็จ: ${json.message}`
-          : `คืนกุญแจไม่สำเร็จ (${res.status})`
-      );
-      return;
+    try {
+      await returnKeyService(reservationId, token);
+      await load();
+      setLookup(null);
+      setLookupError(null);
+      setScanToken("");
+    } catch (e: unknown) {
+      setError(`คืนกุญแจไม่สำเร็จ: ${(e as Error)?.message ?? ""}`);
+    } finally {
+      setBusyId(null);
     }
-    await load();
-    setLookup(null);
-    setLookupError(null);
-    setScanToken("");
   }
-  const [scanToken, setScanToken] = useState("");
 
   async function lookupReservation() {
     const token = scanToken.trim();
@@ -163,31 +117,16 @@ export default function LoanDesk({ title }: { title: string }) {
     setLookupLoading(true);
     setLookupError(null);
     setLookup(null);
-
-    const res = await fetch("/api/loans/lookup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userToken: token }),
-    });
-    const json = await res.json().catch(() => ({}));
-    setLookupLoading(false);
-
-    if (!res.ok || !json?.ok) {
-      const msg =
-        json?.message === "NO_MATCHING_RESERVATION"
-          ? "ไม่พบรายการที่ตรงกับผู้ใช้"
-          : json?.message === "NO_MATCHING_CHECKEDIN_RESERVATION"
-          ? "ไม่พบรายการที่กำลังยืมอยู่"
-          : json?.message === "NO_MATCHING_APPROVED_RESERVATION"
-          ? "ไม่พบรายการที่อนุมัติแล้วสำหรับวันนี้"
-          : json?.message === "BAD_QR_TOKEN"
-          ? "QR Token ไม่ถูกต้อง"
-          : "ค้นหาไม่สำเร็จ";
-      setLookupError(msg);
-      return;
+    try {
+      const result = await lookupReservationService(token);
+      setLookup(result);
+    } catch (e: unknown) {
+      const err = e as { detail?: { message?: string }; message?: string };
+      const code = err?.detail?.message ?? err?.message;
+      setLookupError(LOOKUP_ERROR_MESSAGES[code ?? ""] ?? "ค้นหาไม่สำเร็จ");
+    } finally {
+      setLookupLoading(false);
     }
-
-    setLookup(json as LookupResult);
   }
 
 

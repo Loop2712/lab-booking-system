@@ -17,6 +17,11 @@ import {
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { areConsecutiveSlots } from "@/lib/reserve/slots";
 import { addDaysYmd, todayYmdBkk } from "@/lib/date";
+import { fetchTeachers, searchUsers } from "@/lib/services/users";
+import { fetchRoomsAvailability } from "@/lib/services/rooms";
+import { createReservation } from "@/lib/services/booking";
+import type { TeacherOption, UserSearchResult } from "@/lib/types/users";
+import type { AvailabilitySlot } from "@/lib/types/rooms";
 import RoomAvailability from "@/app/(app)/student/reserve/room-availability";
 import MyReservationsTable from "@/components/reservations/MyReservationsTable";
 import { cn } from "@/lib/utils";
@@ -27,36 +32,6 @@ type RoomItem = {
   name: string;
   roomNumber: string;
   floor: number;
-};
-
-type AvailabilitySlot = {
-  id: string;
-  label: string;
-  start: string;
-  end: string;
-  available: boolean;
-  reason?: string | null;
-};
-
-type AvailabilityResponse = {
-  ok: true;
-  slots: AvailabilitySlot[];
-  limits: { maxSlots: number; mustConsecutive: boolean };
-};
-
-type UserResult = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  studentId?: string | null;
-  email?: string | null;
-};
-
-type TeacherOption = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email?: string | null;
 };
 
 export default function BookingCenter({
@@ -89,25 +64,18 @@ export default function BookingCenter({
 
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<UserResult[]>([]);
-  const [participants, setParticipants] = useState<UserResult[]>([]);
+  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+  const [participants, setParticipants] = useState<UserSearchResult[]>([]);
   const remaining = Math.max(0, 4 - participants.length);
 
   useEffect(() => {
     if (role !== "STUDENT") return;
-
     let mounted = true;
     setLoadingApprovers(true);
-    fetch("/api/teachers?limit=200", { cache: "no-store" })
-      .then((res) => res.json())
-      .then((json: { ok?: boolean; items?: TeacherOption[] }) => {
+    fetchTeachers(200)
+      .then((items) => {
         if (!mounted) return;
-        if (!json?.ok || !Array.isArray(json.items)) {
-          setApprovers([]);
-          setError("โหลดรายชื่ออาจารย์ผู้อนุมัติไม่สำเร็จ");
-          return;
-        }
-        setApprovers(json.items);
+        setApprovers(items ?? []);
       })
       .catch(() => {
         if (!mounted) return;
@@ -118,10 +86,7 @@ export default function BookingCenter({
         if (!mounted) return;
         setLoadingApprovers(false);
       });
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [role]);
 
   useEffect(() => {
@@ -131,16 +96,10 @@ export default function BookingCenter({
     }
     setLoadingSlots(true);
     setError(null);
-    fetch(`/api/rooms/availability?roomId=${encodeURIComponent(roomId)}&date=${encodeURIComponent(date)}`)
-      .then((res) => res.json())
-      .then((json: AvailabilityResponse & { ok?: boolean; message?: string }) => {
-        if (!json?.ok) {
-          setError("โหลดช่วงเวลาว่างไม่สำเร็จ");
-          setSlots([]);
-          return;
-        }
-        setSlots(json.slots);
-        setLimits(json.limits);
+    fetchRoomsAvailability(roomId, date)
+      .then((data) => {
+        setSlots(data.slots);
+        setLimits(data.limits);
         setSelectedSlots([]);
       })
       .catch(() => {
@@ -179,33 +138,26 @@ export default function BookingCenter({
     });
   }
 
-  async function searchUsers() {
-    const q = query.trim();
-    if (q.length < 2) {
+  async function handleSearchUsers() {
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
       setError("พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหา");
       return;
     }
     setSearching(true);
     setError(null);
     try {
-      const res = await fetch(`/api/users/search?q=${encodeURIComponent(q)}`);
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || !json?.ok) {
-        setError("ค้นหาผู้ร่วมใช้ไม่สำเร็จ");
-        setSearchResults([]);
-        setSearching(false);
-        return;
-      }
-      setSearchResults(Array.isArray(json.items) ? json.items : []);
-      setSearching(false);
+      const items = await searchUsers(trimmed);
+      setSearchResults(items);
     } catch {
       setError("ค้นหาผู้ร่วมใช้ไม่สำเร็จ");
       setSearchResults([]);
+    } finally {
       setSearching(false);
     }
   }
 
-  function addParticipant(user: UserResult) {
+  function addParticipant(user: UserSearchResult) {
     if (participants.some((p) => p.id === user.id)) return;
     if (participants.length >= 4) {
       setError("เพิ่มผู้ร่วมใช้ได้สูงสุด 4 คน (รวมผู้จองเป็น 5 คน)");
@@ -217,6 +169,20 @@ export default function BookingCenter({
   function removeParticipant(userId: string) {
     setParticipants((prev) => prev.filter((p) => p.id !== userId));
   }
+
+  const RESERVATION_ERROR_MESSAGES: Record<string, string> = {
+    ROOM_ALREADY_RESERVED: "ห้องนี้ถูกจองในช่วงเวลานี้แล้ว",
+    DATE_OUT_OF_RANGE: "จองได้เฉพาะวันนี้ถึง 30 วันล่วงหน้า",
+    INVALID_SLOT: "ช่วงเวลาที่เลือกไม่ถูกต้อง",
+    TOO_MANY_SLOTS: "เลือกได้สูงสุด 2 ช่วงเวลาเท่านั้น",
+    SLOT_NOT_CONSECUTIVE: "ต้องเลือกช่วงเวลาที่ต่อเนื่องกันเท่านั้น",
+    CONFLICT_WITH_CLASS_SCHEDULE: "ชนตารางเรียนของห้องนี้ กรุณาเลือกเวลาอื่น",
+    TIME_OUT_OF_RANGE: "จองได้เฉพาะช่วงเวลา 07:00 - 21:00",
+    PARTICIPANT_LIMIT_EXCEEDED: "เพิ่มผู้ร่วมใช้ได้สูงสุด 4 คน (รวมผู้จองเป็น 5 คน)",
+    INVALID_PARTICIPANTS: "พบผู้ร่วมใช้ที่ไม่ถูกต้อง",
+    APPROVER_REQUIRED: "กรุณาเลือกอาจารย์ผู้อนุมัติก่อนจอง",
+    INVALID_APPROVER: "อาจารย์ผู้อนุมัติไม่ถูกต้องหรือไม่พร้อมใช้งาน",
+  };
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -233,60 +199,31 @@ export default function BookingCenter({
       return;
     }
 
-    const res = await fetch("/api/reservations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const result = await createReservation({
         roomId,
         date,
         slotIds: selectedSlots,
         approverId: role === "STUDENT" ? approverId : undefined,
         note: note.trim() || undefined,
         participantIds: participants.map((p) => p.id),
-      }),
-    });
+      });
 
-    const json = await res.json().catch(() => ({}));
+      const statusLabel = result?.statusLabel ?? (isAutoApprove ? "อนุมัติแล้ว" : "รออนุมัติ");
+      const nextAction = result?.nextAction ?? (isAutoApprove ? "ไปรับกุญแจได้ตามเวลา" : "รออนุมัติจากอาจารย์");
 
-    if (!res.ok || !json?.ok) {
-      const msg =
-        json?.message === "ROOM_ALREADY_RESERVED"
-          ? "ห้องนี้ถูกจองในช่วงเวลานี้แล้ว"
-          : json?.message === "DATE_OUT_OF_RANGE"
-          ? "จองได้เฉพาะวันนี้ถึง 30 วันล่วงหน้า"
-          : json?.message === "INVALID_SLOT"
-          ? "ช่วงเวลาที่เลือกไม่ถูกต้อง"
-          : json?.message === "TOO_MANY_SLOTS"
-          ? "เลือกได้สูงสุด 2 ช่วงเวลาเท่านั้น"
-          : json?.message === "SLOT_NOT_CONSECUTIVE"
-          ? "ต้องเลือกช่วงเวลาที่ต่อเนื่องกันเท่านั้น"
-          : json?.message === "CONFLICT_WITH_CLASS_SCHEDULE"
-          ? "ชนตารางเรียนของห้องนี้ กรุณาเลือกเวลาอื่น"
-          : json?.message === "TIME_OUT_OF_RANGE"
-          ? "จองได้เฉพาะช่วงเวลา 07:00 - 21:00"
-          : json?.message === "PARTICIPANT_LIMIT_EXCEEDED"
-          ? "เพิ่มผู้ร่วมใช้ได้สูงสุด 4 คน (รวมผู้จองเป็น 5 คน)"
-          : json?.message === "INVALID_PARTICIPANTS"
-          ? "พบผู้ร่วมใช้ที่ไม่ถูกต้อง"
-          : json?.message === "APPROVER_REQUIRED"
-          ? "กรุณาเลือกอาจารย์ผู้อนุมัติก่อนจอง"
-          : json?.message === "INVALID_APPROVER"
-          ? "อาจารย์ผู้อนุมัติไม่ถูกต้องหรือไม่พร้อมใช้งาน"
-          : "จองไม่สำเร็จ กรุณาลองใหม่";
-      setError(msg);
-      return;
+      setSuccess(`จองสำเร็จ! สถานะ: ${statusLabel} • ขั้นตอนถัดไป: ${nextAction}`);
+      setSelectedSlots([]);
+      setNote("");
+      setParticipants([]);
+      setSearchResults([]);
+      setQuery("");
+      setRefreshKey((k) => k + 1);
+    } catch (err: unknown) {
+      const e = err as { message?: string; detail?: { message?: string } };
+      const code = e?.detail?.message ?? e?.message;
+      setError(RESERVATION_ERROR_MESSAGES[code ?? ""] ?? (e?.message ?? "จองไม่สำเร็จ กรุณาลองใหม่"));
     }
-
-    const statusLabel = json?.statusLabel ?? (isAutoApprove ? "อนุมัติแล้ว" : "รออนุมัติ");
-    const nextAction = json?.nextAction ?? (isAutoApprove ? "ไปรับกุญแจได้ตามเวลา" : "รออนุมัติจากอาจารย์");
-
-    setSuccess(`จองสำเร็จ! สถานะ: ${statusLabel} • ขั้นตอนถัดไป: ${nextAction}`);
-    setSelectedSlots([]);
-    setNote("");
-    setParticipants([]);
-    setSearchResults([]);
-    setQuery("");
-    setRefreshKey((k) => k + 1);
   }
 
   return (
@@ -423,7 +360,7 @@ export default function BookingCenter({
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="พิมพ์รหัสนักศึกษา หรือชื่อ"
                   />
-                  <Button type="button" variant="secondary" onClick={searchUsers} disabled={searching}>
+                  <Button type="button" variant="secondary" onClick={handleSearchUsers} disabled={searching}>
                     {searching ? "กำลังค้นหา..." : "ค้นหา"}
                   </Button>
                 </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { fetchMyReservations } from "@/lib/services/reservations";
 import WeekTimelineTable, { type WeekTimelineRow } from "@/components/rooms/week-timeline-table";
 import { parseTimeRangeToMinutes } from "@/lib/date/time";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,15 +75,14 @@ export default function TeacherReservationsClient() {
   async function load() {
     setError(null);
     setLoading(true);
-    const res = await fetch("/api/reservations/my", { cache: "no-store" });
-    const json = await res.json().catch(() => ({}));
-    setLoading(false);
-
-    if (!res.ok || !json?.ok) {
+    try {
+      const list = await fetchMyReservations();
+      setItems(list as Item[]);
+    } catch {
       setError("โหลดรายการไม่สำเร็จ กรุณาลองใหม่");
-      return;
+    } finally {
+      setLoading(false);
     }
-    setItems(json.items as Item[]);
   }
 
   useEffect(() => {

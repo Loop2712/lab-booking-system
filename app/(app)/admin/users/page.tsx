@@ -1,6 +1,7 @@
 "use client";
 
 import type { Gender, Role, StudentType, UserRow } from "./types";
+import { fetchUsers, createUser as createUserService, deleteUser, updateUser, importUsers } from "@/lib/services/users";
 import { useEffect, useMemo, useState } from "react";
 import CreateUserDialog from "./_components/CreateUserDialog";
 import UsersFiltersImportCard from "./_components/UsersFiltersImportCard";
@@ -30,28 +31,20 @@ export default function AdminUsersPage() {
   const [gender, setGender] = useState<Gender | "">("");
   const [studentType, setStudentType] = useState<StudentType | "">("");
 
-  const queryUrl = useMemo(() => {
-    const sp = new URLSearchParams();
-    if (q.trim()) sp.set("q", q.trim());
-    if (active) sp.set("active", active);
-    return `/api/admin/users?${sp.toString()}`;
-  }, [q, active]);
-
   async function load() {
     setError(null);
-    const res = await fetch(queryUrl, { cache: "no-store" });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok || !json?.ok) {
-      setError(json?.message || "โหลด users ไม่สำเร็จ");
-      return;
+    try {
+      const list = await fetchUsers({ q: q.trim() || undefined, active });
+      setItems(list);
+    } catch (e: unknown) {
+      setError((e as Error)?.message || "โหลด users ไม่สำเร็จ");
     }
-    setItems(json.users ?? []);
   }
 
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryUrl]);
+  }, [q, active]);
 
   async function runImport(dryRun: boolean) {
     if (!csvFile) {
@@ -61,27 +54,8 @@ export default function AdminUsersPage() {
     setImportBusy(true);
     setImportMsg(null);
     setImportErr(null);
-
     try {
-      const fd = new FormData();
-      fd.append("file", csvFile);
-
-      const res = await fetch(`/api/admin/users/import?dryRun=${dryRun ? "1" : "0"}`, {
-        method: "POST",
-        body: fd,
-      });
-      const text = await res.text();
-      let data: any = null;
-      try {
-        data = JSON.parse(text);
-      } catch {}
-
-      if (!res.ok || !data?.ok) {
-        console.error("API ERROR RAW:", text);
-        setImportErr(data?.message ?? `HTTP ${res.status}`);
-        return;
-      }
-
+      const data = await importUsers(csvFile, dryRun);
       if (dryRun) {
         setImportPreview(data);
         setImportMsg(
@@ -92,9 +66,9 @@ export default function AdminUsersPage() {
         setImportMsg(`นำเข้าสำเร็จ: ทั้งหมด ${data.total} แถว | สร้างใหม่ ${data.created} | อัปเดต ${data.updated}`);
         await load();
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       setImportPreview(null);
-      setImportErr(e?.message || "เกิดข้อผิดพลาด");
+      setImportErr((e as Error)?.message || "เกิดข้อผิดพลาด");
     } finally {
       setImportBusy(false);
     }
@@ -133,10 +107,8 @@ export default function AdminUsersPage() {
     }
 
     setBusy(true);
-    const res = await fetch("/api/admin/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      await createUserService({
         role,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
@@ -146,59 +118,49 @@ export default function AdminUsersPage() {
         major: major.trim() ? major.trim() : null,
         gender: gender || null,
         studentType: studentType || null,
-      }),
-    });
-    const json = await res.json().catch(() => ({}));
-    setBusy(false);
-
-    if (!res.ok || !json?.ok) {
-      setError(json?.detail || json?.message || "สร้าง user ไม่สำเร็จ");
+      });
+      setFirstName("");
+      setLastName("");
+      setBirthDate("");
+      setStudentId("");
+      setEmail("");
+      setMajor("");
+      setGender("");
+      setStudentType("");
+      await load();
+      return true;
+    } catch (e: unknown) {
+      setError((e as Error)?.message || "สร้าง user ไม่สำเร็จ");
       return false;
+    } finally {
+      setBusy(false);
     }
-
-    setFirstName("");
-    setLastName("");
-    setBirthDate("");
-    setStudentId("");
-    setEmail("");
-    setMajor("");
-    setGender("");
-    setStudentType("");
-
-    await load();
-    return true;
   }
 
   async function deactivateUser(id: string) {
     setError(null);
     setBusy(true);
-    const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
-    const json = await res.json().catch(() => ({}));
-    setBusy(false);
-
-    if (!res.ok || !json?.ok) {
-      setError(json?.message || "ปิดบัญชีไม่สำเร็จ");
-      return;
+    try {
+      await deleteUser(id);
+      await load();
+    } catch (e: unknown) {
+      setError((e as Error)?.message || "ปิดบัญชีไม่สำเร็จ");
+    } finally {
+      setBusy(false);
     }
-    await load();
   }
 
   async function toggleActiveInline(u: UserRow) {
     setError(null);
     setBusy(true);
-    const res = await fetch(`/api/admin/users/${u.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isActive: !u.isActive }),
-    });
-    const json = await res.json().catch(() => ({}));
-    setBusy(false);
-
-    if (!res.ok || !json?.ok) {
-      setError(json?.message || "อัปเดต isActive ไม่สำเร็จ");
-      return;
+    try {
+      await updateUser(u.id, { isActive: !u.isActive });
+      await load();
+    } catch (e: unknown) {
+      setError((e as Error)?.message || "อัปเดต isActive ไม่สำเร็จ");
+    } finally {
+      setBusy(false);
     }
-    await load();
   }
 
   return (

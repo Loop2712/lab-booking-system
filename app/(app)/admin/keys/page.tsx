@@ -1,5 +1,8 @@
 "use client";
-import type { KeyRow, KeyStatus, Room } from "./types";
+import type { KeyStatus, Room } from "./types";
+import { fetchKeys, createKey, updateKeyStatus } from "@/lib/services/keys";
+import { fetchAdminRooms } from "@/lib/services/rooms";
+import type { KeyRow } from "@/lib/services/keys";
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -50,26 +53,22 @@ export default function AdminKeysPage() {
 
   async function loadRooms() {
     setError(null);
-    const res = await fetch("/api/admin/rooms", { cache: "no-store" });
-    const json = await res.json().catch(() => ({}));
-
-    if (!res.ok || !json?.ok) {
-      setError(json?.message || "โหลดห้องไม่สำเร็จ");
-      return;
+    try {
+      const list = await fetchAdminRooms();
+      setRooms(list);
+    } catch (e: unknown) {
+      setError((e as Error)?.message || "โหลดห้องไม่สำเร็จ");
     }
-    setRooms(json.rooms ?? []);
   }
 
   async function loadKeys() {
     setError(null);
-    const res = await fetch("/api/admin/keys", { cache: "no-store" });
-    const json = await res.json().catch(() => ({}));
-
-    if (!res.ok || !json?.ok) {
-      setError(json?.message || "โหลดกุญแจไม่สำเร็จ");
-      return;
+    try {
+      const list = await fetchKeys();
+      setKeys(list);
+    } catch (e: unknown) {
+      setError((e as Error)?.message || "โหลดกุญแจไม่สำเร็จ");
     }
-    setKeys(json.keys ?? []);
   }
 
   useEffect(() => {
@@ -77,9 +76,8 @@ export default function AdminKeysPage() {
     loadKeys();
   }, []);
 
-  async function createKey() {
+  async function handleCreateKey() {
     setError(null);
-
     const trimmedKeyCode = form.keyCode.trim();
     if (!trimmedKeyCode) {
       setError("กรุณากรอกรหัสกุญแจ (Key Code)");
@@ -89,44 +87,31 @@ export default function AdminKeysPage() {
       setError("กรุณาเลือกห้องก่อน");
       return false;
     }
-
     setBusy(true);
-    const res = await fetch("/api/admin/keys", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, keyCode: trimmedKeyCode }),
-    });
-    const json = await res.json().catch(() => ({}));
-    setBusy(false);
-
-    if (!res.ok || !json?.ok) {
-      setError(json?.message || "เพิ่มกุญแจไม่สำเร็จ");
+    try {
+      await createKey({ ...form, keyCode: trimmedKeyCode });
+      setForm({ keyCode: "", roomId: "", status: "AVAILABLE" });
+      await loadKeys();
+      return true;
+    } catch (e: unknown) {
+      setError((e as Error)?.message || "เพิ่มกุญแจไม่สำเร็จ");
       return false;
+    } finally {
+      setBusy(false);
     }
-
-    setForm({ keyCode: "", roomId: "", status: "AVAILABLE" });
-    await loadKeys();
-    return true;
   }
 
-  async function updateKeyStatus(keyId: string, status: KeyStatus) {
+  async function handleUpdateKeyStatus(keyId: string, status: KeyStatus) {
     setError(null);
     setBusy(true);
-
-    const res = await fetch(`/api/admin/keys/${keyId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    const json = await res.json().catch(() => ({}));
-
-    setBusy(false);
-    if (!res.ok || !json?.ok) {
-      setError(json?.message || "อัปเดตไม่สำเร็จ");
-      return;
+    try {
+      await updateKeyStatus(keyId, status);
+      await loadKeys();
+    } catch (e: unknown) {
+      setError((e as Error)?.message || "อัปเดตไม่สำเร็จ");
+    } finally {
+      setBusy(false);
     }
-
-    await loadKeys();
   }
 
   return (
@@ -205,7 +190,7 @@ export default function AdminKeysPage() {
               </Button>
               <Button
                 onClick={async () => {
-                  const ok = await createKey();
+                  const ok = await handleCreateKey();
                   if (ok) setOpenCreate(false);
                 }}
                 disabled={busy}
@@ -277,7 +262,7 @@ export default function AdminKeysPage() {
                   <TableCell className="text-right">
                     <Select
                       value={k.status}
-                      onValueChange={(v) => updateKeyStatus(k.id, v as KeyStatus)}
+                      onValueChange={(v) => handleUpdateKeyStatus(k.id, v as KeyStatus)}
                       disabled={busy}
                     >
                       <SelectTrigger className="h-8 w-36 ml-auto">

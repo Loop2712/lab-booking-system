@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { fetchMyReservations, cancelReservation } from "@/lib/services/reservations";
+import type { MyReservationItem } from "@/lib/types/reservations";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -27,20 +29,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 
-type Item = {
-  id: string;
-  type: string;
-  status: string;
-  statusLabel?: string;
-  nextAction?: string | null;
-  date: string;
-  slot: string;
-  startAt: string;
-  endAt: string;
-  note: string | null;
-  createdAt: string;
-  room: { code: string; name: string; roomNumber: string; floor: number };
-};
+type Item = MyReservationItem & { room: { code: string; name: string; roomNumber: string; floor: number } };
 
 type FilterType = "ALL" | "AD_HOC" | "IN_CLASS";
 type Props = {
@@ -109,44 +98,38 @@ export default function MyReservationsTable({
   async function load() {
     setError(null);
     setLoading(true);
-
-    const res = await fetch("/api/reservations/my", { cache: "no-store" });
-    const json = await res.json().catch(() => ({}));
-    setLoading(false);
-
-    if (!res.ok || !json?.ok) {
+    try {
+      const list = await fetchMyReservations();
+      setItems(list as Item[]);
+    } catch {
       setError("โหลดรายการไม่สำเร็จ กรุณาลองใหม่");
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    setItems(json.items as Item[]);
   }
 
   useEffect(() => {
     load();
   }, [refreshKey]);
 
-  async function cancel(id: string) {
+  async function handleCancel(id: string) {
     setBusyId(id);
     setError(null);
-
-    const res = await fetch(`/api/reservations/${id}/cancel`, { method: "POST" });
-    const json = await res.json().catch(() => ({}));
-
-    setBusyId(null);
-
-    if (!res.ok || !json?.ok) {
+    try {
+      await cancelReservation(id);
+      await load();
+    } catch (e: unknown) {
+      const err = e as { message?: string; detail?: { message?: string } };
       const msg =
-        json?.message === "CANNOT_CANCEL_STATUS"
+        err?.detail?.message === "CANNOT_CANCEL_STATUS"
           ? "ยกเลิกได้เฉพาะรายการที่ยังเป็น PENDING หรือ APPROVED"
-          : json?.message === "CANCEL_TOO_LATE"
-          ? "ยกเลิกไม่ได้ เนื่องจากใกล้เวลาเริ่มใช้งานแล้ว"
-          : "ยกเลิกไม่สำเร็จ กรุณาลองใหม่";
+          : err?.detail?.message === "CANCEL_TOO_LATE"
+            ? "ยกเลิกไม่ได้ เนื่องจากใกล้เวลาเริ่มใช้งานแล้ว"
+            : err?.message ?? "ยกเลิกไม่สำเร็จ กรุณาลองใหม่";
       setError(msg);
-      return;
+    } finally {
+      setBusyId(null);
     }
-
-    await load();
   }
 
   const rows = useMemo(() => {
@@ -299,7 +282,7 @@ export default function MyReservationsTable({
                         variant="outline"
                         size="sm"
                         disabled={!["PENDING", "APPROVED"].includes(r.status) || busyId === r.id}
-                        onClick={() => cancel(r.id)}
+                        onClick={() => handleCancel(r.id)}
                       >
                         {busyId === r.id ? "กำลังยกเลิก..." : "ยกเลิก"}
                       </Button>

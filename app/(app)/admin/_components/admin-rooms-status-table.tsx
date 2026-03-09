@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { fetchRoomsToday } from "@/lib/services/rooms";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,20 +67,15 @@ export default function AdminRoomsStatusTable() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setError(null);
-      const res = await fetch("/api/rooms/today", { cache: "no-store" });
-      const json = (await res.json().catch(() => ({}))) as Payload;
-      if (!res.ok || !json?.ok) {
-        setError((json as any)?.message || "โหลดข้อมูลไม่สำเร็จ");
-        setLoading(false);
-        return;
-      }
-      setData(json);
+      const json = await fetchRoomsToday();
+      setData(json as Payload);
       setLastUpdated(new Date());
-      setLoading(false);
-    } catch (e: any) {
-      setError(e?.message || "ERROR");
+    } catch (e: unknown) {
+      setError((e as Error)?.message || "โหลดข้อมูลไม่สำเร็จ");
+    } finally {
       setLoading(false);
     }
   }, []);

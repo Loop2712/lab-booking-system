@@ -1,22 +1,8 @@
-export type StudentCalendarResponse = {
-  sections?: any[];
-  reservations?: {
-    adhoc?: any[];
-    inClass?: any[];
-  };
-};
+import type { StudentCalendarApiResponse } from "@/lib/reservations/types";
+import { fetchJson } from "@/lib/http/fetch-json";
 
-export async function fetchStudentCalendar(from: string, to: string) {
-  const res = await fetch(`/api/student/calendar?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
-  const text = await res.text();
-  const data = text ? (JSON.parse(text) as StudentCalendarResponse) : null;
-
-  if (!res.ok) {
-    const message = (data as any)?.message ?? `HTTP ${res.status}`;
-    const err = new Error(String(message));
-    (err as any).detail = data;
-    throw err;
-  }
-
-  return data ?? {};
+export async function fetchStudentCalendar(from: string, to: string): Promise<StudentCalendarApiResponse> {
+  const url = `/api/student/calendar?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+  return fetchJson<StudentCalendarApiResponse>(url);
 }
+

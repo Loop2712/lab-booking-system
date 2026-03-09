@@ -1,6 +1,13 @@
 "use client";
 
 import type { Course, Room, Section, Term, User } from "./types";
+import {
+  fetchSections,
+  fetchCourses,
+  fetchAdminRoomsForSections,
+  fetchAdminUsers,
+  fetchTerms,
+} from "@/lib/services/admin";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import EditSectionDialog from "./_components/EditSectionDialog";
@@ -56,21 +63,23 @@ export default function AdminSectionsPage() {
   const activeTeachers = useMemo(() => teachers.filter((t) => t.isActive !== false), [teachers]);
 
   async function load() {
-    const [sectionsResponse, coursesResponse, roomsResponse, usersResponse, termsResponse] = await Promise.all([
-      fetch("/api/admin/sections").then((r) => r.json()),
-      fetch("/api/admin/courses").then((r) => r.json()),
-      fetch("/api/admin/rooms").then((r) => r.json()),
-      fetch("/api/admin/users").then((r) => r.json()),
-      fetch("/api/admin/terms").then((r) => r.json()),
-    ]);
+    try {
+      const [sections, courses, rooms, allUsers, terms] = await Promise.all([
+        fetchSections(),
+        fetchCourses(),
+        fetchAdminRoomsForSections(),
+        fetchAdminUsers(),
+        fetchTerms(),
+      ]);
 
-    setSections(sectionsResponse.items ?? []);
-    setCourses(coursesResponse.items ?? []);
-    setRooms(roomsResponse.rooms ?? []);
-    setTerms(termsResponse.items ?? []);
-
-    const allUsers: User[] = usersResponse.users ?? [];
-    setTeachers(allUsers.filter((u) => u.role === "TEACHER" && u.isActive !== false));
+      setSections(sections);
+      setCourses(courses);
+      setRooms(rooms);
+      setTerms(terms);
+      setTeachers(allUsers.filter((u) => u.role === "TEACHER" && u.isActive !== false) as User[]);
+    } catch {
+      // Error handling can be added if needed
+    }
   }
 
   useEffect(() => {
