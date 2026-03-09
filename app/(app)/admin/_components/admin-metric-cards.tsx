@@ -84,39 +84,32 @@ export default function AdminMetricCards({ metrics }: { metrics: AdminDashboardM
   }
 
   return (
-    <div className="overflow-x-auto">
-      <div className="flex flex-nowrap gap-4">
-        {items.map((item) => (
-          <Card
-            key={item.title}
-            className={cn(
-              "@container/card flex-none",
-              item.featured ? "min-w-[320px]" : "min-w-[240px]"
-            )}
-          >
-            <CardHeader className="gap-2 p-4">
-              <div className="flex items-start justify-between gap-2">
-                <CardDescription className="text-xs">{item.title}</CardDescription>
-                <Badge className={cn("h-7 px-3 text-[11px] font-semibold", badgeTone(item.tone))}>
-                  {item.icon}
-                  {item.badge}
-                </Badge>
-              </div>
-              <CardTitle
-                className={cn(
-                  "tabular-nums leading-none",
-                  item.featured ? "text-[30px]" : "text-2xl"
-                )}
-              >
-                {item.value}
-              </CardTitle>
-              <div className="text-xs text-muted-foreground line-clamp-2">
-                {item.description}
-              </div>
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      {items.map((item) => (
+        <Card
+          key={item.title}
+          className={cn(
+            "overflow-hidden border-0 bg-card shadow-sm ring-1 ring-black/5",
+            item.featured && "sm:col-span-2 xl:col-span-1"
+          )}
+        >
+          <CardHeader className="gap-2 p-4 pb-2">
+            <div className="flex items-start justify-between gap-2">
+              <CardDescription className="text-xs">{item.title}</CardDescription>
+              <Badge className={cn("h-6 px-2 text-[10px] font-semibold shrink-0", badgeTone(item.tone))}>
+                {item.icon}
+                {item.badge}
+              </Badge>
+            </div>
+            <CardTitle className={cn("tabular-nums leading-none", item.featured ? "text-2xl" : "text-2xl")}>
+              {item.value}
+            </CardTitle>
+            <div className="text-xs text-muted-foreground line-clamp-2">
+              {item.description}
+            </div>
+          </CardHeader>
+        </Card>
+      ))}
     </div>
   );
 }
