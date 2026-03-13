@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
+import { authorizeReservationActor } from "@/lib/loans/reservation-access";
 import { verifyUserQrToken } from "@/lib/security/user-qr";
 import { requireKioskDevice } from "@/lib/kiosk-device";
 
@@ -23,7 +24,6 @@ export async function POST(req: Request) {
     );
   }
 
-  // 1) Verify QR token
   const vt = verifyUserQrToken(body.data.userToken);
   if (!vt.ok) {
     return NextResponse.json(
@@ -34,7 +34,6 @@ export async function POST(req: Request) {
 
   const borrowerId = vt.uid;
 
-  // ✅ 2) Role guard: allow only STUDENT / TEACHER (รับ TEACHER ตามที่ขอ)
   const user = await prisma.user.findUnique({
     where: { id: borrowerId },
     select: { id: true, role: true, isActive: true },
@@ -50,69 +49,72 @@ export async function POST(req: Request) {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      const resv = await tx.reservation.findUnique({
+      const reservation = await tx.reservation.findUnique({
         where: { id: body.data.reservationId },
         select: {
           id: true,
           status: true,
+          type: true,
           requesterId: true,
           roomId: true,
           startAt: true,
           sectionId: true,
-          loan: { select: { id: true } },
+          loan: { select: { id: true, borrowerId: true } },
           participants: { select: { userId: true } },
         },
       });
 
-      if (!resv) return { ok: false as const, status: 404, message: "RESERVATION_NOT_FOUND" };
-      if (resv.status !== "APPROVED")
+      if (!reservation) {
+        return { ok: false as const, status: 404, message: "RESERVATION_NOT_FOUND" };
+      }
+      if (reservation.status !== "APPROVED") {
         return { ok: false as const, status: 400, message: "INVALID_STATUS" };
-      if (resv.loan?.id) return { ok: false as const, status: 400, message: "ALREADY_HAS_LOAN" };
+      }
+      if (reservation.loan?.id) {
+        return { ok: false as const, status: 400, message: "ALREADY_HAS_LOAN" };
+      }
 
       const now = new Date();
-      const lateLimit = new Date(resv.startAt.getTime() + 30 * 60 * 1000);
+      const lateLimit = new Date(reservation.startAt.getTime() + 30 * 60 * 1000);
       if (now > lateLimit) {
         await tx.reservation.update({
-          where: { id: resv.id },
+          where: { id: reservation.id },
           data: { status: "NO_SHOW" },
         });
         return { ok: false as const, status: 400, message: "LATE_CHECKIN_NO_SHOW" };
       }
 
-      // 3) Ownership/permission check
-      // - IN_CLASS: อนุญาตให้นักศึกษาที่ลงทะเบียน (enrollment)
-      // - AD_HOC: requester หรือ participant
-      if (resv.sectionId) {
-        const enrolled = await tx.enrollment.findFirst({
-          where: { sectionId: resv.sectionId, studentId: borrowerId },
-          select: { id: true },
-        });
-        if (!enrolled) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
-      } else {
-        const okOwner =
-          resv.requesterId === borrowerId || resv.participants.some((p) => p.userId === borrowerId);
-        if (!okOwner) return { ok: false as const, status: 403, message: "NOT_OWNER" };
+      const access = await authorizeReservationActor(tx, {
+        actorId: borrowerId,
+        action: "CHECKIN",
+        reservation,
+      });
+      if (!access.ok) {
+        return {
+          ok: false as const,
+          status: access.message === "MISSING_SECTION" ? 400 : 403,
+          message: access.message,
+        };
       }
 
       const key = await tx.key.findFirst({
-        where: { roomId: resv.roomId, status: "AVAILABLE" },
+        where: { roomId: reservation.roomId, status: "AVAILABLE" },
         select: { id: true },
       });
 
       if (!key) return { ok: false as const, status: 409, message: "NO_AVAILABLE_KEY" };
 
-      // 4) Create Loan + update key/reservation
       await tx.loan.create({
         data: {
-          reservationId: resv.id,
+          reservationId: reservation.id,
           keyId: key.id,
-          checkedInAt: new Date(), // (ตามของเดิมในโปรเจค)
+          checkedInAt: new Date(),
           borrowerId,
         },
       });
 
       await tx.key.update({ where: { id: key.id }, data: { status: "BORROWED" } });
-      await tx.reservation.update({ where: { id: resv.id }, data: { status: "CHECKED_IN" } });
+      await tx.reservation.update({ where: { id: reservation.id }, data: { status: "CHECKED_IN" } });
 
       return { ok: true as const };
     });

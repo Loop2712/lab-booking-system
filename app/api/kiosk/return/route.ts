@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
+import { authorizeReservationActor } from "@/lib/loans/reservation-access";
 import { verifyUserQrToken } from "@/lib/security/user-qr";
 import { requireKioskDevice } from "@/lib/kiosk-device";
 
@@ -23,7 +24,6 @@ export async function POST(req: Request) {
     );
   }
 
-  // 1) Verify QR token
   const vt = verifyUserQrToken(body.data.userToken);
   if (!vt.ok) {
     return NextResponse.json(
@@ -32,9 +32,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const returnedById = vt.uid; // ✅ schema ใช้ returnedById
+  const returnedById = vt.uid;
 
-  // ✅ 2) Role guard: allow only STUDENT / TEACHER
   const user = await prisma.user.findUnique({
     where: { id: returnedById },
     select: { id: true, role: true, isActive: true },
@@ -50,11 +49,12 @@ export async function POST(req: Request) {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      const resv = await tx.reservation.findUnique({
+      const reservation = await tx.reservation.findUnique({
         where: { id: body.data.reservationId },
         select: {
           id: true,
           status: true,
+          type: true,
           requesterId: true,
           sectionId: true,
           loan: { select: { id: true, keyId: true, borrowerId: true } },
@@ -62,34 +62,34 @@ export async function POST(req: Request) {
         },
       });
 
-      if (!resv) return { ok: false as const, status: 404, message: "RESERVATION_NOT_FOUND" };
-      if (resv.status !== "CHECKED_IN")
+      if (!reservation) {
+        return { ok: false as const, status: 404, message: "RESERVATION_NOT_FOUND" };
+      }
+      if (reservation.status !== "CHECKED_IN") {
         return { ok: false as const, status: 400, message: "INVALID_STATUS" };
-      if (!resv.loan?.id) return { ok: false as const, status: 400, message: "NO_LOAN" };
+      }
+      if (!reservation.loan?.id) return { ok: false as const, status: 400, message: "NO_LOAN" };
 
-      if (resv.sectionId) {
-        const enrolled = await tx.enrollment.findFirst({
-          where: { sectionId: resv.sectionId, studentId: returnedById },
-          select: { id: true },
-        });
-        if (!enrolled) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
+      const access = await authorizeReservationActor(tx, {
+        actorId: returnedById,
+        action: "RETURN",
+        reservation,
+      });
+      if (!access.ok) {
+        return {
+          ok: false as const,
+          status: access.message === "MISSING_SECTION" ? 400 : 403,
+          message: access.message,
+        };
       }
 
-      // 3) Ownership check: requester/participant/borrower
-      const okOwner =
-        resv.requesterId === returnedById ||
-        resv.participants.some((p) => p.userId === returnedById) ||
-        resv.loan?.borrowerId === returnedById;
-      if (!okOwner) return { ok: false as const, status: 403, message: "NOT_OWNER" };
-
-      // ✅ ทำให้เหมือนของเดิมใน /api/loans/return
       await tx.loan.update({
-        where: { id: resv.loan.id },
+        where: { id: reservation.loan.id },
         data: { checkedOutAt: new Date(), returnedById },
       });
 
-      await tx.key.update({ where: { id: resv.loan.keyId }, data: { status: "AVAILABLE" } });
-      await tx.reservation.update({ where: { id: resv.id }, data: { status: "COMPLETED" } });
+      await tx.key.update({ where: { id: reservation.loan.keyId }, data: { status: "AVAILABLE" } });
+      await tx.reservation.update({ where: { id: reservation.id }, data: { status: "COMPLETED" } });
 
       return { ok: true as const, status: 200 };
     });

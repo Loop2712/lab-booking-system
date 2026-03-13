@@ -5,6 +5,7 @@ import { verifyUserQrToken } from "@/lib/security/user-qr";
 import { addDays } from "@/lib/date/addDays";
 import { getBangkokYMD, startOfBangkokDay } from "@/lib/date/bangkok";
 import { requireKioskDevice } from "@/lib/kiosk-device";
+import { pickClosestToNow } from "@/lib/loans/pick-closest-to-now";
 
 export const runtime = "nodejs";
 
@@ -29,7 +30,6 @@ export async function POST(req: Request) {
   }
   const uid = vt.uid;
 
-  // หาวันนี้ (Bangkok)
   const ymd = getBangkokYMD(new Date());
   const dayStart = startOfBangkokDay(ymd);
   const dayEnd = addDays(dayStart, 1);
@@ -128,14 +128,18 @@ export async function POST(req: Request) {
     );
   }
 
-  // เลือกตัวแรกตามเวลา (จองช่วงเช้าก็ขึ้นก่อน)
-  const reservation = reservations[0];
+  const reservation = pickClosestToNow(reservations) ?? reservations[0];
 
   return NextResponse.json({
     ok: true,
     mode: body.data.mode,
     user,
-    reservation,
+    reservation: {
+      ...reservation,
+      startAt: reservation.startAt.toISOString(),
+      endAt: reservation.endAt.toISOString(),
+    },
     room: reservation.room,
+    candidatesCount: reservations.length,
   });
 }

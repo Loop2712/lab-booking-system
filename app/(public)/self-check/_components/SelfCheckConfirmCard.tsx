@@ -3,13 +3,25 @@
 import type { LookupSuccess } from "../types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  getLoanModeLabel,
+  getReservationStatusLabelText,
+  getReservationTypeLabel,
+} from "@/lib/loans/messages";
 
-function formatTime(dt: string) {
+const timeFormatter = new Intl.DateTimeFormat("th-TH", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  timeZone: "Asia/Bangkok",
+});
+
+function formatTime(value: string) {
   try {
-    return new Date(dt).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+    return timeFormatter.format(new Date(value));
   } catch {
-    return dt;
+    return value;
   }
 }
 
@@ -23,55 +35,60 @@ export default function SelfCheckConfirmCard({ lookup, confirming, onConfirm }: 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">ขั้นตอน 3: ยืนยันการทำรายการ</CardTitle>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <CardTitle className="text-base">ขั้นตอน 4: ยืนยันรายการ</CardTitle>
+            <CardDescription>ตรวจสอบชื่อผู้ใช้ ห้อง และช่วงเวลาให้ถูกต้องก่อนกดยืนยัน</CardDescription>
+          </div>
+          <Badge variant="secondary">{getLoanModeLabel(lookup.mode)}</Badge>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="font-semibold">ยืนยัน</div>
-          <Badge variant="secondary">{lookup.mode === "CHECKIN" ? "ยืมกุญแจ" : "คืนกุญแจ"}</Badge>
-        </div>
-
-        <div className="text-sm space-y-1">
-          <div>
-            <span className="text-muted-foreground">ผู้ใช้: </span>
-            <span className="font-medium">
+      <CardContent className="space-y-4">
+        <div className="grid gap-3 rounded-2xl border bg-stone-50 p-4 md:grid-cols-2">
+          <div className="space-y-1">
+            <div className="text-xs uppercase tracking-[0.2em] text-stone-500">ผู้ใช้</div>
+            <div className="font-semibold text-stone-900">
               {lookup.user.firstName} {lookup.user.lastName}
-            </span>
-            {lookup.user.studentId ? <span className="text-muted-foreground"> • {lookup.user.studentId}</span> : null}
+            </div>
+            <div className="text-xs text-stone-600">
+              {lookup.user.studentId || lookup.user.email || lookup.user.role}
+            </div>
           </div>
-
-          <div>
-            <span className="text-muted-foreground">ห้อง: </span>
-            <span className="font-medium">
-              {lookup.room.code} • {lookup.room.roomNumber} • ชั้น {lookup.room.floor}
-            </span>
+          <div className="space-y-1">
+            <div className="text-xs uppercase tracking-[0.2em] text-stone-500">ห้อง</div>
+            <div className="font-semibold text-stone-900">
+              {lookup.room.code} ห้อง {lookup.room.roomNumber}
+            </div>
+            <div className="text-xs text-stone-600">
+              {lookup.room.name} ชั้น {lookup.room.floor}
+            </div>
           </div>
-
-          <div>
-            <span className="text-muted-foreground">รายการจอง: </span>
-            <span className="font-mono text-xs">{lookup.reservation.id}</span>
+          <div className="space-y-1">
+            <div className="text-xs uppercase tracking-[0.2em] text-stone-500">ช่วงเวลา</div>
+            <div className="font-semibold text-stone-900">{lookup.reservation.slot}</div>
+            <div className="text-xs text-stone-600">
+              {formatTime(lookup.reservation.startAt)} - {formatTime(lookup.reservation.endAt)}
+            </div>
           </div>
-
-          <div>
-            <span className="text-muted-foreground">ช่วงเวลา: </span>
-            <span className="font-medium">
-              {lookup.reservation.slot} ({formatTime(lookup.reservation.startAt)} - {formatTime(lookup.reservation.endAt)})
-            </span>
-          </div>
-
-          <div>
-            <span className="text-muted-foreground">สถานะ: </span>
-            <Badge variant="outline">{lookup.reservation.status}</Badge>
-            <span className="text-muted-foreground"> • </span>
-            <Badge variant="secondary">{lookup.reservation.type}</Badge>
+          <div className="space-y-2">
+            <div className="text-xs uppercase tracking-[0.2em] text-stone-500">ข้อมูลรายการ</div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline">{getReservationTypeLabel(lookup.reservation.type)}</Badge>
+              <Badge variant="outline">{getReservationStatusLabelText(lookup.reservation.status)}</Badge>
+            </div>
+            <div className="text-xs text-stone-600">เลขที่รายการ {lookup.reservation.id}</div>
           </div>
         </div>
 
-        <Button onClick={onConfirm} disabled={confirming} className="w-full">
-          {confirming ? "กำลังยืนยัน..." : lookup.mode === "CHECKIN" ? "ยืนยัน “ยืมกุญแจ”" : "ยืนยัน “คืนกุญแจ”"}
-        </Button>
+        {lookup.candidatesCount > 1 ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            พบหลายรายการในวันนี้ ระบบเลือกช่วงเวลาที่ใกล้เวลาปัจจุบันที่สุดให้แล้ว
+          </div>
+        ) : null}
 
-        <div className="text-xs text-muted-foreground">ระบบจะบันทึกตามรายการจองและสถานะล่าสุด</div>
+        <Button onClick={() => void onConfirm()} disabled={confirming} className="w-full">
+          {confirming ? "กำลังบันทึกรายการ..." : `ยืนยัน${getLoanModeLabel(lookup.mode)}`}
+        </Button>
       </CardContent>
     </Card>
   );

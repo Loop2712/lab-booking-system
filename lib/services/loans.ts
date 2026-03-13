@@ -42,17 +42,33 @@ export type LookupResult = {
   candidatesCount: number;
 };
 
+type LoanLookupOptions = {
+  allowLateOverride?: boolean;
+};
+
+type LoanCheckInOptions = {
+  allowLateOverride?: boolean;
+};
+
 export async function fetchLoansQueue(): Promise<QueueResponse> {
   const data = await fetchJson<QueueResponse>("/api/loans/queue", { cache: "no-store" });
   assertOk(data, "โหลดข้อมูลไม่สำเร็จ");
   return data;
 }
 
-export async function checkIn(reservationId: string, userToken: string): Promise<void> {
+export async function checkIn(
+  reservationId: string,
+  userToken: string,
+  options: LoanCheckInOptions = {}
+): Promise<void> {
   const data = await fetchJson<{ ok: boolean; message?: string }>("/api/loans/check-in", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ reservationId, userToken }),
+    body: JSON.stringify({
+      reservationId,
+      userToken,
+      allowLateOverride: options.allowLateOverride === true,
+    }),
   });
   assertOk(data, "เช็คอินไม่สำเร็จ");
 }
@@ -66,11 +82,17 @@ export async function returnKey(reservationId: string, userToken: string): Promi
   assertOk(data, "คืนกุญแจไม่สำเร็จ");
 }
 
-export async function lookupReservation(userToken: string): Promise<LookupResult> {
+export async function lookupReservation(
+  userToken: string,
+  options: LoanLookupOptions = {}
+): Promise<LookupResult> {
   const data = await fetchJson<LookupResult | { ok: false; message?: string }>("/api/loans/lookup", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userToken }),
+    body: JSON.stringify({
+      userToken,
+      allowLateOverride: options.allowLateOverride === true,
+    }),
   });
   assertOk(data, "ค้นหาไม่สำเร็จ");
   return data as LookupResult;

@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
+import { authorizeReservationActor } from "@/lib/loans/reservation-access";
 import { verifyUserQrToken } from "@/lib/security/user-qr";
 
 export const runtime = "nodejs";
@@ -11,6 +12,7 @@ export const runtime = "nodejs";
 const bodySchema = z.object({
   reservationId: z.string().min(1),
   userToken: z.string().min(10),
+  allowLateOverride: z.boolean().optional(),
 });
 
 export async function POST(req: Request) {
@@ -27,6 +29,8 @@ export async function POST(req: Request) {
     );
   }
 
+  const allowLateOverride = guard.role === "ADMIN" && body.data.allowLateOverride === true;
+
   const vt = verifyUserQrToken(body.data.userToken);
   if (!vt.ok) {
     return NextResponse.json({ ok: false, message: "BAD_QR_TOKEN", reason: vt.reason }, { status: 400 });
@@ -35,7 +39,7 @@ export async function POST(req: Request) {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      const resv = await tx.reservation.findUnique({
+      const reservation = await tx.reservation.findUnique({
         where: { id: body.data.reservationId },
         select: {
           id: true,
@@ -45,57 +49,54 @@ export async function POST(req: Request) {
           roomId: true,
           sectionId: true,
           startAt: true,
-          loan: { select: { id: true } },
+          participants: { select: { userId: true } },
+          loan: { select: { id: true, borrowerId: true } },
         },
       });
 
-      if (!resv) return { ok: false as const, status: 404, message: "NOT_FOUND" };
-     if (resv.status !== "APPROVED") return { ok: false as const, status: 400, message: "NOT_APPROVED" };
-      if (resv.loan) return { ok: false as const, status: 400, message: "ALREADY_CHECKED_IN" };
-
-      // ✅ กฎ: check-in เลทเกิน 30 นาที => NO_SHOW
-        const now = new Date();
-        const lateLimit = new Date(resv.startAt.getTime() + 30 * 60 * 1000);
-
-        if (now > lateLimit) {
-          await tx.reservation.update({
-            where: { id: resv.id },
-            data: { status: "NO_SHOW" },
-          });
-
-          return { ok: false as const, status: 400, message: "LATE_CHECKIN_NO_SHOW" };
-        }
-
-      // ✅ ตรวจสิทธิ์คนยืมตามประเภท
-      if (resv.type === "IN_CLASS") {
-        if (!resv.sectionId) return { ok: false as const, status: 400, message: "MISSING_SECTION" };
-        const enrolled = await tx.enrollment.findFirst({
-          where: { sectionId: resv.sectionId, studentId: borrowerId },
-          select: { id: true },
-        });
-        if (!enrolled) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
-      } else {
-        // AD_HOC: requester หรือ participant
-        if (borrowerId !== resv.requesterId) {
-          const p = await tx.reservationParticipant.findFirst({
-            where: { reservationId: resv.id, userId: borrowerId },
-            select: { id: true },
-          });
-          if (!p) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
-        }
+      if (!reservation) return { ok: false as const, status: 404, message: "NOT_FOUND" };
+      if (reservation.status === "NO_SHOW" && !allowLateOverride) {
+        return { ok: false as const, status: 400, message: "LATE_CHECKIN_NO_SHOW" };
+      }
+      if (reservation.status !== "APPROVED" && !(allowLateOverride && reservation.status === "NO_SHOW")) {
+        return { ok: false as const, status: 400, message: "NOT_APPROVED" };
+      }
+      if (reservation.loan) {
+        return { ok: false as const, status: 400, message: "ALREADY_CHECKED_IN" };
       }
 
-      // ✅ หา key ว่าง (ห้องละ 1 key ก็จะเจอ/ไม่เจอตามสถานะ)
+      const now = new Date();
+      const lateLimit = new Date(reservation.startAt.getTime() + 30 * 60 * 1000);
+      if (now > lateLimit && !allowLateOverride) {
+        await tx.reservation.update({
+          where: { id: reservation.id },
+          data: { status: "NO_SHOW" },
+        });
+        return { ok: false as const, status: 400, message: "LATE_CHECKIN_NO_SHOW" };
+      }
+
+      const access = await authorizeReservationActor(tx, {
+        actorId: borrowerId,
+        action: "CHECKIN",
+        reservation,
+      });
+      if (!access.ok) {
+        return {
+          ok: false as const,
+          status: access.message === "MISSING_SECTION" ? 400 : 403,
+          message: access.message,
+        };
+      }
+
       const key = await tx.key.findFirst({
-        where: { roomId: resv.roomId, status: "AVAILABLE" },
+        where: { roomId: reservation.roomId, status: "AVAILABLE" },
         select: { id: true },
       });
       if (!key) return { ok: false as const, status: 400, message: "NO_AVAILABLE_KEY" };
 
-      // ✅ create loan + ผูก borrower
       await tx.loan.create({
         data: {
-          reservationId: resv.id,
+          reservationId: reservation.id,
           keyId: key.id,
           checkedInAt: new Date(),
           borrowerId,
@@ -104,7 +105,7 @@ export async function POST(req: Request) {
       });
 
       await tx.key.update({ where: { id: key.id }, data: { status: "BORROWED" } });
-      await tx.reservation.update({ where: { id: resv.id }, data: { status: "CHECKED_IN" } });
+      await tx.reservation.update({ where: { id: reservation.id }, data: { status: "CHECKED_IN" } });
 
       return { ok: true as const, status: 200 };
     });

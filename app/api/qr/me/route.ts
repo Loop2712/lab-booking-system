@@ -17,7 +17,12 @@ export async function GET() {
 
   try {
     const token = makeUserQrToken(uid, QR_TOKEN_TTL_SECONDS);
-    return NextResponse.json({ ok: true, token });
+    return NextResponse.json({
+      ok: true,
+      token,
+      expiresInSeconds: QR_TOKEN_TTL_SECONDS,
+      expiresAt: new Date(Date.now() + QR_TOKEN_TTL_SECONDS * 1000).toISOString(),
+    });
   } catch (error) {
     console.error("[api/qr/me] failed to generate qr token:", error);
     return NextResponse.json({ ok: false, message: "QR_CONFIG_ERROR" }, { status: 503 });

@@ -1,10 +1,10 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
-import crypto from "crypto";
 
 export const runtime = "nodejs";
 
@@ -14,6 +14,7 @@ const bodySchema = z.object({
 
 const COOKIE_PRIMARY = "kiosk_device";
 const COOKIE_ALT = "Kiosk_Token";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 90;
 
 function generateDeviceId() {
   return crypto.randomBytes(32).toString("hex");
@@ -23,11 +24,69 @@ function attachCookies(res: NextResponse, token: string) {
   const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict" as const,
-    path: "/self-check",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: COOKIE_MAX_AGE,
   };
+
   res.cookies.set({ name: COOKIE_PRIMARY, value: token, ...options });
   res.cookies.set({ name: COOKIE_ALT, value: token, ...options });
+}
+
+function clearCookies(res: NextResponse) {
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: 0,
+  };
+
+  res.cookies.set({ name: COOKIE_PRIMARY, value: "", ...options });
+  res.cookies.set({ name: COOKIE_ALT, value: "", ...options });
+}
+
+async function getCurrentDeviceToken(req: NextRequest) {
+  const value = req.cookies.get(COOKIE_PRIMARY)?.value ?? req.cookies.get(COOKIE_ALT)?.value;
+  if (!value) return null;
+
+  return prisma.kioskToken.findFirst({
+    where: {
+      token: value,
+      isActive: true,
+      revokedAt: null,
+    },
+    select: {
+      id: true,
+      token: true,
+      pairedAt: true,
+      createdAt: true,
+    },
+  });
+}
+
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  const guard = requireApiRole(session, ["ADMIN"]);
+  if (!guard.ok) return guard.response;
+
+  const token = await getCurrentDeviceToken(req);
+  if (token) {
+    return NextResponse.json({
+      ok: true,
+      paired: true,
+      token: token.token,
+      pairedAt: token.pairedAt,
+      createdAt: token.createdAt,
+    });
+  }
+
+  const hasCookie = req.cookies.has(COOKIE_PRIMARY) || req.cookies.has(COOKIE_ALT);
+  const res = NextResponse.json({ ok: true, paired: false });
+  if (hasCookie) {
+    clearCookies(res);
+  }
+  return res;
 }
 
 export async function POST(req: NextRequest) {
@@ -41,15 +100,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, message: "BAD_BODY", detail: body.error.flatten() }, { status: 400 });
     }
 
-    const existingCookie = req.cookies.get(COOKIE_PRIMARY)?.value ?? req.cookies.get(COOKIE_ALT)?.value;
-    if (existingCookie) {
-      const active = await prisma.kioskToken.findFirst({
-        where: { token: existingCookie, isActive: true, revokedAt: null },
-        select: { id: true },
-      });
-      if (active) {
-        return NextResponse.json({ ok: false, message: "ALREADY_PAIRED" }, { status: 409 });
-      }
+    const currentDeviceToken = await getCurrentDeviceToken(req);
+    if (currentDeviceToken) {
+      return NextResponse.json({ ok: false, message: "ALREADY_PAIRED" }, { status: 409 });
     }
 
     const inputCode = body.data.code.trim();
@@ -68,7 +121,7 @@ export async function POST(req: NextRequest) {
         data: { isActive: true, pairedAt: new Date(), revokedAt: null },
       });
 
-      const res = NextResponse.json({ ok: true, token: updated.token });
+      const res = NextResponse.json({ ok: true, token: updated.token, pairedAt: updated.pairedAt });
       attachCookies(res, updated.token);
       return res;
     }
@@ -87,7 +140,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const res = NextResponse.json({ ok: true, token: kioskToken.token });
+    const res = NextResponse.json({ ok: true, token: kioskToken.token, pairedAt: kioskToken.pairedAt });
     attachCookies(res, kioskToken.token);
     return res;
   } catch (e: any) {

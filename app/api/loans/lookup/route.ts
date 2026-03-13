@@ -1,28 +1,22 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
+import type { ReservationStatus } from "@/app/generated/prisma/enums";
 import { authOptions } from "@/lib/auth/options";
 import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
-import { verifyUserQrToken } from "@/lib/security/user-qr";
 import { addDays } from "@/lib/date/addDays";
 import { getBangkokYMD, startOfBangkokDay } from "@/lib/date/bangkok";
+import { pickClosestToNow } from "@/lib/loans/pick-closest-to-now";
+import { verifyUserQrToken } from "@/lib/security/user-qr";
 
 export const runtime = "nodejs";
 
 const bodySchema = z.object({
   userToken: z.string().min(10),
   mode: z.enum(["CHECKIN", "RETURN"]).optional(),
+  allowLateOverride: z.boolean().optional(),
 });
-
-function pickClosestToNow<T extends { startAt: Date }>(list: T[]) {
-  if (!list.length) return null;
-  const now = Date.now();
-  const sorted = [...list].sort(
-    (a, b) => Math.abs(a.startAt.getTime() - now) - Math.abs(b.startAt.getTime() - now)
-  );
-  return sorted[0] ?? null;
-}
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -42,6 +36,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "BAD_QR_TOKEN", reason: vt.reason }, { status: 400 });
   }
   const uid = vt.uid;
+  const allowLateOverride = guard.role === "ADMIN" && body.data.allowLateOverride === true;
 
   const user = await prisma.user.findUnique({
     where: { id: uid },
@@ -55,11 +50,13 @@ export async function POST(req: Request) {
   const dayStart = startOfBangkokDay(ymd);
   const dayEnd = addDays(dayStart, 1);
 
+  const checkinStatuses: ReservationStatus[] = allowLateOverride ? ["APPROVED", "NO_SHOW"] : ["APPROVED"];
+
   const checkinCandidates = await prisma.reservation.findMany({
     where: {
       startAt: { lt: dayEnd },
       endAt: { gt: dayStart },
-      status: "APPROVED",
+      status: { in: checkinStatuses },
       loan: null,
       OR: [
         { requesterId: user.id },
@@ -106,10 +103,7 @@ export async function POST(req: Request) {
   }
 
   if (!mode) {
-    return NextResponse.json(
-      { ok: false, message: "NO_MATCHING_RESERVATION" },
-      { status: 404 }
-    );
+    return NextResponse.json({ ok: false, message: "NO_MATCHING_RESERVATION" }, { status: 404 });
   }
 
   const list = mode === "RETURN" ? returnCandidates : checkinCandidates;
@@ -123,7 +117,10 @@ export async function POST(req: Request) {
     );
   }
 
-  const reservation = pickClosestToNow(list) ?? list[0];
+  const reservation =
+    mode === "RETURN"
+      ? (pickClosestToNow(returnCandidates) ?? returnCandidates[0])
+      : (pickClosestToNow(checkinCandidates) ?? checkinCandidates[0]);
 
   return NextResponse.json({
     ok: true,

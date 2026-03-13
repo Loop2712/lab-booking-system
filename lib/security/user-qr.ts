@@ -5,7 +5,7 @@ type Payload = {
   exp: number; // epoch seconds
 };
 
-export const QR_TOKEN_TTL_SECONDS = 60 * 3;
+export const QR_TOKEN_TTL_SECONDS = 60 * 10;
 const PLACEHOLDER_SECRET = "change-this-to-a-long-random-string";
 
 function resolveQrSecret() {

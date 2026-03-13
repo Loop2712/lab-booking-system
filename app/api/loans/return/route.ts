@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { requireApiRole } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db/prisma";
+import { authorizeReservationActor } from "@/lib/loans/reservation-access";
 import { verifyUserQrToken } from "@/lib/security/user-qr";
 
 export const runtime = "nodejs";
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      const resv = await tx.reservation.findUnique({
+      const reservation = await tx.reservation.findUnique({
         where: { id: body.data.reservationId },
         select: {
           id: true,
@@ -43,39 +44,37 @@ export async function POST(req: Request) {
           type: true,
           requesterId: true,
           sectionId: true,
+          participants: { select: { userId: true } },
           loan: { select: { id: true, keyId: true, borrowerId: true } },
         },
       });
 
-      if (!resv) return { ok: false as const, status: 404, message: "NOT_FOUND" };
-      if (resv.status !== "CHECKED_IN") return { ok: false as const, status: 400, message: "NOT_CHECKED_IN" };
-      if (!resv.loan) return { ok: false as const, status: 400, message: "NO_LOAN" };
+      if (!reservation) return { ok: false as const, status: 404, message: "NOT_FOUND" };
+      if (reservation.status !== "CHECKED_IN") {
+        return { ok: false as const, status: 400, message: "NOT_CHECKED_IN" };
+      }
+      if (!reservation.loan) return { ok: false as const, status: 400, message: "NO_LOAN" };
 
-      // ✅ ตรวจสิทธิ์คนคืน (แนะนำให้ใช้ rule เดียวกับคนยืม)
-      if (resv.type === "IN_CLASS") {
-        if (!resv.sectionId) return { ok: false as const, status: 400, message: "MISSING_SECTION" };
-        const enrolled = await tx.enrollment.findFirst({
-          where: { sectionId: resv.sectionId, studentId: returnedById },
-          select: { id: true },
-        });
-        if (!enrolled) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
-      } else {
-        if (returnedById !== resv.requesterId) {
-          const p = await tx.reservationParticipant.findFirst({
-            where: { reservationId: resv.id, userId: returnedById },
-            select: { id: true },
-          });
-          if (!p) return { ok: false as const, status: 403, message: "NOT_ALLOWED" };
-        }
+      const access = await authorizeReservationActor(tx, {
+        actorId: returnedById,
+        action: "RETURN",
+        reservation,
+      });
+      if (!access.ok) {
+        return {
+          ok: false as const,
+          status: access.message === "MISSING_SECTION" ? 400 : 403,
+          message: access.message,
+        };
       }
 
       await tx.loan.update({
-        where: { id: resv.loan.id },
+        where: { id: reservation.loan.id },
         data: { checkedOutAt: new Date(), returnedById, handledById },
       });
 
-      await tx.key.update({ where: { id: resv.loan.keyId }, data: { status: "AVAILABLE" } });
-      await tx.reservation.update({ where: { id: resv.id }, data: { status: "COMPLETED" } });
+      await tx.key.update({ where: { id: reservation.loan.keyId }, data: { status: "AVAILABLE" } });
+      await tx.reservation.update({ where: { id: reservation.id }, data: { status: "COMPLETED" } });
 
       return { ok: true as const, status: 200 };
     });
