@@ -102,7 +102,7 @@ export default function AdminRoomsStatusTable() {
   }, [data, q]);
 
   return (
-    <Card>
+    <Card className="border-[var(--brand-light-gray-line)] shadow-sm">
       <CardHeader className="gap-3">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
@@ -125,11 +125,11 @@ export default function AdminRoomsStatusTable() {
             </div>
             <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
-                <span className="h-3 w-3 rounded-sm bg-emerald-600/90" />
+                <span className="h-3 w-3 rounded-sm border border-emerald-200 bg-emerald-50" />
                 ว่าง
               </div>
               <div className="flex items-center gap-1">
-                <span className="h-3 w-3 rounded-sm bg-rose-600/90" />
+                <span className="h-3 w-3 rounded-sm border border-rose-200 bg-rose-50" />
                 ไม่ว่าง
               </div>
             </div>
@@ -141,7 +141,7 @@ export default function AdminRoomsStatusTable() {
               placeholder="ค้นหาห้อง เช่น LAB-1, 401, ชั้น 4..."
               className="max-w-xs bg-white"
             />
-            <Button variant="outline" onClick={load}>
+            <Button variant="outline" onClick={load} className="rounded-xl">
               รีเฟรช
             </Button>
           </div>
@@ -160,9 +160,9 @@ export default function AdminRoomsStatusTable() {
           </div>
         ) : null}
 
-        <div className="overflow-auto rounded-lg border">
+        <div className="overflow-auto rounded-[1.25rem] border border-[var(--brand-light-gray-line)]">
           <Table>
-            <TableHeader className="bg-muted/40">
+            <TableHeader className="bg-[var(--brand-light-gray)]/70">
               <TableRow>
                 <TableHead className="min-w-[240px] text-xs font-semibold text-muted-foreground">
                   ห้อง
@@ -191,8 +191,8 @@ export default function AdminRoomsStatusTable() {
                       key={room.id}
                       className={cn(
                         "border-border/60",
-                        idx % 2 === 0 ? "bg-white" : "bg-muted/20",
-                        "hover:bg-muted/30"
+                        idx % 2 === 0 ? "bg-white" : "bg-[var(--brand-light-gray)]/30",
+                        "hover:bg-[var(--brand-light-green)]/40"
                       )}
                     >
                       <TableCell className="font-medium">
@@ -211,7 +211,9 @@ export default function AdminRoomsStatusTable() {
                         <Badge
                           className={cn(
                             "h-8 px-3 text-[12px] font-semibold",
-                            isBusy ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"
+                            isBusy
+                              ? "border border-rose-200 bg-rose-50 text-rose-700"
+                              : "border border-emerald-200 bg-emerald-50 text-emerald-700"
                           )}
                         >
                           {isBusy ? "ไม่ว่าง" : "ว่าง"}

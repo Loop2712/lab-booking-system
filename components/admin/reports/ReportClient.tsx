@@ -1,11 +1,47 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  CalendarRange,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  DoorOpen,
+  FileDown,
+  KeyRound,
+  LogIn,
+  RotateCcw,
+  Search,
+  UserRound,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { ymd } from "@/lib/date/ymd";
+import { cn } from "@/lib/utils";
+import {
+  formatReportDateLabel,
+  formatReportDateRangeLabel,
+  formatReportDateTimeLabel,
+  formatReportDurationLabel,
+  formatReportShortDateLabel,
+  formatReportStatusLabel,
+  formatReportTimeLabel,
+  formatReportTimeRangeLabel,
+  formatReportTypeLabel,
+  REPORT_STATUS_OPTIONS,
+  REPORT_TYPE_OPTIONS,
+} from "@/lib/reports/presentation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -111,43 +147,26 @@ type FilterState = {
   pageSize: number;
 };
 
-const TYPE_OPTIONS = ["ALL", "IN_CLASS", "AD_HOC"] as const;
-const STATUS_OPTIONS = [
-  "ALL",
-  "PENDING",
-  "APPROVED",
-  "REJECTED",
-  "CANCELLED",
-  "NO_SHOW",
-  "CHECKED_IN",
-  "COMPLETED",
-] as const;
 const PAGE_SIZES = [10, 20, 50, 100] as const;
 
-function statusVariant(status: string) {
-  if (status === "APPROVED" || status === "COMPLETED") return "default";
-  if (status === "REJECTED" || status === "CANCELLED" || status === "NO_SHOW")
-    return "destructive";
-  if (status === "CHECKED_IN") return "secondary";
-  return "outline";
+function statusBadgeClass(status: string) {
+  if (status === "COMPLETED") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+  if (status === "APPROVED") {
+    return "border-teal-200 bg-teal-50 text-teal-700";
+  }
+  if (status === "CHECKED_IN") {
+    return "border-sky-200 bg-sky-50 text-sky-700";
+  }
+  if (status === "PENDING") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+  if (status === "REJECTED" || status === "CANCELLED" || status === "NO_SHOW") {
+    return "border-rose-200 bg-rose-50 text-rose-700";
+  }
+  return "border-slate-200 bg-slate-50 text-slate-700";
 }
-
-function formatTypeLabel(value: string) {
-  if (value === "IN_CLASS") return "ตารางเรียน";
-  if (value === "AD_HOC") return "จอง";
-  return value;
-}
-
-const timeFormatter = new Intl.DateTimeFormat("en-GB", {
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-});
-const dateFormatter = new Intl.DateTimeFormat("en-CA", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
 
 function formatNameOnly(user?: {
   firstName?: string | null;
@@ -158,27 +177,49 @@ function formatNameOnly(user?: {
   return name || "-";
 }
 
-function formatStudentId(user?: { studentId?: string | null } | null) {
-  return user?.studentId ?? "-";
+function formatIdentityLine(user?: {
+  studentId?: string | null;
+  email?: string | null;
+  role?: string | null;
+} | null) {
+  if (!user) return "ไม่พบข้อมูลผู้ใช้";
+  const parts = [user.studentId, user.email].filter(Boolean);
+  if (parts.length > 0) return parts.join(" • ");
+  return user.role ? `บทบาท ${user.role}` : "ไม่พบรหัสนักศึกษา/อีเมล";
+}
+
+function formatRoomTitle(room?: {
+  roomNumber?: string | null;
+  name?: string | null;
+} | null) {
+  const number = room?.roomNumber ? `ห้อง ${room.roomNumber}` : "ไม่พบห้อง";
+  return room?.name ? `${number} • ${room.name}` : number;
+}
+
+function formatRoomMeta(room?: {
+  floor?: number | null;
+  code?: string | null;
+} | null) {
+  const parts = [
+    room?.code ? `รหัส ${room.code}` : null,
+    room?.floor !== null && room?.floor !== undefined ? `ชั้น ${room.floor}` : null,
+  ].filter(Boolean);
+  return parts.join(" • ") || "ไม่พบรายละเอียดห้อง";
 }
 
 function formatCourseLine(item: ReservationItem) {
   const course = item.section?.course;
-  if (!course) return "-";
+  if (!course) return "ไม่มีวิชาที่เชื่อมโยง";
   const code = course.code ?? "";
   const name = course.name ?? "";
-  return [code, name].filter(Boolean).join(" ");
+  return [code, name].filter(Boolean).join(" • ") || "ไม่มีวิชาที่เชื่อมโยง";
 }
 
-function formatDateLines(value?: string | null) {
-  if (!value) return { time: "-", date: "-" };
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return { time: "-", date: "-" };
-  return {
-    time: timeFormatter.format(d),
-    date: dateFormatter.format(d),
-  };
+function formatEventLine(value?: string | null, emptyLabel = "-") {
+  if (!value) return emptyLabel;
+  return `${formatReportShortDateLabel(value)} • ${formatReportTimeLabel(value)}`;
 }
+
 function buildDefaultFilters(): FilterState {
   const today = ymd(new Date());
   return {
@@ -213,9 +254,138 @@ export default function ReportClient() {
     [rooms]
   );
 
+  const selectedRoom = useMemo(
+    () => rooms.find((room) => room.id === filters.roomId),
+    [filters.roomId, rooms]
+  );
+
+  const selectedKey = useMemo(
+    () => keys.find((key) => key.id === filters.keyId),
+    [filters.keyId, keys]
+  );
+
   const totalPages = useMemo(() => {
     return Math.max(1, Math.ceil(totalCount / filters.pageSize));
-  }, [totalCount, filters.pageSize]);
+  }, [filters.pageSize, totalCount]);
+
+  const reportRangeLabel = useMemo(
+    () => formatReportDateRangeLabel(filters.dateFrom, filters.dateTo),
+    [filters.dateFrom, filters.dateTo]
+  );
+
+  const activeFilterChips = useMemo(() => {
+    const chips = [
+      {
+        label: "ช่วงวันที่",
+        value: reportRangeLabel,
+      },
+    ];
+
+    if (filters.type !== "ALL") {
+      chips.push({
+        label: "ประเภท",
+        value: formatReportTypeLabel(filters.type),
+      });
+    }
+
+    if (filters.status !== "ALL") {
+      chips.push({
+        label: "สถานะ",
+        value: formatReportStatusLabel(filters.status),
+      });
+    }
+
+    if (filters.roomId !== "ALL") {
+      chips.push({
+        label: "ห้อง",
+        value: selectedRoom
+          ? `${selectedRoom.roomNumber} • ชั้น ${selectedRoom.floor}`
+          : filters.roomId,
+      });
+    } else if (filters.roomQuery.trim()) {
+      chips.push({
+        label: "ค้นหาห้อง",
+        value: filters.roomQuery.trim(),
+      });
+    }
+
+    if (filters.keyId !== "ALL") {
+      chips.push({
+        label: "กุญแจ",
+        value: selectedKey?.keyCode ?? filters.keyId,
+      });
+    } else if (filters.keyQuery.trim()) {
+      chips.push({
+        label: "ค้นหากุญแจ",
+        value: filters.keyQuery.trim(),
+      });
+    }
+
+    if (filters.requester.trim()) {
+      chips.push({
+        label: "ผู้จอง",
+        value: filters.requester.trim(),
+      });
+    }
+
+    return chips;
+  }, [
+    filters.keyId,
+    filters.keyQuery,
+    filters.requester,
+    filters.roomId,
+    filters.roomQuery,
+    filters.status,
+    filters.type,
+    reportRangeLabel,
+    selectedKey,
+    selectedRoom,
+  ]);
+
+  const exportCount = summary
+    ? Math.min(summary.totalReservations, 200)
+    : Math.min(totalCount, 200);
+
+  const summaryCards = [
+    {
+      title: "รายการทั้งหมด",
+      value: summary?.totalReservations ?? "-",
+      note: "ตามตัวกรองปัจจุบัน",
+      icon: ClipboardList,
+      accent: "bg-slate-100 text-slate-700",
+    },
+    {
+      title: "เสร็จสิ้น",
+      value: summary?.totalCompleted ?? "-",
+      note: "ใช้งานสำเร็จแล้ว",
+      icon: CheckCircle2,
+      accent: "bg-emerald-100 text-emerald-700",
+    },
+    {
+      title: "เช็คอินแล้ว",
+      value: summary?.totalCheckedIn ?? "-",
+      note: "กำลังใช้งานห้อง",
+      icon: LogIn,
+      accent: "bg-sky-100 text-sky-700",
+    },
+    {
+      title: "ยกเลิก",
+      value: summary?.totalCancelled ?? "-",
+      note: "รายการที่ถูกยกเลิก",
+      icon: XCircle,
+      accent: "bg-rose-100 text-rose-700",
+    },
+    {
+      title: "No Show",
+      value: summary?.totalNoShow ?? "-",
+      note: "จองแต่ไม่มาใช้งาน",
+      icon: AlertTriangle,
+      accent: "bg-amber-100 text-amber-700",
+    },
+  ] as const;
+
+  const pageStart = totalCount === 0 ? 0 : (filters.page - 1) * filters.pageSize + 1;
+  const pageEnd = Math.min(filters.page * filters.pageSize, totalCount);
 
   useEffect(() => {
     void loadRooms();
@@ -393,351 +563,555 @@ export default function ReportClient() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Admin Reports</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-4">
-          <div className="space-y-2">
-            <div className="text-sm">Date From</div>
-            <Input
-              type="date"
-              value={filters.dateFrom}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm">Date To</div>
-            <Input
-              type="date"
-              value={filters.dateTo}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, dateTo: e.target.value }))
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm">Type</div>
-            <Select
-              value={filters.type}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, type: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All types" />
-              </SelectTrigger>
-              <SelectContent>
-                {TYPE_OPTIONS.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm">Status</div>
-            <Select
-              value={filters.status}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, status: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      <Card className="overflow-hidden border-[var(--brand-line-green)] bg-gradient-to-br from-[var(--brand-light-green)] via-white to-[var(--brand-bg)] shadow-sm">
+        <CardContent className="grid gap-6 px-6 py-6 lg:grid-cols-[1.45fr_0.85fr]">
+          <div className="space-y-4">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[var(--brand-line-green)] bg-white/80 px-3 py-1 text-xs font-medium text-[var(--brand-gray-dark)]">
+              <FileDown className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
+              Admin PDF Report
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold tracking-tight text-[var(--brand-gray-dark)]">
+                รายงานการจองและการส่งออก PDF
+              </h1>
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                ดูภาพรวมการจองห้อง การยืมกุญแจ และพฤติกรรมการใช้งานในช่วงเวลาที่เลือก
+                พร้อมสร้าง PDF ที่จัดวางให้อ่านง่ายสำหรับส่งต่อหรือเก็บเป็นรายงาน
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/85 px-4 py-3 text-sm shadow-sm">
+                <CalendarRange className="h-4 w-4 text-[var(--brand-primary)]" />
+                <div>
+                  <div className="text-xs text-muted-foreground">ช่วงรายงาน</div>
+                  <div className="font-medium">{reportRangeLabel}</div>
+                </div>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/85 px-4 py-3 text-sm shadow-sm">
+                <ClipboardList className="h-4 w-4 text-[var(--brand-primary)]" />
+                <div>
+                  <div className="text-xs text-muted-foreground">ผลลัพธ์ที่พบ</div>
+                  <div className="font-medium">
+                    {summary?.totalReservations ?? totalCount} รายการ
+                  </div>
+                </div>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/85 px-4 py-3 text-sm shadow-sm">
+                <DoorOpen className="h-4 w-4 text-[var(--brand-primary)]" />
+                <div>
+                  <div className="text-xs text-muted-foreground">ห้องที่พร้อมเลือก</div>
+                  <div className="font-medium">{activeRooms.length} ห้อง</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="text-sm">Room (Select)</div>
-            <Select
-              value={filters.roomId}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, roomId: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All rooms" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All</SelectItem>
-                {activeRooms.map((room) => (
-                  <SelectItem key={room.id} value={room.id}>
-                    {room.roomNumber} / Floor {room.floor}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm">Room Search</div>
-            <Input
-              value={filters.roomQuery}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, roomQuery: e.target.value }))
-              }
-              placeholder="Room number or floor"
-              disabled={filters.roomId !== "ALL"}
-            />
-          </div>
+          <div className="rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-sm backdrop-blur">
+            <div className="space-y-1">
+              <div className="text-sm font-semibold text-[var(--brand-gray-dark)]">
+                พร้อมส่งออกตามตัวกรองนี้
+              </div>
+              <p className="text-sm leading-6 text-muted-foreground">
+                PDF จะสรุปช่วงวันที่ เงื่อนไขที่เลือก ภาพรวมตัวเลขสำคัญ และรายการจองในรูปแบบที่อ่านต่อได้ง่าย
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <div className="text-sm">Key (Select)</div>
-            <Select
-              value={filters.keyId}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, keyId: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All keys" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All</SelectItem>
-                {keys.map((key) => (
-                  <SelectItem key={key.id} value={key.id}>
-                    {key.keyCode}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm">Key Search</div>
-            <Input
-              value={filters.keyQuery}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, keyQuery: e.target.value }))
-              }
-              placeholder="Key code"
-              disabled={filters.keyId !== "ALL"}
-            />
-          </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl bg-[var(--brand-light-gray)] px-4 py-3">
+                <div className="text-xs text-muted-foreground">รายการใน PDF</div>
+                <div className="mt-1 text-xl font-semibold">{exportCount}</div>
+              </div>
+              <div className="rounded-2xl bg-[var(--brand-light-gray)] px-4 py-3">
+                <div className="text-xs text-muted-foreground">ตัวกรองที่ใช้งาน</div>
+                <div className="mt-1 text-xl font-semibold">
+                  {activeFilterChips.length}
+                </div>
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <div className="text-sm">Requester</div>
-            <Input
-              value={filters.requester}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, requester: e.target.value }))
-              }
-              placeholder="Student ID, email, or name"
-            />
-          </div>
+            {summary && summary.totalReservations > 200 ? (
+              <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                PDF ปัจจุบันส่งออกสูงสุด 200 รายการล่าสุดตามตัวกรองนี้
+              </div>
+            ) : null}
 
-          <div className="flex flex-wrap items-center gap-2 md:col-span-4">
-            <Button onClick={() => applyFilters({ page: 1 })} disabled={loading}>
-              {loading ? "Loading..." : "Search"}
-            </Button>
-            <Button variant="outline" onClick={resetFilters} disabled={loading}>
-              Reset
-            </Button>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Button
+                onClick={exportPdf}
+                disabled={exporting || loading}
+                className="rounded-xl"
+              >
+                <FileDown className="mr-2 h-4 w-4" />
+                {exporting ? "กำลังสร้าง PDF..." : "Export PDF"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => applyFilters({ page: 1 })}
+                disabled={loading}
+                className="rounded-xl"
+              >
+                <Search className="mr-2 h-4 w-4" />
+                {loading ? "กำลังโหลด..." : "รีเฟรชข้อมูล"}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-5">
+      <Card className="border-dashed border-[var(--brand-line-green)] bg-[var(--brand-light-gray)]/40">
+        <CardHeader>
+          <CardTitle>ตัวกรองรายงาน</CardTitle>
+          <CardDescription>
+            ปรับช่วงเวลา ประเภท ห้อง กุญแจ หรือข้อมูลผู้จองก่อนค้นหาและส่งออก PDF
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Date From</div>
+              <Input
+                className="h-11 bg-white"
+                type="date"
+                value={filters.dateFrom}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Date To</div>
+              <Input
+                className="h-11 bg-white"
+                type="date"
+                value={filters.dateTo}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, dateTo: e.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Type</div>
+              <Select
+                value={filters.type}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, type: value }))
+                }
+              >
+                <SelectTrigger className="h-11 bg-white">
+                  <SelectValue placeholder="เลือกประเภท" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REPORT_TYPE_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {formatReportTypeLabel(option)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Status</div>
+              <Select
+                value={filters.status}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, status: value }))
+                }
+              >
+                <SelectTrigger className="h-11 bg-white">
+                  <SelectValue placeholder="เลือกสถานะ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REPORT_STATUS_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {formatReportStatusLabel(option)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Room (Select)</div>
+              <Select
+                value={filters.roomId}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, roomId: value }))
+                }
+              >
+                <SelectTrigger className="h-11 bg-white">
+                  <SelectValue placeholder="เลือกห้อง" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">ทุกห้อง</SelectItem>
+                  {activeRooms.map((room) => (
+                    <SelectItem key={room.id} value={room.id}>
+                      {room.roomNumber} • ชั้น {room.floor}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Room Search</div>
+              <Input
+                className="h-11 bg-white"
+                value={filters.roomQuery}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, roomQuery: e.target.value }))
+                }
+                placeholder="เลขห้อง หรือชั้น"
+                disabled={filters.roomId !== "ALL"}
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Key (Select)</div>
+              <Select
+                value={filters.keyId}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, keyId: value }))
+                }
+              >
+                <SelectTrigger className="h-11 bg-white">
+                  <SelectValue placeholder="เลือกกุญแจ" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">ทุกกุญแจ</SelectItem>
+                  {keys.map((key) => (
+                    <SelectItem key={key.id} value={key.id}>
+                      {key.keyCode}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Key Search</div>
+              <Input
+                className="h-11 bg-white"
+                value={filters.keyQuery}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, keyQuery: e.target.value }))
+                }
+                placeholder="รหัสกุญแจ"
+                disabled={filters.keyId !== "ALL"}
+              />
+            </div>
+            <div className="space-y-2 xl:col-span-1">
+              <div className="text-sm font-medium">Requester</div>
+              <Input
+                className="h-11 bg-white"
+                value={filters.requester}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, requester: e.target.value }))
+                }
+                placeholder="รหัสนักศึกษา อีเมล หรือชื่อ"
+              />
+            </div>
+          </div>
+
+          <div className="rounded-[1.5rem] border bg-white p-4 shadow-sm">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-2">
+                <div className="text-sm font-medium">ตัวกรองที่กำลังใช้งาน</div>
+                <div className="flex flex-wrap gap-2">
+                  {activeFilterChips.map((chip) => (
+                    <div
+                      key={`${chip.label}-${chip.value}`}
+                      className="rounded-full border border-[var(--brand-line-green)] bg-[var(--brand-light-green)] px-3 py-1.5 text-xs text-[var(--brand-gray-dark)]"
+                    >
+                      <span className="font-medium">{chip.label}:</span>{" "}
+                      {chip.value}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={() => applyFilters({ page: 1 })}
+                  disabled={loading}
+                  className="rounded-xl"
+                >
+                  <Search className="mr-2 h-4 w-4" />
+                  {loading ? "กำลังค้นหา..." : "ค้นหารายงาน"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={resetFilters}
+                  disabled={loading}
+                  className="rounded-xl"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  รีเซ็ตตัวกรอง
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        {summaryCards.map((entry) => (
+          <Card key={entry.title} className="border-[var(--brand-light-gray-line)]">
+            <CardContent className="flex items-start justify-between px-6 py-5">
+              <div className="space-y-2">
+                <div className="text-sm text-muted-foreground">{entry.title}</div>
+                <div className="text-3xl font-semibold tracking-tight">
+                  {entry.value}
+                </div>
+                <div className="text-xs text-muted-foreground">{entry.note}</div>
+              </div>
+              <div className={cn("rounded-2xl p-3 shadow-sm", entry.accent)}>
+                <entry.icon className="h-5 w-5" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Total Reservations</CardTitle>
+            <CardTitle>สัดส่วนประเภทการจอง</CardTitle>
+            <CardDescription>
+              เปรียบเทียบจำนวนรายการระหว่างตารางเรียนและการจองทั่วไป
+            </CardDescription>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {summary?.totalReservations ?? "-"}
+          <CardContent className="space-y-4">
+            {(summary?.breakdownByType ?? []).length === 0 ? (
+              <div className="rounded-2xl border border-dashed px-4 py-6 text-sm text-muted-foreground">
+                ยังไม่มีข้อมูลสรุปในช่วงเวลานี้
+              </div>
+            ) : (
+              (summary?.breakdownByType ?? []).map((item) => {
+                const total = summary?.totalReservations ?? 0;
+                const percent =
+                  total > 0 ? Math.round((item.count / total) * 100) : 0;
+
+                return (
+                  <div
+                    key={item.type}
+                    className="rounded-2xl border border-[var(--brand-light-gray-line)] p-4"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="font-medium">
+                          {formatReportTypeLabel(item.type)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {item.count} รายการ
+                        </div>
+                      </div>
+                      <div className="text-sm font-semibold text-[var(--brand-gray-dark)]">
+                        {percent}%
+                      </div>
+                    </div>
+                    <div className="mt-3 h-2 rounded-full bg-[var(--brand-light-gray)]">
+                      <div
+                        className="h-2 rounded-full bg-[var(--brand-primary)]"
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader>
-            <CardTitle>Completed</CardTitle>
+            <CardTitle>ภาพรวมการส่งออก</CardTitle>
+            <CardDescription>
+              ตรวจสอบรายละเอียดสำคัญก่อนดาวน์โหลดรายงาน PDF
+            </CardDescription>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {summary?.totalCompleted ?? "-"}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Cancelled</CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {summary?.totalCancelled ?? "-"}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>No Show</CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {summary?.totalNoShow ?? "-"}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Checked In</CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {summary?.totalCheckedIn ?? "-"}
+          <CardContent className="space-y-4 text-sm">
+            <div className="rounded-2xl bg-[var(--brand-light-gray)] px-4 py-3">
+              <div className="flex items-center gap-2 font-medium text-[var(--brand-gray-dark)]">
+                <CalendarRange className="h-4 w-4 text-[var(--brand-primary)]" />
+                ช่วงวันที่ในรายงาน
+              </div>
+              <div className="mt-2 text-muted-foreground">{reportRangeLabel}</div>
+            </div>
+            <div className="rounded-2xl bg-[var(--brand-light-gray)] px-4 py-3">
+              <div className="flex items-center gap-2 font-medium text-[var(--brand-gray-dark)]">
+                <UserRound className="h-4 w-4 text-[var(--brand-primary)]" />
+                รายการที่แสดงในตาราง
+              </div>
+              <div className="mt-2 text-muted-foreground">
+                แสดง {pageStart}-{pageEnd} จากทั้งหมด {totalCount} รายการ
+              </div>
+            </div>
+            <div className="rounded-2xl bg-[var(--brand-light-gray)] px-4 py-3">
+              <div className="flex items-center gap-2 font-medium text-[var(--brand-gray-dark)]">
+                <KeyRound className="h-4 w-4 text-[var(--brand-primary)]" />
+                ขนาดหน้ารายการ
+              </div>
+              <div className="mt-2 text-muted-foreground">
+                ปัจจุบันแสดง {filters.pageSize} รายการต่อหน้า
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Breakdown By Type</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-2 md:grid-cols-2">
-          {(summary?.breakdownByType ?? []).map((item) => (
-            <div
-              key={item.type}
-              className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
-            >
-              <span>{item.type}</span>
-              <span className="font-medium">{item.count}</span>
-            </div>
-          ))}
-          {(summary?.breakdownByType ?? []).length === 0 && (
-            <div className="text-sm text-muted-foreground">No data</div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <CardTitle>Reservations</CardTitle>
-          <div className="flex flex-wrap items-center gap-2">
+        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-1">
+            <CardTitle>รายการการจอง</CardTitle>
+            <CardDescription>
+              แสดงรายละเอียดห้อง ช่วงเวลา ผู้จอง สถานะ และข้อมูลการยืมคืนกุญแจในมุมมองที่อ่านง่ายขึ้น
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="text-sm text-muted-foreground">รายการต่อหน้า</div>
             <Select
               value={String(filters.pageSize)}
               onValueChange={(value) =>
                 applyFilters({ pageSize: Number(value), page: 1 })
               }
             >
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Page size" />
+              <SelectTrigger className="h-11 w-32">
+                <SelectValue placeholder="เลือกจำนวน" />
               </SelectTrigger>
               <SelectContent>
                 {PAGE_SIZES.map((size) => (
                   <SelectItem key={size} value={String(size)}>
-                    {size} / page
+                    {size} / หน้า
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="outline" onClick={exportPdf} disabled={exporting}>
-              {exporting ? "Exporting..." : "Export PDF"}
-            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ห้อง</TableHead>
-                  <TableHead>กุญแจ</TableHead>
-                  <TableHead>ผู้จอง</TableHead>
-                  <TableHead>ประเภท</TableHead>
-                  <TableHead>สถานะ</TableHead>
-                  <TableHead>ผู้ยืมกุญแจ</TableHead>
-                  <TableHead>เช็คอิน</TableHead>
-                  <TableHead>ผู้คืนกุญแจ</TableHead>
-                  <TableHead>เช็คเอาท์</TableHead>
+          <div className="rounded-[1.5rem] border border-[var(--brand-light-gray-line)]">
+            <Table className="min-w-[1040px]">
+              <TableHeader className="bg-[var(--brand-light-gray)]/70">
+                <TableRow className="hover:bg-[var(--brand-light-gray)]/70">
+                  <TableHead className="w-[220px]">ห้อง</TableHead>
+                  <TableHead className="w-[250px]">รายละเอียดการจอง</TableHead>
+                  <TableHead className="w-[220px]">ผู้จอง</TableHead>
+                  <TableHead className="w-[170px]">สถานะ</TableHead>
+                  <TableHead className="w-[220px]">รับกุญแจ</TableHead>
+                  <TableHead className="w-[220px]">คืนกุญแจ</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {items.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={9}
-                      className="text-sm text-muted-foreground"
+                      colSpan={6}
+                      className="whitespace-normal px-4 py-10 text-center text-sm text-muted-foreground"
                     >
-                      No reservations found.
+                      ไม่พบรายการจองตามเงื่อนไขที่เลือก
                     </TableCell>
                   </TableRow>
                 ) : (
                   items.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="text-sm">
-                        {item.room?.roomNumber ?? "-"}
+                    <TableRow key={item.id} className="align-top">
+                      <TableCell className="whitespace-normal align-top">
+                        <div className="space-y-1">
+                          <div className="font-semibold text-[var(--brand-gray-dark)]">
+                            {formatRoomTitle(item.room)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {formatRoomMeta(item.room)}
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell className="text-sm">
-                        {item.loan?.key?.keyCode ?? "-"}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        <div className="flex flex-col">
-                          <span>{formatNameOnly(item.requester)}</span>
-                          <span className="text-xs text-muted-foreground">
+
+                      <TableCell className="whitespace-normal align-top">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge
+                              variant="outline"
+                              className="border-emerald-200 bg-emerald-50 text-emerald-700"
+                            >
+                              {formatReportTypeLabel(item.type)}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {formatReportDurationLabel(item.startAt, item.endAt)}
+                            </span>
+                          </div>
+                          <div className="font-medium text-[var(--brand-gray-dark)]">
+                            {formatReportDateLabel(item.startAt)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {formatReportTimeRangeLabel(item.startAt, item.endAt)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
                             {formatCourseLine(item)}
-                          </span>
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm">
-                        {formatTypeLabel(item.type)}
+
+                      <TableCell className="whitespace-normal align-top">
+                        <div className="space-y-1">
+                          <div className="font-medium text-[var(--brand-gray-dark)]">
+                            {formatNameOnly(item.requester)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {formatIdentityLine(item.requester)}
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant={statusVariant(item.status) as any}>
-                          {item.status}
-                        </Badge>
+
+                      <TableCell className="whitespace-normal align-top">
+                        <div className="space-y-2">
+                          <Badge
+                            variant="outline"
+                            className={cn("rounded-full", statusBadgeClass(item.status))}
+                          >
+                            {formatReportStatusLabel(item.status)}
+                          </Badge>
+                          <div className="text-sm text-muted-foreground">
+                            สร้างรายการสำหรับ{" "}
+                            {formatReportDateTimeLabel(item.startAt)}
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell className="text-sm">
-                        <div className="flex flex-col">
-                          <span>
+
+                      <TableCell className="whitespace-normal align-top">
+                        <div className="space-y-1">
+                          <div className="font-medium text-[var(--brand-gray-dark)]">
+                            {item.loan?.key?.keyCode
+                              ? `กุญแจ ${item.loan.key.keyCode}`
+                              : "ยังไม่มีข้อมูลกุญแจ"}
+                          </div>
+                          <div className="text-sm">
                             {formatNameOnly(item.loan?.borrower ?? undefined)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {formatStudentId(item.loan?.borrower ?? undefined)}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {(() => {
-                          const { time, date } = formatDateLines(
-                            item.loan?.checkedInAt
-                          );
-                          return (
-                            <div className="flex flex-col">
-                              <span>{time}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {date}
-                              </span>
-                            </div>
-                          );
-                        })()}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        <div className="flex flex-col">
-                          <span>
-                            {formatNameOnly(item.loan?.returnedBy ?? undefined)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {formatStudentId(
-                              item.loan?.returnedBy ?? undefined
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {formatIdentityLine(item.loan?.borrower ?? undefined)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            เช็คอิน:{" "}
+                            {formatEventLine(
+                              item.loan?.checkedInAt,
+                              "ยังไม่มีการเช็คอิน"
                             )}
-                          </span>
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm">
-                        {(() => {
-                          const { time, date } = formatDateLines(
-                            item.loan?.checkedOutAt
-                          );
-                          return (
-                            <div className="flex flex-col">
-                              <span>{time}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {date}
-                              </span>
-                            </div>
-                          );
-                        })()}
+
+                      <TableCell className="whitespace-normal align-top">
+                        <div className="space-y-1">
+                          <div className="font-medium text-[var(--brand-gray-dark)]">
+                            {formatNameOnly(item.loan?.returnedBy ?? undefined)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {formatIdentityLine(item.loan?.returnedBy ?? undefined)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            เช็คเอาท์:{" "}
+                            {formatEventLine(
+                              item.loan?.checkedOutAt,
+                              "ยังไม่มีการคืนกุญแจ"
+                            )}
+                          </div>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -746,41 +1120,31 @@ export default function ReportClient() {
             </Table>
           </div>
 
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="text-sm text-muted-foreground">
-              Total {totalCount} reservations
+              แสดง {pageStart}-{pageEnd} จากทั้งหมด {totalCount} รายการ
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={() => applyFilters({ page: 1 })}
-                disabled={filters.page === 1 || loading}
-              >
-                First
-              </Button>
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="outline"
                 onClick={() => applyFilters({ page: filters.page - 1 })}
                 disabled={filters.page === 1 || loading}
+                className="rounded-xl"
               >
-                Prev
+                <ChevronLeft className="mr-1 h-4 w-4" />
+                ก่อนหน้า
               </Button>
-              <div className="text-sm">
-                Page {filters.page} of {totalPages}
+              <div className="rounded-full bg-[var(--brand-light-gray)] px-4 py-2 text-sm">
+                หน้า {filters.page} / {totalPages}
               </div>
               <Button
                 variant="outline"
                 onClick={() => applyFilters({ page: filters.page + 1 })}
                 disabled={filters.page >= totalPages || loading}
+                className="rounded-xl"
               >
-                Next
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => applyFilters({ page: totalPages })}
-                disabled={filters.page >= totalPages || loading}
-              >
-                Last
+                ถัดไป
+                <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -789,5 +1153,3 @@ export default function ReportClient() {
     </div>
   );
 }
-
-

@@ -1,15 +1,19 @@
-import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { getReservationStatusLabel } from "@/lib/reservations/status";
 import {
-  ClipboardList,
-  KeyRound,
-  Clock,
-  QrCode,
-  Calendar,
   BookOpen,
+  Calendar,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
+  KeyRound,
+  QrCode,
 } from "lucide-react";
+import {
+  DashboardActionGrid,
+  DashboardHero,
+  DashboardMetricGrid,
+} from "@/components/dashboard/DashboardKit";
 
 export default async function TeacherDashboard() {
   const [pendingRequests, pendingCheckin, activeLoans] = await Promise.all([
@@ -18,73 +22,128 @@ export default async function TeacherDashboard() {
     prisma.reservation.count({ where: { status: "CHECKED_IN" } }),
   ]);
 
-  const stats = [
-    { label: "คำขอรออนุมัติ", value: pendingRequests, icon: ClipboardList, desc: "รายการที่รอคุณอนุมัติ", color: "text-amber-600" },
-    { label: "รอรับกุญแจ", value: pendingCheckin, icon: Clock, desc: "อนุมัติแล้ว รอมาหยิบกุญแจ", color: "text-blue-600" },
-    { label: "กำลังยืมอยู่", value: activeLoans, icon: KeyRound, desc: "มีการเช็คอินแล้ว", color: "text-emerald-600" },
+  const heroMeta = [
+    {
+      label: "คำขอรออนุมัติ",
+      value: pendingRequests,
+      icon: ClipboardList,
+    },
+    {
+      label: "รอรับกุญแจ",
+      value: pendingCheckin,
+      icon: Clock,
+    },
+    {
+      label: "กำลังใช้งาน",
+      value: activeLoans,
+      icon: KeyRound,
+    },
+  ] as const;
+
+  const metricItems = [
+    {
+      title: getReservationStatusLabel("PENDING"),
+      value: pendingRequests,
+      description: "รายการที่รอการอนุมัติหรือการพิจารณาเพิ่มเติม",
+      icon: ClipboardList,
+      tone: "warning" as const,
+    },
+    {
+      title: "รอรับกุญแจ",
+      value: pendingCheckin,
+      description: "รายการที่อนุมัติแล้วและกำลังรอรับกุญแจหน้าเคาน์เตอร์",
+      icon: Clock,
+      tone: "info" as const,
+    },
+    {
+      title: getReservationStatusLabel("CHECKED_IN"),
+      value: activeLoans,
+      description: "รายการที่เช็คอินแล้วและอยู่ระหว่างการใช้ห้อง",
+      icon: KeyRound,
+      tone: "success" as const,
+    },
+  ];
+
+  const actionItems = [
+    {
+      href: "/teacher/requests",
+      title: "คำขอจอง",
+      description: "ตรวจสอบและจัดการคำขอจองที่เกี่ยวข้องกับการสอน",
+      icon: ClipboardList,
+    },
+    {
+      href: "/teacher/check",
+      title: "ยืม-คืนกุญแจ",
+      description: "ดูขั้นตอนรับกุญแจ คืนกุญแจ และสถานะการเข้าใช้งาน",
+      icon: KeyRound,
+    },
+    {
+      href: "/teacher/calendar",
+      title: "ปฏิทิน",
+      description: "ดูภาพรวมการจองและตารางใช้งานในรูปแบบปฏิทิน",
+      icon: Calendar,
+    },
+    {
+      href: "/teacher/reservations",
+      title: "รายการจองของฉัน",
+      description: "ตรวจสอบรายการจองทั้งหมดที่สร้างหรือเกี่ยวข้องกับคุณ",
+      icon: BookOpen,
+    },
+    {
+      href: "/teacher/qr",
+      title: "QR / Token",
+      description: "เปิดหน้าสำหรับแสดง QR และการยืนยันตัวตนหน้างาน",
+      icon: QrCode,
+    },
+    {
+      href: "/teacher/schedule",
+      title: "ตารางสอน",
+      description: "ดูตารางเรียนและข้อมูล section ที่เชื่อมกับห้อง",
+      icon: CheckCircle2,
+    },
+  ];
+
+  const asideItems = [
+    `คำขอที่ยังรออยู่ ${pendingRequests} รายการ`,
+    `มี ${pendingCheckin} รายการที่พร้อมรับกุญแจ`,
+    `กำลังใช้งานห้องอยู่ ${activeLoans} รายการ`,
   ];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">หน้าหลัก</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          ภาพรวมคำขอจองและการยืม-คืนกุญแจ
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        {stats.map(({ label, value, icon: Icon, desc, color }) => (
-          <Card key={label} className="overflow-hidden border-0 bg-card shadow-sm ring-1 ring-black/5">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
-              <div className={`rounded-lg bg-muted/60 p-2 ${color}`}>
-                <Icon className="h-4 w-4" />
+    <div className="space-y-6">
+      <DashboardHero
+        badge="Teacher Dashboard"
+        title="แดชบอร์ดอาจารย์"
+        description="รวมมุมมองคำขอจอง การรับกุญแจ และรายการใช้งานห้องที่เกี่ยวข้องกับงานสอนให้ตรวจสอบได้เร็วขึ้นในโครงหน้าที่เหมือนกันกับทุก dashboard"
+        meta={heroMeta}
+        asideTitle="สิ่งที่ควรตรวจตอนนี้"
+        asideDescription="สถานะหลักที่ควรติดตามก่อนเข้าสู่หน้าจัดการย่อย"
+        aside={
+          <div className="space-y-3">
+            {asideItems.map((item) => (
+              <div
+                key={item}
+                className="rounded-2xl border border-[var(--brand-light-gray-line)] bg-[var(--brand-light-gray)]/70 px-4 py-3 text-sm text-[var(--brand-gray-dark)]"
+              >
+                {item}
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-semibold tabular-nums">{value}</div>
-              <p className="mt-1 text-xs text-muted-foreground">{desc}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            ))}
+          </div>
+        }
+      />
 
-      <div className="rounded-2xl border bg-muted/30 p-6 ring-1 ring-black/5">
-        <h2 className="text-sm font-semibold text-foreground mb-4">เมนูหลัก</h2>
-        <div className="flex flex-wrap gap-3">
-          <Button asChild size="lg" className="gap-2 shadow-sm">
-            <Link href="/teacher/requests">
-              <ClipboardList className="h-4 w-4" />
-              คำขอจอง
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="gap-2">
-            <Link href="/teacher/check">
-              <KeyRound className="h-4 w-4" />
-              ยืม-คืนกุญแจ
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="gap-2">
-            <Link href="/teacher/calendar">
-              <Calendar className="h-4 w-4" />
-              ปฏิทิน
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="gap-2">
-            <Link href="/teacher/reservations">
-              <BookOpen className="h-4 w-4" />
-              รายการจองของฉัน
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="gap-2">
-            <Link href="/teacher/qr">
-              <QrCode className="h-4 w-4" />
-              QR / Token
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <DashboardMetricGrid
+        title="สรุปงานที่ต้องติดตาม"
+        description="ตัวเลขหลักที่ช่วยให้เห็นสถานะคำขอและการใช้งานห้องอย่างรวดเร็ว"
+        items={metricItems}
+        columnsClassName="md:grid-cols-3"
+      />
+
+      <DashboardActionGrid
+        title="เมนูใช้งานหลัก"
+        description="เข้าถึงหน้าที่ใช้บ่อยสำหรับอนุมัติคำขอ ตรวจสอบสถานะ และติดตามการจอง"
+        items={actionItems}
+      />
     </div>
   );
 }
