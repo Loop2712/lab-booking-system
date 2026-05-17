@@ -1,0 +1,124 @@
+---
+config:
+  er:
+    useMaxWidth: false
+    fontSize: 13
+  themeVariables:
+    fontFamily: "Noto Sans Thai, Sarabun, sans-serif"
+---
+erDiagram
+    User ||--o{ Enrollment : "ลงทะเบียน"
+    User ||--o{ Section : "เป็นอาจารย์สอน"
+    User ||--o{ Reservation : "เป็นผู้จอง"
+    User ||--o{ Reservation : "เป็นผู้อนุมัติ"
+    User ||--o{ Loan : "เป็นผู้ยืม"
+    User ||--o{ Loan : "เป็นผู้คืน"
+    User ||--o{ Loan : "เป็นเจ้าหน้าที่"
+    User ||--o{ ReservationParticipant : "เป็นผู้ร่วมจอง"
+
+    Room ||--o{ Key : "มีกุญแจ"
+    Room ||--o{ Section : "ใช้เป็นห้องเรียน"
+    Room ||--o{ Reservation : "ถูกจอง"
+
+    Course ||--o{ Section : "เปิดสอนเป็น"
+    Term   ||--o{ Section : "ในภาคการศึกษา"
+
+    Section ||--o{ Enrollment : "มีผู้เรียน"
+    Section ||--o{ Reservation : "สร้างการจอง IN_CLASS"
+
+    Reservation ||--o{ ReservationParticipant : "มีผู้ร่วม"
+    Reservation ||--o| Loan : "เกิดการยืม"
+    Key ||--o{ Loan : "ถูกยืม"
+
+    User {
+        string  id PK
+        string  role
+        string  studentId UK
+        string  email UK
+        string  firstName
+        string  lastName
+        date    birthDate
+        string  passwordHash
+        boolean isActive
+    }
+    Room {
+        string  id PK
+        string  code UK
+        string  name
+        string  roomNumber
+        int     floor
+        int     computerCount
+        boolean isActive
+    }
+    Key {
+        string id PK
+        string keyCode UK
+        string status
+        string roomId FK
+    }
+    Course {
+        string id PK
+        string code UK
+        string name
+    }
+    Term {
+        string  id PK
+        int     term
+        int     year
+        date    startDate
+        date    endDate
+        boolean isActive
+    }
+    Section {
+        string id PK
+        string courseId FK
+        string teacherId FK
+        string roomId FK
+        string termId FK
+        string dayOfWeek
+        string startTime
+        string endTime
+        boolean isActive
+    }
+    Enrollment {
+        string id PK
+        string studentId FK
+        string sectionId FK
+        date   createdAt
+    }
+    Reservation {
+        string id PK
+        string type
+        string status
+        string requesterId FK
+        string approverId FK
+        string roomId FK
+        string sectionId FK
+        date   date
+        string slot
+        date   startAt
+        date   endAt
+        string note
+    }
+    ReservationParticipant {
+        string id PK
+        string reservationId FK
+        string userId FK
+    }
+    Loan {
+        string id PK
+        string reservationId UK
+        string keyId FK
+        date   checkedInAt
+        date   checkedOutAt
+        string handledById FK
+        string borrowerId FK
+        string returnedById FK
+    }
+    KioskToken {
+        string  id PK
+        string  token UK
+        boolean isActive
+        date    pairedAt
+        date    revokedAt
+    }

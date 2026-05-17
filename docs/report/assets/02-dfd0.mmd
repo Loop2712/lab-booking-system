@@ -1,0 +1,73 @@
+---
+config:
+  flowchart:
+    htmlLabels: true
+    curve: linear
+    nodeSpacing: 40
+    rankSpacing: 50
+  themeVariables:
+    fontFamily: "Noto Sans Thai, Sarabun, sans-serif"
+    fontSize: "14px"
+---
+flowchart TB
+    STU["นักศึกษา"]
+    TCH["อาจารย์"]
+    ADM["ผู้ดูแลระบบ"]
+    KIO["อุปกรณ์ Kiosk"]
+
+    P1(("1.0<br/>ยืนยันตัวตน<br/>และจัดการ<br/>เซสชัน"))
+    P2(("2.0<br/>จัดการ<br/>การจองห้อง"))
+    P3(("3.0<br/>อนุมัติ<br/>คำขอจอง"))
+    P4(("4.0<br/>ยืม-คืน<br/>กุญแจ"))
+    P5(("5.0<br/>จัดการ<br/>ข้อมูลพื้นฐาน"))
+    P6(("6.0<br/>จัดทำ<br/>รายงาน"))
+
+    D1[("D1 : ผู้ใช้งาน")]
+    D2[("D2 : ห้อง / กุญแจ")]
+    D3[("D3 : รายวิชา / ตอนเรียน")]
+    D4[("D4 : การจองห้อง")]
+    D5[("D5 : การยืม-คืน")]
+    D6[("D6 : Kiosk Token")]
+
+    STU -- "รหัสเข้าระบบ" --> P1
+    TCH -- "รหัสเข้าระบบ" --> P1
+    ADM -- "รหัสเข้าระบบ" --> P1
+    P1 <-- "ตรวจสอบบัญชี" --> D1
+    P1 -- "JWT / QR Token" --> STU
+    P1 -- "JWT" --> TCH
+    P1 -- "JWT" --> ADM
+
+    STU -- "คำขอจอง / ยกเลิก" --> P2
+    P2 <-- "ตรวจสอบ" --> D2
+    P2 <-- "บันทึก/อ่าน" --> D4
+    P2 -- "สถานะการจอง" --> STU
+
+    TCH -- "อนุมัติ / ปฏิเสธ" --> P3
+    P3 <-- "อัปเดต" --> D4
+    P3 -- "ผลอนุมัติ" --> STU
+
+    KIO -- "Kiosk Token / QR Token / Check-in / Return" --> P4
+    P4 <-- "ตรวจสอบ Token" --> D6
+    P4 <-- "ตรวจสอบ/อัปเดต" --> D4
+    P4 <-- "บันทึกการยืม-คืน" --> D5
+    P4 <-- "เปลี่ยนสถานะกุญแจ" --> D2
+    P4 -- "ผลการดำเนินการ" --> KIO
+
+    ADM -- "จัดการ ผู้ใช้ / ห้อง / กุญแจ / รายวิชา / Kiosk" --> P5
+    P5 <-- "CRUD" --> D1
+    P5 <-- "CRUD" --> D2
+    P5 <-- "CRUD" --> D3
+    P5 <-- "CRUD" --> D6
+    P5 -- "ผลการจัดการ" --> ADM
+
+    ADM -- "ขอรายงาน" --> P6
+    P6 <-- "ดึงข้อมูล" --> D4
+    P6 <-- "ดึงข้อมูล" --> D5
+    P6 -- "รายงาน / PDF" --> ADM
+
+    classDef ent fill:#fff,stroke:#000,stroke-width:1.5px,color:#000
+    classDef proc fill:#e8f5e9,stroke:#2e7d32,stroke-width:1.5px,color:#000
+    classDef store fill:#fff8e1,stroke:#f57f17,stroke-width:1.5px,color:#000
+    class STU,TCH,ADM,KIO ent
+    class P1,P2,P3,P4,P5,P6 proc
+    class D1,D2,D3,D4,D5,D6 store

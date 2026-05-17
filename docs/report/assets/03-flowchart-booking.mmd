@@ -1,0 +1,51 @@
+---
+config:
+  flowchart:
+    htmlLabels: true
+    curve: linear
+    nodeSpacing: 30
+    rankSpacing: 35
+  themeVariables:
+    fontFamily: "Noto Sans Thai, Sarabun, sans-serif"
+    fontSize: "14px"
+---
+flowchart TB
+    START([เริ่มต้น]):::se
+    LOGIN[/"นักศึกษาเข้าสู่ระบบ<br/>ด้วยรหัสนักศึกษา + รหัสผ่าน"/]:::io
+    AUTH{ยืนยันตัวตน<br/>ถูกต้องหรือไม่?}:::dec
+    SHOW[/"แสดงรายการห้องและ<br/>ช่วงเวลาที่ว่าง"/]:::io
+    PICK[/"เลือกห้อง วันที่ ช่วงเวลา<br/>ระบุเหตุผล<br/>เลือกอาจารย์ผู้อนุมัติ<br/>เพิ่มผู้ร่วมจอง 0-4 คน"/]:::io
+    V1{วันที่ในช่วง<br/>0-30 วันข้างหน้า?}:::dec
+    V2{ห้องว่างใน<br/>ช่วงเวลานี้?}:::dec
+    V3{ผู้ร่วมจอง<br/>ไม่เกิน 4 คน?}:::dec
+    V4{อาจารย์<br/>ผู้อนุมัติถูกต้อง?}:::dec
+    ERR[/"แสดงข้อความ<br/>แจ้งข้อผิดพลาด"/]:::err
+    SAVE[("บันทึก Reservation<br/>status = PENDING")]:::db
+    NOTIFY[/"แจ้งผู้จอง:<br/>คำขออยู่ระหว่างรออนุมัติ"/]:::io
+    APPR[/"อาจารย์เปิดรายการ<br/>คำขอที่รออนุมัติ"/]:::io
+    DEC{อนุมัติ<br/>หรือปฏิเสธ?}:::dec
+    UPD1[("อัปเดต status =<br/>APPROVED")]:::db
+    UPD2[("อัปเดต status =<br/>REJECTED")]:::db
+    INFO[/"แจ้งสถานะคำขอ<br/>ให้นักศึกษาทราบ"/]:::io
+    END([สิ้นสุด]):::se
+
+    START --> LOGIN --> AUTH
+    AUTH -- "ไม่" --> ERR --> LOGIN
+    AUTH -- "ใช่" --> SHOW --> PICK --> V1
+    V1 -- "ไม่" --> ERR
+    V1 -- "ใช่" --> V2
+    V2 -- "ไม่" --> ERR
+    V2 -- "ใช่" --> V3
+    V3 -- "ไม่" --> ERR
+    V3 -- "ใช่" --> V4
+    V4 -- "ไม่" --> ERR
+    V4 -- "ใช่" --> SAVE --> NOTIFY --> APPR --> DEC
+    DEC -- "อนุมัติ" --> UPD1 --> INFO
+    DEC -- "ปฏิเสธ" --> UPD2 --> INFO
+    INFO --> END
+
+    classDef se fill:#fff,stroke:#000,stroke-width:2px,color:#000
+    classDef io fill:#fff8e1,stroke:#bf6f00,stroke-width:1.5px,color:#000
+    classDef dec fill:#e3f2fd,stroke:#0d47a1,stroke-width:1.5px,color:#000
+    classDef err fill:#ffebee,stroke:#b71c1c,stroke-width:1.5px,color:#000
+    classDef db fill:#e8f5e9,stroke:#1b5e20,stroke-width:1.5px,color:#000
