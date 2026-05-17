@@ -1,0 +1,33 @@
+---
+config:
+  flowchart:
+    htmlLabels: true
+    curve: linear
+  themeVariables:
+    fontFamily: "Noto Sans Thai, Sarabun, sans-serif"
+    fontSize: "16px"
+---
+flowchart LR
+    STU["นักศึกษา"]
+    TCH["อาจารย์"]
+    ADM["ผู้ดูแลระบบ"]
+    KIO["อุปกรณ์ Kiosk"]
+
+    SYS((("0<br/>ระบบบริหารจัดการ<br/>ห้องปฏิบัติการ<br/>คอมพิวเตอร์<br/>อาคาร 75 ปี<br/>วไลยอลงกรณ์")))
+
+    STU -- "ข้อมูลเข้าสู่ระบบ,<br/>คำขอจองห้อง,<br/>ข้อมูลผู้ร่วมจอง,<br/>QR Token,<br/>คำสั่งยกเลิกการจอง" --> SYS
+    SYS -- "ผลการเข้าสู่ระบบ,<br/>รายการห้องว่าง,<br/>ผลการสร้างคำขอ,<br/>QR Token,<br/>สถานะคำขอจอง" --> STU
+
+    TCH -- "ข้อมูลเข้าสู่ระบบ,<br/>คำสั่งอนุมัติ/ปฏิเสธ,<br/>คำสั่งดูตารางสอน" --> SYS
+    SYS -- "รายการคำขออนุมัติ,<br/>รายละเอียดคำขอ,<br/>ตารางสอน/ปฏิทิน,<br/>สถานะที่อัปเดต" --> TCH
+
+    ADM -- "ข้อมูลจัดการผู้ใช้,<br/>ข้อมูลจัดการห้อง/กุญแจ,<br/>ข้อมูลรายวิชา,<br/>คำสั่ง Kiosk Token,<br/>คำสั่งยืม-คืน,<br/>คำขอดูรายงาน" --> SYS
+    SYS -- "ผลการจัดการข้อมูล,<br/>สถานะ Kiosk Token,<br/>ผลยืม-คืนกุญแจ,<br/>รายงานสรุป,<br/>ไฟล์รายงาน PDF" --> ADM
+
+    KIO -- "Token จับคู่เครื่อง,<br/>QR Token ผู้ใช้,<br/>คำสั่ง Check-in,<br/>คำสั่ง Return" --> SYS
+    SYS -- "ผลการจับคู่,<br/>ข้อมูลการจองของผู้ใช้,<br/>ผลตรวจสอบสิทธิ์,<br/>ผลการ Check-in/Return,<br/>ข้อความสถานะ" --> KIO
+
+    classDef ent fill:#fff,stroke:#000,stroke-width:1.5px,color:#000
+    classDef sys fill:#e3f2fd,stroke:#1565c0,stroke-width:2.5px,color:#000
+    class STU,TCH,ADM,KIO ent
+    class SYS sys

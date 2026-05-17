@@ -2,7 +2,15 @@
 
 ## ไฟล์ปัจจุบัน
 
-- `figure-3.1-context-diagram.jpg` — แผนภาพบริบทของระบบ (รูปที่ 3.1)
+| ไฟล์ | คำอธิบาย |
+|---|---|
+| `figure-3.1-context-diagram.jpg` | Context Diagram (ต้นฉบับที่ผู้จัดทำส่งมา) |
+| `figure-3.1-context-diagram-mermaid.png` | Context Diagram (สร้างใหม่ด้วย Mermaid - ทางเลือก) |
+| `figure-3.2-dfd-level0.png` | DFD Level 0 — 6 กระบวนการ (Yourdon Style) |
+| `figure-3.3-flowchart-booking.png` | Flowchart กระบวนการจองและอนุมัติ |
+| `figure-3.4-flowchart-loan-return.png` | Flowchart กระบวนการยืม-คืนกุญแจ |
+| `figure-3.5-er-diagram.png` | E-R Diagram (14 ตารางจาก prisma/schema.prisma) |
+| `01-context.mmd` … `05-erd.mmd` | ไฟล์ต้นฉบับ Mermaid (เปิดแก้ได้ที่ https://mermaid.live) |
 
 ## วิธีสร้างรูปจาก Mermaid Diagram
 

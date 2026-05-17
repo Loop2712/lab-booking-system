@@ -1,0 +1,53 @@
+---
+config:
+  flowchart:
+    htmlLabels: true
+    curve: linear
+    nodeSpacing: 30
+    rankSpacing: 35
+  themeVariables:
+    fontFamily: "Noto Sans Thai, Sarabun, sans-serif"
+    fontSize: "14px"
+---
+flowchart TB
+    START([เริ่มต้น]):::se
+    OPEN[/"ผู้ใช้ยืนเครื่อง Kiosk<br/>หรือเคาน์เตอร์ยืม-คืน"/]:::io
+    SHOWQR[/"แสดง QR Token<br/>จากแอป (อายุ ≤ 10 นาที)"/]:::io
+    KCHK{ตรวจสอบ<br/>Kiosk Token ถูกต้อง?}:::dec
+    VRF{"ตรวจสอบลายเซ็น<br/>QR (HMAC-SHA256)<br/>และเวลา exp?"}:::dec
+    FINDR[("ค้นหาการจองของ uid<br/>ที่อยู่ในสถานะ APPROVED")]:::db
+    AUTH{สิทธิ์ผู้ยืม<br/>ตรงตามการจอง?}:::dec
+    TIME{อยู่ในช่วง 30 นาที<br/>หลัง startAt?}:::dec
+    NOSHOW[("อัปเดตเป็น NO_SHOW")]:::db
+    PICKK[("เลือก Key ที่<br/>status = AVAILABLE")]:::db
+    TX1[("Transaction:<br/>INSERT Loan,<br/>UPDATE Key.status = BORROWED,<br/>UPDATE Reservation = CHECKED_IN")]:::db
+    SHOWK[/"แสดงเลขกุญแจ<br/>และข้อความสำเร็จ"/]:::io
+
+    USEROOM[/"ผู้ใช้ใช้ห้อง"/]:::io
+    RET[/"ผู้ใช้กลับมาคืน<br/>ที่ Kiosk หรือเคาน์เตอร์<br/>พร้อม QR Token"/]:::io
+    VRF2{ตรวจสอบลายเซ็น QR<br/>+ สิทธิ์ผู้คืน?}:::dec
+    CHK{สถานะการจอง<br/>= CHECKED_IN?}:::dec
+    TX2[("Transaction:<br/>UPDATE Loan.checkedOutAt,<br/>UPDATE Key = AVAILABLE,<br/>UPDATE Reservation = COMPLETED")]:::db
+    DONE[/"แสดงข้อความ<br/>คืนสำเร็จ"/]:::io
+    ERR[/"แสดงข้อความ<br/>แจ้งข้อผิดพลาด<br/>พร้อมเหตุผล"/]:::err
+    END([สิ้นสุด]):::se
+
+    START --> OPEN --> SHOWQR --> KCHK
+    KCHK -- "ไม่" --> ERR --> END
+    KCHK -- "ใช่" --> VRF
+    VRF -- "ไม่" --> ERR
+    VRF -- "ใช่" --> FINDR --> AUTH
+    AUTH -- "ไม่" --> ERR
+    AUTH -- "ใช่" --> TIME
+    TIME -- "ไม่ (เลยเวลา)" --> NOSHOW --> ERR
+    TIME -- "ใช่" --> PICKK --> TX1 --> SHOWK --> USEROOM --> RET --> VRF2
+    VRF2 -- "ไม่" --> ERR
+    VRF2 -- "ใช่" --> CHK
+    CHK -- "ไม่" --> ERR
+    CHK -- "ใช่" --> TX2 --> DONE --> END
+
+    classDef se fill:#fff,stroke:#000,stroke-width:2px,color:#000
+    classDef io fill:#fff8e1,stroke:#bf6f00,stroke-width:1.5px,color:#000
+    classDef dec fill:#e3f2fd,stroke:#0d47a1,stroke-width:1.5px,color:#000
+    classDef err fill:#ffebee,stroke:#b71c1c,stroke-width:1.5px,color:#000
+    classDef db fill:#e8f5e9,stroke:#1b5e20,stroke-width:1.5px,color:#000
