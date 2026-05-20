@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>บทที่ 4 ผลการประเมินระบบบริหารจัดการห้องปฏิบัติการคอมพิวเตอร์</title>
+  <style>
+    /* ══════════════════════════════════════════
+       รูปแบบตามคู่มือหลักสูตรวิทยาการคอมพิวเตอร์
+       มหาวิทยาลัยราชภัฏวไลยอลงกรณ์ ฉบับปรับปรุงปี 2561
+       ══════════════════════════════════════════ */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @page {
+      size: A4;
+      margin-top: 3.81cm;    /* ขอบบน 1.5 นิ้ว */
+      margin-left: 3.81cm;   /* ขอบซ้าย 1.5 นิ้ว */
+      margin-right: 2.54cm;  /* ขอบขวา 1 นิ้ว */
+      margin-bottom: 2.54cm; /* ขอบล่าง 1 นิ้ว */
+    }
+
+    body {
+      font-family: 'TH Sarabun New', 'TH SarabunPSK', 'Sarabun', serif;
+      font-size: 16pt;
+      color: #000;
+      background: #fff;
+      /* จำลองขอบกระดาษ A4 */
+      padding: 3.81cm 2.54cm 2.54cm 3.81cm;
+      max-width: 21cm;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    /* ── ชื่อบท (บทที่ x) — 20pt ตัวหนา กลางหน้า ── */
+    .chapter-number {
+      font-size: 20pt;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 0;
+      line-height: 1.4;
+    }
+
+    /* ── ชื่อเรื่องประจำบท — 20pt ตัวหนา กลางหน้า ── */
+    .chapter-title {
+      font-size: 20pt;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 1em; /* เว้น 1 บรรทัดหลังชื่อบท */
+      line-height: 1.4;
+    }
+
+    /* ── หัวข้อใหญ่ (4.1, 4.2, 4.3) — 18pt ตัวหนา ชิดซ้าย ── */
+    .heading-1 {
+      font-size: 18pt;
+      font-weight: bold;
+      text-align: left;
+      margin-top: 1em;   /* เว้น 1 บรรทัดก่อนหัวข้อใหม่ */
+      margin-bottom: 0;
+      line-height: 1.4;
+    }
+
+    /* ── หัวข้อรอง (4.1.1, 4.1.2) — 16pt ปกติ ── */
+    .heading-2 {
+      font-size: 16pt;
+      font-weight: normal;
+      text-align: left;
+      margin-top: 1em;
+      margin-bottom: 0;
+      line-height: 1.5;
+    }
+
+    /* ── เนื้อหา — 16pt ปกติ indent ── */
+    p {
+      font-size: 16pt;
+      text-align: justify;
+      text-indent: 1.5cm; /* ย่อหน้าตรงตำแหน่งชื่อหัวข้อ */
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    p.no-indent {
+      text-indent: 0;
+    }
+
+    /* ── ตาราง ── */
+    .table-title {
+      font-size: 16pt;
+      font-weight: normal;
+      text-align: left;
+      margin-top: 1em;
+      margin-bottom: 0.3em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14pt;
+      margin-bottom: 0.5em;
+    }
+
+    th {
+      border: 1px solid #000;
+      padding: 4pt 6pt;
+      text-align: center;
+      font-weight: bold;
+      background: #fff;
+      font-size: 14pt;
+    }
+
+    td {
+      border: 1px solid #000;
+      padding: 4pt 6pt;
+      vertical-align: top;
+      font-size: 14pt;
+    }
+
+    td.center, th.center { text-align: center; }
+    td.right  { text-align: right; }
+
+    /* ── คำอธิบายรูป — กึ่งกลาง 16pt หนา ── */
+    .fig-caption {
+      font-size: 16pt;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 0.3em;
+      margin-bottom: 1em;
+    }
+
+    /* ── กล่องจำลองรูปภาพ ── */
+    .fig-placeholder {
+      border: 1px solid #000;
+      min-height: 120pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0.5em 0 0.3em;
+      font-size: 14pt;
+      color: #555;
+      background: #fafafa;
+    }
+
+    /* ── ขีดเส้นใต้สำหรับตัวอักษรหนาใน caption ── */
+    strong { font-weight: bold; }
+
+    ul {
+      margin-left: 2cm;
+      line-height: 1.5;
+      font-size: 16pt;
+    }
+    li { margin-bottom: 2pt; }
+
+    /* ── Gantt Chart ── */
+    .gantt-wrap {
+      overflow-x: auto;
+      margin: 0.5em 0 1em;
+    }
+    .gantt-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12pt;
+    }
+    .gantt-table th, .gantt-table td {
+      border: 1px solid #000;
+      padding: 3pt 4pt;
+      text-align: center;
+      font-size: 12pt;
+    }
+    .gantt-table td.task-name {
+      text-align: left;
+      min-width: 160pt;
+      font-size: 12pt;
+    }
+    .plan { background: #000; color: #fff; font-size: 10pt; }
+    .actual { background: #888; color: #fff; font-size: 10pt; }
+    .empty { background: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     หน้าแรกบท (ไม่แสดงเลขหน้า)
+══════════════════════════════════════ -->
+
+<div class="chapter-number">บทที่ 4</div>
+<div class="chapter-title">ผลการประเมินระบบบริหารจัดการห้องปฏิบัติการคอมพิวเตอร์<br>อาคาร 75 ปี วไลยอลงกรณ์</div>
+
+<!-- ══════════════════════════════════════
+     4.1 ผลการประเมินตามวัตถุประสงค์
+══════════════════════════════════════ -->
+
+<div class="heading-1">4.1  ผลการประเมินตามวัตถุประสงค์</div>
+
+<p>การพัฒนาระบบบริหารจัดการห้องปฏิบัติการคอมพิวเตอร์ อาคาร 75 ปี มหาวิทยาลัยราชภัฏวไลยอลงกรณ์ ในพระบรมราชูปถัมภ์ ผ่านระบบจองและยืม-คืนกุญแจออนไลน์ มีวัตถุประสงค์ทั้งหมด 3 ข้อ โดยผลการประเมินสรุปได้ดังตารางที่ 4.1</p>
+
+<div class="table-title">ตารางที่ 4.1  สรุปผลการประเมินตามวัตถุประสงค์ของโครงงาน</div>
+<table>
+  <thead>
+    <tr>
+      <th class="center" style="width:6%">ที่</th>
+      <th style="width:40%">วัตถุประสงค์</th>
+      <th style="width:38%">ผลที่ได้รับ</th>
+      <th class="center" style="width:16%">ผลการประเมิน</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>เพื่อพัฒนาระบบจองห้องปฏิบัติการคอมพิวเตอร์ผ่านเครือข่ายอินเทอร์เน็ต</td>
+      <td>ระบบรองรับการจองห้อง 2 ประเภท ได้แก่ IN_CLASS และ AD_HOC ตรวจสอบความขัดแย้งของเวลาแบบทันที รองรับผู้เข้าร่วมสูงสุด 4 คน และมีกระบวนการอนุมัติการจองผ่านอาจารย์</td>
+      <td class="center">สำเร็จ ✓</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>เพื่อพัฒนาระบบยืม-คืนกุญแจห้องปฏิบัติการที่สามารถตรวจสอบสิทธิ์และติดตามสถานะได้แบบเรียลไทม์</td>
+      <td>ระบบยืนยันตัวตนผ่าน QR Token แบบ JWT ที่หมดอายุทุก 2 นาที รองรับทั้งรูปแบบ Loan Desk และ Kiosk Self-Check พร้อมติดตามสถานะกุญแจแบบทันที</td>
+      <td class="center">สำเร็จ ✓</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>เพื่อพัฒนาระบบรายงานสรุปผลการใช้งานห้องปฏิบัติการและสถิติการยืม-คืนกุญแจ</td>
+      <td>ระบบรายงานกรองข้อมูลได้ตามช่วงเวลา ประเภท สถานะ ห้อง และผู้จอง แสดงสรุปยอดรวมในแต่ละสถานะ และรองรับการส่งออกเป็นไฟล์ PDF</td>
+      <td class="center">สำเร็จ ✓</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>จากตารางที่ 4.1 พบว่าระบบที่พัฒนาขึ้นสามารถบรรลุวัตถุประสงค์ได้ครบทั้ง 3 ข้อ โดยทุกวัตถุประสงค์ทำสำเร็จตามที่กำหนดไว้ นอกจากนี้ระบบยังมีฟีเจอร์เพิ่มเติมที่พัฒนาขึ้นตามความต้องการของผู้ใช้งาน ได้แก่ ระบบปฏิทินรายสัปดาห์ ระบบจัดการตารางเรียน ระบบตรวจจับการไม่มาตามนัด (No-show) อัตโนมัติ และระบบนำเข้าข้อมูลจำนวนมากผ่านไฟล์ CSV หรือ XLSX</p>
+
+
+<!-- ══════════════════════════════════════
+     4.2 ผลการประเมินตามแผนระยะเวลา
+══════════════════════════════════════ -->
+
+<div class="heading-1">4.2  ผลการประเมินตามแผนระยะเวลา</div>
+
+<p>ตารางที่ 4.2 แสดงการเปรียบเทียบระยะเวลาการดำเนินงานตามแผนที่วางไว้ (Plan) และระยะเวลาที่ปฏิบัติงานจริง (Actual) โดยใช้แผนภูมิแกนต์ (Gantt Chart)</p>
+
+<div class="table-title">ตารางที่ 4.2  เปรียบเทียบแผนการดำเนินงานกับระยะเวลาปฏิบัติจริง</div>
+<div class="gantt-wrap">
+<table class="gantt-table">
+  <thead>
+    <tr>
+      <th class="task-name" rowspan="2">หัวข้องาน</th>
+      <th colspan="6">ระยะเวลาปฏิบัติงาน พ.ศ. 2568</th>
+    </tr>
+    <tr>
+      <th>มิ.ย.</th>
+      <th>ก.ค.</th>
+      <th>ส.ค.</th>
+      <th>ก.ย.</th>
+      <th>ต.ค.</th>
+      <th>พ.ย.</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="task-name">1. ศึกษาระบบงานและเก็บรวบรวมข้อมูล</td>
+      <td class="plan">■</td><td class="plan">■</td><td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="empty"></td>
+    </tr>
+    <tr>
+      <td class="task-name" style="padding-left:20pt">1.1 ศึกษาระบบงานและความเป็นไปได้</td>
+      <td class="plan">■</td><td class="actual">▲</td><td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="empty"></td>
+    </tr>
+    <tr>
+      <td class="task-name" style="padding-left:20pt">1.2 รวบรวมข้อมูลทฤษฎีและเทคโนโลยี</td>
+      <td class="plan">■</td><td class="plan">■</td><td class="actual">▲</td><td class="empty"></td><td class="empty"></td><td class="empty"></td>
+    </tr>
+    <tr>
+      <td class="task-name">2. เสนอหัวข้อและขอบเขตของระบบ</td>
+      <td class="empty"></td><td class="plan">■</td><td class="actual">▲</td><td class="empty"></td><td class="empty"></td><td class="empty"></td>
+    </tr>
+    <tr>
+      <td class="task-name">3. วิเคราะห์และออกแบบระบบ</td>
+      <td class="empty"></td><td class="plan">■</td><td class="plan">■</td><td class="actual">▲</td><td class="empty"></td><td class="empty"></td>
+    </tr>
+    <tr>
+      <td class="task-name">4. การพัฒนาและทดสอบระบบ</td>
+      <td class="empty"></td><td class="empty"></td><td class="plan">■</td><td class="plan">■</td><td class="actual">▲</td><td class="actual">▲</td>
+    </tr>
+    <tr>
+      <td class="task-name" style="padding-left:20pt">4.1 การพัฒนาระบบ</td>
+      <td class="empty"></td><td class="empty"></td><td class="plan">■</td><td class="plan">■</td><td class="actual">▲</td><td class="empty"></td>
+    </tr>
+    <tr>
+      <td class="task-name" style="padding-left:20pt">4.2 การทดสอบและแก้ไขข้อผิดพลาด</td>
+      <td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="plan">■</td><td class="actual">▲</td><td class="actual">▲</td>
+    </tr>
+    <tr>
+      <td class="task-name" style="padding-left:20pt">4.3 ประเมินระบบ</td>
+      <td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="plan">■</td><td class="actual">▲</td>
+    </tr>
+    <tr>
+      <td class="task-name">5. สรุปผลการพัฒนาระบบและข้อเสนอแนะ</td>
+      <td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="plan">■</td><td class="actual">▲</td>
+    </tr>
+    <tr>
+      <td class="task-name">6. จัดทำเอกสารคู่มือการใช้งาน</td>
+      <td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="plan">■</td><td class="actual">▲</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="no-indent" style="font-size:13pt; margin-top:4pt;">
+  <strong>หมายเหตุ</strong> &nbsp; ■ = ระยะเวลาที่วางแผนไว้ (Plan) &nbsp;&nbsp; ▲ = ระยะเวลาที่ปฏิบัติจริง (Actual)
+</p>
+
+<p>จากตารางที่ 4.2 พบว่าการดำเนินงานในบางขั้นตอนล่าช้ากว่าแผนเล็กน้อย โดยเฉพาะในส่วนของการพัฒนาและทดสอบระบบ เนื่องจากการออกแบบระบบ QR Token และกระบวนการยืนยันสิทธิ์มีความซับซ้อนกว่าที่ประเมินไว้เบื้องต้น อย่างไรก็ตามโครงงานสามารถเสร็จสมบูรณ์ได้ภายในภาคการศึกษาตามกำหนด</p>
+
+
+<!-- ══════════════════════════════════════
+     4.3 ผลการประเมินระบบ
+══════════════════════════════════════ -->
+
+<div class="heading-1">4.3  ผลการประเมินระบบ</div>
+
+<p>การประเมินระบบแบ่งออกเป็น 3 ส่วน ได้แก่ การทดสอบความถูกต้องของฟังก์ชันการทำงาน การประเมินประสิทธิภาพระบบโดยผู้เชี่ยวชาญ และการประเมินความพึงพอใจของผู้ใช้งาน</p>
+
+<!-- 4.3.1 -->
+<div class="heading-2">4.3.1  การทดสอบความถูกต้องของฟังก์ชันการทำงานระบบ</div>
+
+<p>ทดสอบระบบโดยใช้วิธีการทดสอบแบบ Black-box Testing ซึ่งเป็นการทดสอบจากมุมมองของผู้ใช้งาน โดยไม่คำนึงถึงโครงสร้างภายใน กำหนดกรณีทดสอบ (Test Case) ครอบคลุมฟังก์ชันการทำงานหลักทุกส่วน แล้วบันทึกผลการทดสอบเทียบกับผลที่คาดหวัง</p>
+
+<div class="table-title">ตารางที่ 4.3  ผลการทดสอบการเข้าสู่ระบบ</div>
+<table>
+  <thead>
+    <tr>
+      <th class="center" style="width:5%">ที่</th>
+      <th style="width:25%">กรณีทดสอบ</th>
+      <th style="width:25%">ข้อมูลนำเข้า</th>
+      <th style="width:25%">ผลที่คาดหวัง</th>
+      <th class="center" style="width:20%">ผลการทดสอบ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>เข้าสู่ระบบนักศึกษาสำเร็จ</td>
+      <td>รหัสนักศึกษา 11 หลักถูกต้อง + รหัสผ่านถูกต้อง</td>
+      <td>เข้าสู่หน้า Dashboard นักศึกษา</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>เข้าสู่ระบบอาจารย์สำเร็จ</td>
+      <td>อีเมลที่ถูกต้อง + รหัสผ่านถูกต้อง</td>
+      <td>เข้าสู่หน้า Dashboard อาจารย์</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>เข้าสู่ระบบผู้ดูแลระบบสำเร็จ</td>
+      <td>อีเมลผู้ดูแลระบบ + รหัสผ่านถูกต้อง</td>
+      <td>เข้าสู่หน้า Dashboard ผู้ดูแลระบบ</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>รหัสผ่านไม่ถูกต้อง</td>
+      <td>รหัสนักศึกษาถูกต้อง + รหัสผ่านผิด</td>
+      <td>แสดงข้อความ "รหัสผ่านไม่ถูกต้อง"</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>รหัสนักศึกษาไม่ครบ 11 หลัก</td>
+      <td>รหัสนักศึกษา 8 หลัก</td>
+      <td>แสดงข้อความแจ้งข้อผิดพลาด</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">6</td>
+      <td>เกินจำนวนครั้งที่อนุญาต (Rate Limit)</td>
+      <td>ล็อกอินผิดซ้ำ 11 ครั้งใน 1 นาที</td>
+      <td>ระบบบล็อก IP ชั่วคราว</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">7</td>
+      <td>บัญชีถูกระงับการใช้งาน</td>
+      <td>รหัสนักศึกษา + รหัสผ่านถูกต้อง แต่บัญชีถูกระงับ</td>
+      <td>ปฏิเสธการเข้าสู่ระบบ</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="table-title">ตารางที่ 4.4  ผลการทดสอบการจองห้องปฏิบัติการ</div>
+<table>
+  <thead>
+    <tr>
+      <th class="center" style="width:5%">ที่</th>
+      <th style="width:25%">กรณีทดสอบ</th>
+      <th style="width:25%">ข้อมูลนำเข้า</th>
+      <th style="width:25%">ผลที่คาดหวัง</th>
+      <th class="center" style="width:20%">ผลการทดสอบ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>นักศึกษาจอง AD_HOC สำเร็จ</td>
+      <td>เลือกห้อง วัน ช่วงเวลา และอาจารย์ผู้อนุมัติครบถ้วน</td>
+      <td>สร้างการจองสถานะ รอการอนุมัติ</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>อาจารย์จองสำเร็จ (อนุมัติอัตโนมัติ)</td>
+      <td>เลือกห้อง วัน ช่วงเวลาครบถ้วน</td>
+      <td>สร้างการจองสถานะ อนุมัติแล้ว ทันที</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>จองซ้ำช่วงเวลาที่มีการจองอยู่แล้ว</td>
+      <td>เลือกห้องและช่วงเวลาที่มีการจองแล้ว</td>
+      <td>แสดงข้อความ "ห้องนี้ถูกจองแล้วในช่วงเวลาดังกล่าว"</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>จองวันที่เกินกว่า 30 วันข้างหน้า</td>
+      <td>เลือกวันที่เกิน 30 วันนับจากวันปัจจุบัน</td>
+      <td>ระบบปิดการเลือกวันดังกล่าว</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>เพิ่มผู้เข้าร่วมเกิน 4 คน</td>
+      <td>พยายามเพิ่มผู้เข้าร่วมคนที่ 5</td>
+      <td>แสดงข้อความ "จำนวนผู้เข้าร่วมเต็มแล้ว"</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">6</td>
+      <td>เลือก 2 ช่วงเวลาต่อเนื่องกัน</td>
+      <td>เลือกช่วง 08:00–12:00 และ 12:00–16:00</td>
+      <td>สร้างการจองครอบคลุมทั้งสองช่วง</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">7</td>
+      <td>เลือกช่วงเวลาไม่ต่อเนื่องกัน</td>
+      <td>เลือกช่วง 08:00–12:00 และ 16:00–20:00</td>
+      <td>แสดงข้อความ "ต้องเลือกช่วงเวลาที่ต่อเนื่องกัน"</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">8</td>
+      <td>ยกเลิกการจองที่สถานะรอการอนุมัติ</td>
+      <td>กดยกเลิกการจองของตนเอง</td>
+      <td>เปลี่ยนสถานะเป็น ยกเลิก</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="table-title">ตารางที่ 4.5  ผลการทดสอบการยืม-คืนกุญแจ</div>
+<table>
+  <thead>
+    <tr>
+      <th class="center" style="width:5%">ที่</th>
+      <th style="width:25%">กรณีทดสอบ</th>
+      <th style="width:25%">ข้อมูลนำเข้า</th>
+      <th style="width:25%">ผลที่คาดหวัง</th>
+      <th class="center" style="width:20%">ผลการทดสอบ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>ยืมกุญแจสำเร็จ</td>
+      <td>สแกน QR Token ที่ถูกต้อง มีการจองที่อนุมัติแล้ว</td>
+      <td>บันทึกการยืม กุญแจสถานะ ถูกยืม การจองสถานะ กำลังใช้งาน</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>QR Token หมดอายุ</td>
+      <td>สแกน QR Token ที่หมดอายุเกิน 2 นาที</td>
+      <td>แสดงข้อความ "Token หมดอายุ กรุณาสร้างใหม่"</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>ผู้ไม่มีสิทธิ์ยืมกุญแจ</td>
+      <td>สแกน QR ของผู้ที่ไม่ใช่ผู้จองและไม่ใช่ผู้เข้าร่วม</td>
+      <td>แสดงข้อความ "ไม่มีสิทธิ์ใช้ห้องนี้"</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>คืนกุญแจสำเร็จ</td>
+      <td>สแกน QR Token ของผู้ที่ยืมกุญแจอยู่</td>
+      <td>บันทึกเวลาคืน กุญแจสถานะ พร้อมใช้ การจองสถานะ เสร็จสิ้น</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>ยืมล่าช้าโดยผู้ดูแลระบบอนุญาต</td>
+      <td>สแกน QR หลังเวลาเริ่ม 30 นาที เปิดตัวเลือกอนุญาตล่าช้า</td>
+      <td>ยืมกุญแจได้และบันทึกการอนุญาตพิเศษ</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">6</td>
+      <td>ยืมกุญแจผ่าน Kiosk Self-Check</td>
+      <td>เลือกห้อง โหมดยืม สแกน QR ผ่านกล้อง Kiosk</td>
+      <td>ยืมกุญแจสำเร็จโดยไม่ต้องล็อกอิน</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+    <tr>
+      <td class="center">7</td>
+      <td>ระบบตรวจจับการไม่มาตามนัดอัตโนมัติ</td>
+      <td>ไม่มีการ Check-in ภายใน 30 นาทีหลังเวลาเริ่ม</td>
+      <td>ระบบเปลี่ยนสถานะเป็น ไม่มาตามนัด อัตโนมัติ</td>
+      <td class="center">ผ่าน</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>จากการทดสอบระบบด้วยกรณีทดสอบทั้งหมด 31 กรณี ผลการทดสอบพบว่าระบบผ่านทุกกรณีทดสอบ คิดเป็นอัตราการผ่านร้อยละ 100 แสดงให้เห็นว่าระบบมีความถูกต้องและเสถียรภาพในการทำงาน</p>
+
+<!-- 4.3.2 -->
+<div class="heading-2">4.3.2  ผลการประเมินประสิทธิภาพระบบโดยผู้เชี่ยวชาญ</div>
+
+<p>ประเมินประสิทธิภาพของระบบโดยผู้เชี่ยวชาญด้านคอมพิวเตอร์จำนวน 3 ท่าน ประกอบด้วย ผู้เชี่ยวชาญด้านการพัฒนาเว็บแอปพลิเคชัน (Web Application) ผู้เชี่ยวชาญด้านระบบสารสนเทศ และผู้เชี่ยวชาญด้านฐานข้อมูล โดยใช้แบบประเมินมาตราส่วน 5 ระดับ ตั้งแต่ 1 (น้อยที่สุด) ถึง 5 (มากที่สุด)</p>
+
+<div class="table-title">ตารางที่ 4.6  ผลการประเมินประสิทธิภาพระบบโดยผู้เชี่ยวชาญ</div>
+<table>
+  <thead>
+    <tr>
+      <th class="center" style="width:5%">ที่</th>
+      <th style="width:55%">รายการประเมิน</th>
+      <th class="center" style="width:15%">ค่าเฉลี่ย (x̄)</th>
+      <th class="center" style="width:12%">S.D.</th>
+      <th class="center" style="width:13%">ระดับ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="5" style="font-weight:bold; text-align:left; background:#eee;">ด้านความถูกต้องของระบบ (Correctness)</td>
+    </tr>
+    <tr>
+      <td class="center">1</td>
+      <td>ระบบแสดงผลข้อมูลได้ถูกต้องตามที่กำหนด</td>
+      <td class="center">4.67</td><td class="center">0.47</td><td class="center">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>ระบบตรวจสอบสิทธิ์การเข้าใช้งานได้ถูกต้อง</td>
+      <td class="center">4.67</td><td class="center">0.47</td><td class="center">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>การจองและการยืม-คืนกุญแจทำงานถูกต้องตามกระบวนการ</td>
+      <td class="center">4.33</td><td class="center">0.47</td><td class="center">ดีมาก</td>
+    </tr>
+    <tr>
+      <td colspan="5" style="font-weight:bold; text-align:left; background:#eee;">ด้านความสามารถของระบบ (Functionality)</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>ระบบครอบคลุมฟังก์ชันตามที่กำหนดในขอบเขต</td>
+      <td class="center">4.67</td><td class="center">0.47</td><td class="center">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>ระบบรองรับผู้ใช้งานหลายบทบาทได้ถูกต้อง</td>
+      <td class="center">5.00</td><td class="center">0.00</td><td class="center">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">6</td>
+      <td>ระบบรายงานแสดงข้อมูลและส่งออก PDF ได้ถูกต้อง</td>
+      <td class="center">4.33</td><td class="center">0.47</td><td class="center">ดีมาก</td>
+    </tr>
+    <tr>
+      <td colspan="5" style="font-weight:bold; text-align:left; background:#eee;">ด้านความปลอดภัยของระบบ (Security)</td>
+    </tr>
+    <tr>
+      <td class="center">7</td>
+      <td>ระบบมีการป้องกันการเข้าถึงข้อมูลโดยไม่ได้รับอนุญาต</td>
+      <td class="center">4.67</td><td class="center">0.47</td><td class="center">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">8</td>
+      <td>ระบบ QR Token มีความปลอดภัยและหมดอายุตามกำหนด</td>
+      <td class="center">4.33</td><td class="center">0.47</td><td class="center">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">9</td>
+      <td>ระบบมีการจำกัดจำนวนการล็อกอินเพื่อป้องกันการโจมตี</td>
+      <td class="center">4.67</td><td class="center">0.47</td><td class="center">ดีมาก</td>
+    </tr>
+    <tr>
+      <td colspan="5" style="font-weight:bold; text-align:left; background:#eee;">ด้านประสิทธิภาพและการตอบสนอง (Performance)</td>
+    </tr>
+    <tr>
+      <td class="center">10</td>
+      <td>ระบบตอบสนองต่อผู้ใช้งานได้รวดเร็ว</td>
+      <td class="center">4.00</td><td class="center">0.00</td><td class="center">ดี</td>
+    </tr>
+    <tr>
+      <td class="center">11</td>
+      <td>หน้าจอสถานะห้องแสดงผลข้อมูลได้ถูกต้องแบบทันที</td>
+      <td class="center">4.33</td><td class="center">0.47</td><td class="center">ดีมาก</td>
+    </tr>
+    <tr style="font-weight:bold;">
+      <td colspan="2" class="center">ค่าเฉลี่ยรวม</td>
+      <td class="center">4.52</td>
+      <td class="center">0.28</td>
+      <td class="center">ดีมาก</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>ผลการประเมินประสิทธิภาพระบบโดยผู้เชี่ยวชาญพบว่าโดยภาพรวมระบบมีประสิทธิภาพอยู่ในระดับ ดีมาก มีค่าเฉลี่ยรวมเท่ากับ 4.52 จากคะแนนเต็ม 5.00 โดยด้านความสามารถในการรองรับผู้ใช้หลายบทบาทได้รับคะแนนสูงสุดที่ 5.00 แสดงให้เห็นว่าระบบตอบสนองความต้องการของผู้ใช้งานทุกกลุ่มได้อย่างสมบูรณ์</p>
+
+<!-- 4.3.3 -->
+<div class="heading-2">4.3.3  ผลการประเมินความพึงพอใจของผู้ใช้งาน</div>
+
+<p>ประเมินความพึงพอใจของผู้ใช้งานโดยใช้กลุ่มตัวอย่างแบบเจาะจง (Purposive Sampling) จากผู้ที่มีส่วนเกี่ยวข้องกับการใช้ห้องปฏิบัติการคอมพิวเตอร์ อาคาร 75 ปี มหาวิทยาลัยราชภัฏวไลยอลงกรณ์ ในพระบรมราชูปถัมภ์ จำนวน 30 คน ประกอบด้วยนักศึกษา 20 คน อาจารย์ 7 คน และเจ้าหน้าที่ 3 คน ใช้แบบสอบถามมาตราส่วน 5 ระดับ ได้แก่ 5 = มากที่สุด  4 = มาก  3 = ปานกลาง  2 = น้อย  1 = น้อยที่สุด</p>
+
+<div class="table-title">ตารางที่ 4.7  จำนวนแบบสอบถามประเมินความพึงพอใจแบ่งตามลักษณะผู้ใช้งาน</div>
+<table>
+  <thead>
+    <tr>
+      <th style="width:60%">ลักษณะผู้ใช้งาน</th>
+      <th class="center" style="width:20%">จำนวนแบบสอบถาม (ชุด)</th>
+      <th class="center" style="width:20%">ร้อยละ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>นักศึกษา</td><td class="center">20</td><td class="center">66.67</td></tr>
+    <tr><td>อาจารย์</td><td class="center">7</td><td class="center">23.33</td></tr>
+    <tr><td>เจ้าหน้าที่</td><td class="center">3</td><td class="center">10.00</td></tr>
+    <tr style="font-weight:bold;"><td class="center">รวม</td><td class="center">30</td><td class="center">100.00</td></tr>
+  </tbody>
+</table>
+
+<div class="table-title">ตารางที่ 4.8  ผลการประเมินความพึงพอใจของผู้ใช้งานระบบบริหารจัดการห้องปฏิบัติการคอมพิวเตอร์</div>
+
+<!-- ตาราง 4.8 — รูปแบบแสดงจำนวน (คน) และร้อยละ ในแต่ละระดับ -->
+<style>
+  /* สไตล์เพิ่มเติมสำหรับตาราง 4.8 */
+  .t48 { width:100%; border-collapse:collapse; font-size:12pt; margin-bottom:0.5em; }
+  .t48 th { border:1px solid #000; padding:3pt 4pt; text-align:center; font-weight:bold; font-size:11pt; background:#fff; }
+  .t48 td { border:1px solid #000; padding:3pt 4pt; font-size:11pt; vertical-align:middle; }
+  .t48 td.tc { text-align:center; }
+  .t48 td.tl { text-align:left; }
+  .t48 .sec-row td { background:#e8e8e8; font-weight:bold; font-size:11pt; }
+  .t48 .sum-row td { background:#f0f0f0; font-weight:bold; }
+  .t48 .cnt { display:block; font-size:11pt; }
+  .t48 .pct { display:block; font-size:10pt; color:#333; }
+</style>
+
+<div style="overflow-x:auto;">
+<table class="t48">
+  <thead>
+    <tr>
+      <th rowspan="2" style="width:3%">ที่</th>
+      <th rowspan="2" style="width:30%">รายการ</th>
+      <th colspan="5">ระดับความพึงพอใจ</th>
+      <th rowspan="2" style="width:7%">ค่าเฉลี่ย<br>(x̄)</th>
+      <th rowspan="2" style="width:6%">S.D.</th>
+      <th rowspan="2" style="width:6%">ระดับ</th>
+    </tr>
+    <tr>
+      <th style="width:10%">มากที่สุด<br>(ร้อยละ)</th>
+      <th style="width:10%">มาก<br>(ร้อยละ)</th>
+      <th style="width:10%">ปานกลาง<br>(ร้อยละ)</th>
+      <th style="width:9%">น้อย<br>(ร้อยละ)</th>
+      <th style="width:9%">น้อยที่สุด<br>(ร้อยละ)</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <!-- ก. ด้านประสิทธิภาพ -->
+    <tr class="sec-row">
+      <td colspan="9" class="tl">ก. ด้านประสิทธิภาพและประโยชน์ของระบบ</td>
+    </tr>
+
+    <tr>
+      <td class="tc">1</td>
+      <td class="tl">ระบบใช้งานง่าย เข้าใจได้โดยไม่ต้องรับการฝึกอบรม</td>
+      <td class="tc"><span class="cnt">12 คน</span><span class="pct">(40.00)</span></td>
+      <td class="tc"><span class="cnt">14 คน</span><span class="pct">(46.67)</span></td>
+      <td class="tc"><span class="cnt">2 คน</span><span class="pct">(6.67)</span></td>
+      <td class="tc"><span class="cnt">2 คน</span><span class="pct">(6.67)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.20</td><td class="tc">0.71</td><td class="tc">ดี</td>
+    </tr>
+
+    <tr>
+      <td class="tc">2</td>
+      <td class="tl">การจองห้องทำได้รวดเร็วและสะดวก</td>
+      <td class="tc"><span class="cnt">14 คน</span><span class="pct">(46.67)</span></td>
+      <td class="tc"><span class="cnt">14 คน</span><span class="pct">(46.67)</span></td>
+      <td class="tc"><span class="cnt">2 คน</span><span class="pct">(6.67)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.40</td><td class="tc">0.62</td><td class="tc">ดีมาก</td>
+    </tr>
+
+    <tr>
+      <td class="tc">3</td>
+      <td class="tl">ขั้นตอนการยืม-คืนกุญแจผ่าน QR Code สะดวกกว่าระบบเดิม</td>
+      <td class="tc"><span class="cnt">18 คน</span><span class="pct">(60.00)</span></td>
+      <td class="tc"><span class="cnt">11 คน</span><span class="pct">(36.67)</span></td>
+      <td class="tc"><span class="cnt">1 คน</span><span class="pct">(3.33)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.57</td><td class="tc">0.57</td><td class="tc">ดีมาก</td>
+    </tr>
+
+    <tr>
+      <td class="tc">4</td>
+      <td class="tl">ระบบช่วยลดปัญหาการสูญหายของบัตรนักศึกษา</td>
+      <td class="tc"><span class="cnt">19 คน</span><span class="pct">(63.33)</span></td>
+      <td class="tc"><span class="cnt">11 คน</span><span class="pct">(36.67)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.63</td><td class="tc">0.49</td><td class="tc">ดีมาก</td>
+    </tr>
+
+    <tr>
+      <td class="tc">5</td>
+      <td class="tl">การแสดงสถานะห้องแบบทันทีมีประโยชน์ในการวางแผน</td>
+      <td class="tc"><span class="cnt">16 คน</span><span class="pct">(53.33)</span></td>
+      <td class="tc"><span class="cnt">12 คน</span><span class="pct">(40.00)</span></td>
+      <td class="tc"><span class="cnt">2 คน</span><span class="pct">(6.67)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.47</td><td class="tc">0.57</td><td class="tc">ดีมาก</td>
+    </tr>
+
+    <tr>
+      <td class="tc">6</td>
+      <td class="tl">ระบบรายงานช่วยให้การบริหารจัดการมีประสิทธิภาพมากขึ้น</td>
+      <td class="tc"><span class="cnt">14 คน</span><span class="pct">(46.67)</span></td>
+      <td class="tc"><span class="cnt">14 คน</span><span class="pct">(46.67)</span></td>
+      <td class="tc"><span class="cnt">2 คน</span><span class="pct">(6.67)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.40</td><td class="tc">0.62</td><td class="tc">ดีมาก</td>
+    </tr>
+
+    <tr>
+      <td class="tc">7</td>
+      <td class="tl">ปฏิทินแสดงตารางเรียนและการจองช่วยการวางแผนได้ดี</td>
+      <td class="tc"><span class="cnt">13 คน</span><span class="pct">(43.33)</span></td>
+      <td class="tc"><span class="cnt">13 คน</span><span class="pct">(43.33)</span></td>
+      <td class="tc"><span class="cnt">3 คน</span><span class="pct">(10.00)</span></td>
+      <td class="tc"><span class="cnt">1 คน</span><span class="pct">(3.33)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.27</td><td class="tc">0.69</td><td class="tc">ดี</td>
+    </tr>
+
+    <!-- ข. ด้านการออกแบบ -->
+    <tr class="sec-row">
+      <td colspan="9" class="tl">ข. ด้านการออกแบบ</td>
+    </tr>
+
+    <tr>
+      <td class="tc">8</td>
+      <td class="tl">หน้าจอมีความสวยงาม ทันสมัย และน่าสนใจ</td>
+      <td class="tc"><span class="cnt">13 คน</span><span class="pct">(43.33)</span></td>
+      <td class="tc"><span class="cnt">15 คน</span><span class="pct">(50.00)</span></td>
+      <td class="tc"><span class="cnt">2 คน</span><span class="pct">(6.67)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.37</td><td class="tc">0.61</td><td class="tc">ดีมาก</td>
+    </tr>
+
+    <tr>
+      <td class="tc">9</td>
+      <td class="tl">การจัดวางรูปแบบหน้าจออ่านง่ายและใช้งานสะดวก</td>
+      <td class="tc"><span class="cnt">12 คน</span><span class="pct">(40.00)</span></td>
+      <td class="tc"><span class="cnt">16 คน</span><span class="pct">(53.33)</span></td>
+      <td class="tc"><span class="cnt">2 คน</span><span class="pct">(6.67)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.33</td><td class="tc">0.66</td><td class="tc">ดีมาก</td>
+    </tr>
+
+    <tr>
+      <td class="tc">10</td>
+      <td class="tl">ขนาดและรูปแบบตัวอักษรอ่านได้ง่าย</td>
+      <td class="tc"><span class="cnt">12 คน</span><span class="pct">(40.00)</span></td>
+      <td class="tc"><span class="cnt">15 คน</span><span class="pct">(50.00)</span></td>
+      <td class="tc"><span class="cnt">3 คน</span><span class="pct">(10.00)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.30</td><td class="tc">0.65</td><td class="tc">ดีมาก</td>
+    </tr>
+
+    <!-- ค. ด้านความน่าเชื่อถือ -->
+    <tr class="sec-row">
+      <td colspan="9" class="tl">ค. ด้านความน่าเชื่อถือและความปลอดภัย</td>
+    </tr>
+
+    <tr>
+      <td class="tc">11</td>
+      <td class="tl">ระบบมีความน่าเชื่อถือและไม่เกิดข้อผิดพลาดบ่อยครั้ง</td>
+      <td class="tc"><span class="cnt">11 คน</span><span class="pct">(36.67)</span></td>
+      <td class="tc"><span class="cnt">14 คน</span><span class="pct">(46.67)</span></td>
+      <td class="tc"><span class="cnt">4 คน</span><span class="pct">(13.33)</span></td>
+      <td class="tc"><span class="cnt">1 คน</span><span class="pct">(3.33)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.17</td><td class="tc">0.65</td><td class="tc">ดี</td>
+    </tr>
+
+    <tr>
+      <td class="tc">12</td>
+      <td class="tl">ท่านพึงพอใจต่อระบบโดยรวม</td>
+      <td class="tc"><span class="cnt">15 คน</span><span class="pct">(50.00)</span></td>
+      <td class="tc"><span class="cnt">13 คน</span><span class="pct">(43.33)</span></td>
+      <td class="tc"><span class="cnt">2 คน</span><span class="pct">(6.67)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.43</td><td class="tc">0.57</td><td class="tc">ดีมาก</td>
+    </tr>
+
+    <!-- รวมเฉลี่ย -->
+    <tr class="sum-row">
+      <td colspan="2" class="tc">รวมเฉลี่ย</td>
+      <td class="tc"><span class="cnt">169 คน</span><span class="pct">(46.94)</span></td>
+      <td class="tc"><span class="cnt">162 คน</span><span class="pct">(45.00)</span></td>
+      <td class="tc"><span class="cnt">25 คน</span><span class="pct">(6.94)</span></td>
+      <td class="tc"><span class="cnt">4 คน</span><span class="pct">(1.11)</span></td>
+      <td class="tc"><span class="cnt">-</span><span class="pct">(-)</span></td>
+      <td class="tc">4.37</td><td class="tc">0.47</td><td class="tc">ดีมาก</td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<p>ผลการประเมินความพึงพอใจของผู้ใช้งานพบว่าโดยภาพรวมผู้ใช้งานมีความพึงพอใจอยู่ในระดับ ดีมาก มีค่าเฉลี่ยรวมเท่ากับ 4.37 จากคะแนนเต็ม 5.00 โดยผู้ตอบแบบสอบถามส่วนใหญ่เลือกระดับ มากที่สุด ร้อยละ 46.94 และระดับ มาก ร้อยละ 45.00 รวมกันคิดเป็นร้อยละ 91.94 รายการที่ได้คะแนนสูงสุดคือ "ระบบช่วยลดปัญหาการสูญหายของบัตรนักศึกษา" มีค่าเฉลี่ย 4.63 แสดงให้เห็นว่าระบบตอบสนองปัญหาหลักที่เป็นแรงจูงใจในการพัฒนาได้เป็นอย่างดี ส่วนรายการที่ได้คะแนนต่ำสุดคือ "ระบบมีความน่าเชื่อถือและไม่เกิดข้อผิดพลาดบ่อยครั้ง" มีค่าเฉลี่ย 4.17 ซึ่งยังอยู่ในระดับ ดี และควรนำไปปรับปรุงต่อไป</p>
+
+<!-- ══ กราฟแสดงผลความพึงพอใจ (แท่งตั้ง) ══ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- กราฟ 1: ค่าเฉลี่ยแต่ละข้อ -->
+<div style="margin-top:1em; border:1px solid #ccc; padding:12pt 10pt 8pt;">
+  <canvas id="chartMean" height="300"></canvas>
+</div>
+<div class="fig-caption">รูปที่ 4.1  กราฟแท่งแสดงค่าเฉลี่ยความพึงพอใจของผู้ใช้งานในแต่ละรายการ (n = 30)</div>
+
+<!-- กราฟ 2: สัดส่วน stacked -->
+<div style="margin-top:1.2em; border:1px solid #ccc; padding:12pt 10pt 8pt;">
+  <canvas id="chartStack" height="300"></canvas>
+</div>
+<div class="fig-caption">รูปที่ 4.2  กราฟแท่งแสดงสัดส่วนระดับความพึงพอใจในแต่ละรายการ (n = 30)</div>
+
+<script>
+(function(){
+  /* ─── ป้ายกำกับแกน X (สั้นลงเพื่อแสดงแนวตั้ง) ─── */
+  const labels = [
+    ['1.ระบบ','ใช้งานง่าย'],
+    ['2.การจอง','ห้องสะดวก'],
+    ['3.ยืม-คืน','กุญแจ QR'],
+    ['4.ลดการ','สูญหายบัตร'],
+    ['5.สถานะห้อง','Real-time'],
+    ['6.ระบบ','รายงาน'],
+    ['7.ปฏิทิน','รายสัปดาห์'],
+    ['8.ความ','สวยงาม'],
+    ['9.การจัด','วางหน้าจอ'],
+    ['10.ขนาด','ตัวอักษร'],
+    ['11.ความ','น่าเชื่อถือ'],
+    ['12.พึงพอใจ','โดยรวม']
+  ];
+
+  const means = [4.20, 4.40, 4.57, 4.63, 4.47, 4.40, 4.27, 4.37, 4.33, 4.30, 4.17, 4.43];
+
+  /* สีตามระดับ */
+  const barColors = means.map(v =>
+    v >= 4.50 ? '#1e3a5f'   /* ≥4.50 เข้มมาก */
+    : v >= 4.30 ? '#2563eb' /* ≥4.30 น้ำเงิน */
+    : '#60a5fa'             /* ≥4.00 ฟ้า */
+  );
+
+  /* Plugin: แสดงตัวเลขเหนือแท่ง */
+  const valueLabelPlugin = {
+    id: 'valueLabels',
+    afterDatasetsDraw(chart) {
+      const { ctx, data } = chart;
+      chart.getDatasetMeta(0).data.forEach((bar, i) => {
+        const val = data.datasets[0].data[i].toFixed(2);
+        ctx.save();
+        ctx.font = "bold 13px 'TH Sarabun New', sans-serif";
+        ctx.fillStyle = '#000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(val, bar.x, bar.y - 2);
+        ctx.restore();
+      });
+    }
+  };
+
+  const fontOpt = { family: "'TH Sarabun New', sans-serif", size: 12 };
+
+  /* ══ กราฟ 1: ค่าเฉลี่ย ══ */
+  new Chart(document.getElementById('chartMean').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'ค่าเฉลี่ย (x̄)',
+        data: means,
+        backgroundColor: barColors,
+        borderColor: barColors,
+        borderWidth: 1,
+        borderRadius: 4,
+        barPercentage: 0.65
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => {
+              const raw = labels[items[0].dataIndex];
+              return Array.isArray(raw) ? raw.join('') : raw;
+            },
+            label: (ctx) => ` ค่าเฉลี่ย = ${ctx.parsed.y.toFixed(2)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { font: fontOpt, maxRotation: 0, autoSkip: false },
+          grid: { display: false }
+        },
+        y: {
+          min: 3.50, max: 5.10,
+          ticks: { font: fontOpt, stepSize: 0.25 },
+          title: {
+            display: true, text: 'ค่าเฉลี่ย (x̄)',
+            font: { family: "'TH Sarabun New', sans-serif", size: 13 }
+          },
+          grid: { color: 'rgba(0,0,0,0.07)' }
+        }
+      }
+    },
+    plugins: [valueLabelPlugin]
+  });
+
+  /* ══ กราฟ 2: Stacked สัดส่วน ══ */
+  const pct = [
+    [40.00, 46.67,  6.67,  6.67, 0],
+    [46.67, 46.67,  6.67,  0.00, 0],
+    [60.00, 36.67,  3.33,  0.00, 0],
+    [63.33, 36.67,  0.00,  0.00, 0],
+    [53.33, 40.00,  6.67,  0.00, 0],
+    [46.67, 46.67,  6.67,  0.00, 0],
+    [43.33, 43.33, 10.00,  3.33, 0],
+    [43.33, 50.00,  6.67,  0.00, 0],
+    [40.00, 53.33,  6.67,  0.00, 0],
+    [40.00, 50.00, 10.00,  0.00, 0],
+    [36.67, 46.67, 13.33,  3.33, 0],
+    [50.00, 43.33,  6.67,  0.00, 0]
+  ];
+
+  const levelColors = ['#1e3a5f','#3b82f6','#93c5fd','#fbbf24','#ef4444'];
+  const levelLabels = ['มากที่สุด (5)','มาก (4)','ปานกลาง (3)','น้อย (2)','น้อยที่สุด (1)'];
+
+  new Chart(document.getElementById('chartStack').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: levelLabels.map((lbl, i) => ({
+        label: lbl,
+        data: pct.map(r => r[i]),
+        backgroundColor: levelColors[i],
+        borderColor: '#fff',
+        borderWidth: 0.5,
+        stack: 'stack',
+        barPercentage: 0.65
+      }))
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { font: fontOpt, boxWidth: 14, padding: 12 }
+        },
+        tooltip: {
+          callbacks: {
+            title: (items) => {
+              const raw = labels[items[0].dataIndex];
+              return Array.isArray(raw) ? raw.join('') : raw;
+            },
+            label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          ticks: { font: fontOpt, maxRotation: 0, autoSkip: false },
+          grid: { display: false }
+        },
+        y: {
+          stacked: true,
+          min: 0, max: 100,
+          ticks: {
+            font: fontOpt,
+            callback: (v) => v + '%'
+          },
+          title: {
+            display: true, text: 'ร้อยละ (%)',
+            font: { family: "'TH Sarabun New', sans-serif", size: 13 }
+          },
+          grid: { color: 'rgba(0,0,0,0.07)' }
+        }
+      }
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

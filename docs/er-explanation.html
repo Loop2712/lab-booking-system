@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3.6 แผนภาพความสัมพันธ์ของข้อมูล — ER Diagram</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'TH Sarabun New', 'Sarabun', 'Segoe UI', sans-serif;
+      font-size: 16pt;
+      color: #1e293b;
+      background: #fff;
+      padding: 2cm 2.5cm;
+      line-height: 1.8;
+    }
+    h2 { font-size: 18pt; font-weight: 700; margin-bottom: 16px; color: #1e3a5f; }
+    h3 { font-size: 16pt; font-weight: 700; margin: 20px 0 10px; color: #1e3a5f; }
+    p { margin-bottom: 12px; text-indent: 1.5cm; text-align: justify; }
+    p.no-indent { text-indent: 0; }
+
+    /* ER mini diagram */
+    .er-container {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      overflow-x: auto;
+    }
+    .er-diagram {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      min-width: 700px;
+    }
+    .entity {
+      border: 2px solid #1e3a5f;
+      border-radius: 6px;
+      min-width: 120px;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    }
+    .entity-name {
+      background: #1e3a5f;
+      color: #fff;
+      text-align: center;
+      padding: 5px 10px;
+      font-size: 11pt;
+      font-weight: 700;
+      border-radius: 3px 3px 0 0;
+    }
+    .entity-attrs {
+      padding: 6px 10px;
+      font-size: 9.5pt;
+      line-height: 1.7;
+    }
+    .attr-pk { color: #b45309; font-weight: 700; }
+    .attr-fk { color: #1d4ed8; }
+    .attr-uk { color: #166534; }
+
+    /* Relationship table */
+    .rel-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14pt;
+      margin: 16px 0;
+    }
+    .rel-table th {
+      background: #1e3a5f;
+      color: #fff;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 700;
+    }
+    .rel-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+    .rel-table tr:nth-child(even) td { background: #f8fafc; }
+    .rel-table tr:hover td { background: #eff6ff; }
+
+    .badge {
+      display: inline-block;
+      border-radius: 4px;
+      padding: 1px 8px;
+      font-size: 11pt;
+      font-weight: 700;
+    }
+    .b-1n { background:#dbeafe; color:#1e40af; }
+    .b-11 { background:#dcfce7; color:#166534; }
+    .b-nm { background:#f3e8ff; color:#6b21a8; }
+
+    .section-label {
+      font-weight: 700;
+      font-size: 15pt;
+      color: #1e3a5f;
+      margin: 24px 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid #1e3a5f;
+    }
+
+    .note-box {
+      border-left: 4px solid #2563eb;
+      background: #eff6ff;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 13pt;
+      margin: 12px 0;
+      line-height: 1.7;
+    }
+
+    @media print {
+      body { padding: 1.5cm 2.5cm; }
+    }
+  </style>
+</head>
+<body>
+
+<h2>3.6 แผนภาพความสัมพันธ์ของข้อมูล (Entity-Relationship Diagram)</h2>
+
+<p>แผนภาพความสัมพันธ์ของข้อมูล (Entity-Relationship Diagram หรือ ER Diagram) คือแบบจำลองที่แสดงโครงสร้างของฐานข้อมูลในรูปแบบกราฟิก โดยระบุตารางข้อมูล (Entity) คุณสมบัติ (Attribute) และความสัมพันธ์ระหว่างตาราง (Relationship) เพื่อให้เข้าใจการไหลของข้อมูลภายในระบบได้อย่างชัดเจน</p>
+
+<p>ระบบบริหารจัดการห้องปฏิบัติการคอมพิวเตอร์ อาคาร 75 ปี วไลยอลงกรณ์ มีฐานข้อมูลที่ประกอบด้วยตารางหลัก 11 ตาราง ได้แก่ User (ผู้ใช้งาน), Room (ห้องปฏิบัติการ), Key (กุญแจ), Course (รายวิชา), Term (ภาคการศึกษา), Section (กลุ่มเรียน), Enrollment (การลงทะเบียน), Reservation (การจองห้อง), ReservationParticipant (ผู้เข้าร่วมการจอง), Loan (การยืมกุญแจ) และ KioskToken (โทเคนอุปกรณ์ Kiosk) โดยมีความสัมพันธ์ระหว่างตาราง ดังแสดงในรูปที่ 3.32</p>
+
+<p class="no-indent" style="text-align:center; font-style:italic; color:#475569; margin-top:8px;">
+  รูปที่ 3.32 แผนภาพความสัมพันธ์ของข้อมูล (ER Diagram)
+</p>
+
+<div class="note-box">
+  <strong>หมายเหตุสัญลักษณ์ในตาราง:</strong>
+  PK = Primary Key (คีย์หลัก) &nbsp;|&nbsp;
+  FK = Foreign Key (คีย์นอก) &nbsp;|&nbsp;
+  UK = Unique Key (คีย์ไม่ซ้ำ)
+</div>
+
+<!-- ─────────────────────────────────────
+     SECTION: ตารางและคุณสมบัติ
+───────────────────────────────────── -->
+<div class="section-label">ตารางข้อมูลและคุณสมบัติหลัก</div>
+
+<div class="er-container">
+  <div class="er-diagram">
+
+    <!-- User -->
+    <div class="entity">
+      <div class="entity-name">User</div>
+      <div class="entity-attrs">
+        <div class="attr-pk">🔑 id (PK)</div>
+        <div>role</div>
+        <div class="attr-uk">studentId (UK)</div>
+        <div class="attr-uk">email (UK)</div>
+        <div>firstName, lastName</div>
+        <div>birthDate, gender</div>
+        <div>passwordHash</div>
+        <div>isActive</div>
+      </div>
+    </div>
+
+    <!-- Room -->
+    <div class="entity">
+      <div class="entity-name">Room</div>
+      <div class="entity-attrs">
+        <div class="attr-pk">🔑 id (PK)</div>
+        <div class="attr-uk">code (UK)</div>
+        <div>name, roomNumber</div>
+        <div>floor, computerCount</div>
+        <div>isActive</div>
+      </div>
+    </div>
+
+    <!-- Key -->
+    <div class="entity">
+      <div class="entity-name">Key</div>
+      <div class="entity-attrs">
+        <div class="attr-pk">🔑 id (PK)</div>
+        <div class="attr-uk">keyCode (UK)</div>
+        <div>status</div>
+        <div class="attr-fk">🔗 roomId (FK)</div>
+      </div>
+    </div>
+
+    <!-- Course -->
+    <div class="entity">
+      <div class="entity-name">Course</div>
+      <div class="entity-attrs">
+        <div class="attr-pk">🔑 id (PK)</div>
+        <div class="attr-uk">code (UK)</div>
+        <div>name</div>
+      </div>
+    </div>
+
+    <!-- Term -->
+    <div class="entity">
+      <div class="entity-name">Term</div>
+      <div class="entity-attrs">
+        <div class="attr-pk">🔑 id (PK)</div>
+        <div>term, year</div>
+        <div>startDate, endDate</div>
+        <div>isActive</div>
+      </div>
+    </div>
+
+    <!-- Section -->
+    <div class="entity">
+      <div class="entity-name">Section</div>
+      <div class="entity-attrs">
+        <div class="attr-pk">🔑 id (PK)</div>
+        <div class="attr-fk">🔗 courseId (FK)</div>
+        <div class="attr-fk">🔗 teacherId (FK)</div>
+        <div class="attr-fk">🔗 roomId (FK)</div>
+        <div class="attr-fk">🔗 termId (FK)</div>
+        <div>dayOfWeek</div>
+        <div>startTime, endTime</div>
+        <div>isActive</div>
+      </div>
+    </div>
+
+    <!-- Enrollment -->
+    <div class="entity">
+      <div class="entity-name">Enrollment</div>
+      <div class="entity-attrs">
+        <div class="attr-pk">🔑 id (PK)</div>
+        <div class="attr-fk">🔗 studentId (FK)</div>
+        <div class="attr-fk">🔗 sectionId (FK)</div>
+        <div>createdAt</div>
+      </div>
+    </div>
+
+    <!-- Reservation -->
+    <div class="entity">
+      <div class="entity-name">Reservation</div>
+      <div class="entity-attrs">
+        <div class="attr-pk">🔑 id (PK)</div>
+        <div>type, status</div>
+        <div class="attr-fk">🔗 requesterId (FK)</div>
+        <div class="attr-fk">🔗 approverId (FK)</div>
+        <div class="attr-fk">🔗 roomId (FK)</div>
+        <div class="attr-fk">🔗 sectionId (FK)</div>
+        <div>date, slot</div>
+        <div>startAt, endAt</div>
+        <div>note</div>
+      </div>
+    </div>
+
+    <!-- ReservationParticipant -->
+    <div class="entity">
+      <div class="entity-name">ReservationParticipant</div>
+      <div class="entity-attrs">
+        <div class="attr-pk">🔑 id (PK)</div>
+        <div class="attr-fk">🔗 reservationId (FK)</div>
+        <div class="attr-fk">🔗 userId (FK)</div>
+        <div>createdAt</div>
+      </div>
+    </div>
+
+    <!-- Loan -->
+    <div class="entity">
+      <div class="entity-name">Loan</div>
+      <div class="entity-attrs">
+        <div class="attr-pk">🔑 id (PK)</div>
+        <div class="attr-uk attr-fk">🔗 reservationId (UK/FK)</div>
+        <div class="attr-fk">🔗 keyId (FK)</div>
+        <div class="attr-fk">🔗 borrowerId (FK)</div>
+        <div class="attr-fk">🔗 returnedById (FK)</div>
+        <div class="attr-fk">🔗 handledById (FK)</div>
+        <div>checkedInAt</div>
+        <div>checkedOutAt</div>
+      </div>
+    </div>
+
+    <!-- KioskToken -->
+    <div class="entity">
+      <div class="entity-name">KioskToken</div>
+      <div class="entity-attrs">
+        <div class="attr-pk">🔑 id (PK)</div>
+        <div class="attr-uk">token (UK)</div>
+        <div>isActive</div>
+        <div>pairedAt</div>
+        <div>revokedAt</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────
+     SECTION: ความสัมพันธ์
+───────────────────────────────────── -->
+<div class="section-label">ความสัมพันธ์ระหว่างตาราง</div>
+
+<p>ระบบมีความสัมพันธ์ระหว่างตารางทั้งหมด 3 รูปแบบ ได้แก่ ความสัมพันธ์แบบ หนึ่งต่อหนึ่ง (One-to-One หรือ 1:1) ความสัมพันธ์แบบ หนึ่งต่อกลุ่ม (One-to-Many หรือ 1:N) และความสัมพันธ์แบบ กลุ่มต่อกลุ่ม (Many-to-Many หรือ N:M) โดยมีรายละเอียดดังตารางต่อไปนี้</p>
+
+<table class="rel-table">
+  <thead>
+    <tr>
+      <th>ตารางต้น</th>
+      <th>ความสัมพันธ์</th>
+      <th>ตารางปลาย</th>
+      <th>คำอธิบาย</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Room → Key -->
+    <tr>
+      <td><strong>Room</strong></td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Key</strong></td>
+      <td>ห้องปฏิบัติการ 1 ห้อง มีกุญแจได้หลายดอก (Key.roomId → Room.id)</td>
+    </tr>
+    <!-- Room → Section -->
+    <tr>
+      <td><strong>Room</strong></td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Section</strong></td>
+      <td>ห้องปฏิบัติการ 1 ห้อง ถูกกำหนดใช้ในหลายกลุ่มเรียนได้ (Section.roomId → Room.id)</td>
+    </tr>
+    <!-- Room → Reservation -->
+    <tr>
+      <td><strong>Room</strong></td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Reservation</strong></td>
+      <td>ห้องปฏิบัติการ 1 ห้อง มีรายการจองได้หลายรายการ (Reservation.roomId → Room.id)</td>
+    </tr>
+    <!-- Course → Section -->
+    <tr>
+      <td><strong>Course</strong></td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Section</strong></td>
+      <td>รายวิชา 1 วิชา เปิดสอนได้หลายกลุ่มเรียน (Section.courseId → Course.id)</td>
+    </tr>
+    <!-- Term → Section -->
+    <tr>
+      <td><strong>Term</strong></td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Section</strong></td>
+      <td>ภาคการศึกษา 1 ภาค มีหลายกลุ่มเรียน (Section.termId → Term.id)</td>
+    </tr>
+    <!-- User(Teacher) → Section -->
+    <tr>
+      <td><strong>User</strong> (อาจารย์)</td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Section</strong></td>
+      <td>อาจารย์ 1 คน สอนได้หลายกลุ่มเรียน (Section.teacherId → User.id)</td>
+    </tr>
+    <!-- User ↔ Section via Enrollment (N:M) -->
+    <tr>
+      <td><strong>User</strong> (นักศึกษา)</td>
+      <td><span class="badge b-nm">N:M</span></td>
+      <td><strong>Section</strong></td>
+      <td>นักศึกษา 1 คน ลงทะเบียนได้หลายกลุ่มเรียน และกลุ่มเรียน 1 กลุ่ม มีนักศึกษาหลายคน ผ่านตาราง <strong>Enrollment</strong> (Enrollment.studentId → User.id, Enrollment.sectionId → Section.id)</td>
+    </tr>
+    <!-- Section → Reservation -->
+    <tr>
+      <td><strong>Section</strong></td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Reservation</strong></td>
+      <td>กลุ่มเรียน 1 กลุ่ม สร้างการจองแบบ IN_CLASS ได้หลายรายการตามวันเรียน (Reservation.sectionId → Section.id)</td>
+    </tr>
+    <!-- User(Requester) → Reservation -->
+    <tr>
+      <td><strong>User</strong> (ผู้จอง)</td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Reservation</strong></td>
+      <td>ผู้ใช้งาน 1 คน ส่งคำขอจองได้หลายครั้ง (Reservation.requesterId → User.id)</td>
+    </tr>
+    <!-- User(Approver) → Reservation -->
+    <tr>
+      <td><strong>User</strong> (อาจารย์/แอดมิน)</td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Reservation</strong></td>
+      <td>อาจารย์หรือแอดมิน 1 คน อนุมัติหรือปฏิเสธการจองได้หลายรายการ (Reservation.approverId → User.id)</td>
+    </tr>
+    <!-- Reservation → ReservationParticipant -->
+    <tr>
+      <td><strong>Reservation</strong></td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>ReservationParticipant</strong></td>
+      <td>การจอง AD_HOC 1 รายการ มีผู้เข้าร่วมได้สูงสุด 4 คน (ReservationParticipant.reservationId → Reservation.id)</td>
+    </tr>
+    <!-- User ↔ Reservation via ReservationParticipant (N:M) -->
+    <tr>
+      <td><strong>User</strong></td>
+      <td><span class="badge b-nm">N:M</span></td>
+      <td><strong>Reservation</strong></td>
+      <td>ผู้ใช้ 1 คน เป็นผู้เข้าร่วมในหลายการจองได้ และการจอง 1 รายการ มีผู้เข้าร่วมหลายคน ผ่านตาราง <strong>ReservationParticipant</strong></td>
+    </tr>
+    <!-- Reservation → Loan (1:1) -->
+    <tr>
+      <td><strong>Reservation</strong></td>
+      <td><span class="badge b-11">1:1</span></td>
+      <td><strong>Loan</strong></td>
+      <td>การจอง 1 รายการ มีบันทึกการยืมกุญแจได้ 1 รายการ (Loan.reservationId → Reservation.id แบบ Unique)</td>
+    </tr>
+    <!-- Key → Loan -->
+    <tr>
+      <td><strong>Key</strong></td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Loan</strong></td>
+      <td>กุญแจ 1 ดอก มีประวัติการยืมได้หลายครั้งในต่างช่วงเวลา (Loan.keyId → Key.id)</td>
+    </tr>
+    <!-- User → Loan (borrower) -->
+    <tr>
+      <td><strong>User</strong> (ผู้ยืม)</td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Loan</strong></td>
+      <td>ผู้ใช้ 1 คน ยืมกุญแจได้หลายครั้ง (Loan.borrowerId → User.id)</td>
+    </tr>
+    <!-- User → Loan (returnedBy) -->
+    <tr>
+      <td><strong>User</strong> (ผู้คืน)</td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Loan</strong></td>
+      <td>ผู้ใช้ 1 คน คืนกุญแจได้หลายครั้ง (Loan.returnedById → User.id)</td>
+    </tr>
+    <!-- User → Loan (handledBy) -->
+    <tr>
+      <td><strong>User</strong> (เจ้าหน้าที่)</td>
+      <td><span class="badge b-1n">1:N</span></td>
+      <td><strong>Loan</strong></td>
+      <td>เจ้าหน้าที่ 1 คน ดำเนินการยืม/คืนกุญแจได้หลายรายการ (Loan.handledById → User.id)</td>
+    </tr>
+    <!-- KioskToken standalone -->
+    <tr>
+      <td><strong>KioskToken</strong></td>
+      <td>—</td>
+      <td>—</td>
+      <td>ตารางอิสระไม่มีความสัมพันธ์กับตารางอื่น ใช้เก็บโทเคนของอุปกรณ์ Kiosk แต่ละเครื่องที่ผ่านการจับคู่กับระบบแล้ว</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ─────────────────────────────────────
+     SECTION: คำอธิบายกระแสข้อมูลหลัก
+───────────────────────────────────── -->
+<div class="section-label">คำอธิบายกระแสข้อมูลหลักของระบบ</div>
+
+<p>กระแสข้อมูลหลักของระบบสามารถแบ่งออกได้เป็น 3 กระบวนการสำคัญ ดังนี้</p>
+
+<h3>1) กระบวนการจองห้องปฏิบัติการ</h3>
+<p>เมื่อผู้ใช้งาน (User) ส่งคำขอจองห้อง ระบบจะสร้างระเบียนใหม่ในตาราง Reservation โดยบันทึก requesterId อ้างอิงไปยัง User ผู้จอง, roomId อ้างอิงไปยังห้อง (Room) ที่ต้องการ และในกรณีที่เป็นการจองนอกตาราง (AD_HOC) ยังสามารถเพิ่มผู้เข้าร่วมในตาราง ReservationParticipant ได้สูงสุด 4 คน สำหรับการจองประเภท AD_HOC ของนักศึกษาจะอยู่ในสถานะ PENDING รอให้อาจารย์ที่ระบุใน approverId ทำการอนุมัติหรือปฏิเสธ ส่วนการจองของอาจารย์และแอดมินจะได้รับการอนุมัติโดยอัตโนมัติ</p>
+
+<h3>2) กระบวนการยืม-คืนกุญแจ</h3>
+<p>เมื่อการจองได้รับการอนุมัติ (สถานะ APPROVED) ผู้ใช้สามารถแสดง QR Token ที่เจ้าหน้าที่หรืออุปกรณ์ Kiosk เพื่อยืมกุญแจ ระบบจะสร้างระเบียนในตาราง Loan โดยบันทึก reservationId อ้างอิงไปยัง Reservation ที่เกี่ยวข้อง (ความสัมพันธ์แบบ 1:1) และ keyId อ้างอิงไปยัง Key ที่ถูกยืม พร้อมบันทึก checkedInAt (เวลายืม) borrowerId และ handledById เมื่อผู้ใช้คืนกุญแจ ระบบจะอัปเดต checkedOutAt และ returnedById ในตาราง Loan พร้อมเปลี่ยน status ของ Key กลับเป็น AVAILABLE และอัปเดต status ของ Reservation เป็น COMPLETED</p>
+
+<h3>3) กระบวนการจัดการตารางเรียน (IN_CLASS)</h3>
+<p>แอดมินสามารถนำเข้าข้อมูลรายวิชา (Course) ภาคการศึกษา (Term) และกลุ่มเรียน (Section) เข้าสู่ระบบ ตาราง Section จะเชื่อมโยงกับ Course, User (อาจารย์ผู้สอน), Room และ Term ด้วย Foreign Key นักศึกษาที่ลงทะเบียนเรียนจะมีระเบียนใน Enrollment ที่เชื่อมระหว่าง User กับ Section ระบบจะสร้างรายการ Reservation ประเภท IN_CLASS ล่วงหน้าจากข้อมูลใน Section สำหรับทุกวันที่มีการเรียนในช่วงภาคการศึกษานั้น</p>
+
+</body>
+</html>

@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Output Design — ระบบจองห้องปฏิบัติการ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f0f4f8;
+      color: #1e293b;
+      font-size: 13px;
+    }
+
+    /* ───── Cover ───── */
+    .cover {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 100vh;
+      background: linear-gradient(135deg, #134e2c 0%, #16a34a 100%);
+      color: #fff; text-align: center; padding: 40px;
+      page-break-after: always;
+    }
+    .cover .logo-box {
+      width:90px;height:90px;border:3px solid rgba(255,255,255,.4);
+      border-radius:20px;display:flex;align-items:center;justify-content:center;
+      font-size:40px;margin-bottom:28px;background:rgba(255,255,255,.1);
+    }
+    .cover h1 { font-size:32px;font-weight:700;line-height:1.3;margin-bottom:10px; }
+    .cover h2 { font-size:22px;font-weight:400;opacity:.85;margin-bottom:8px; }
+    .cover .subtitle { font-size:15px;opacity:.7;margin-top:8px; }
+    .cover .badge {
+      margin-top:36px;padding:8px 28px;
+      border:2px solid rgba(255,255,255,.5);border-radius:999px;
+      font-size:14px;letter-spacing:.05em;
+    }
+
+    /* ───── Section separator ───── */
+    .section-sep {
+      background: #134e2c; color:#fff;
+      padding:18px 40px;font-size:17px;font-weight:700;letter-spacing:.03em;
+      page-break-before:always;display:flex;align-items:center;gap:12px;
+    }
+    .section-sep .num {
+      background:#16a34a;border-radius:8px;width:32px;height:32px;
+      display:flex;align-items:center;justify-content:center;font-size:15px;
+    }
+
+    /* ───── Screen wrapper ───── */
+    .screen-page { padding:30px 40px; page-break-inside:avoid; }
+    .screen-title {
+      font-size:16px;font-weight:700;color:#134e2c;
+      margin-bottom:6px;display:flex;align-items:center;gap:8px;
+    }
+    .screen-title .tag {
+      background:#dcfce7;color:#166534;border-radius:4px;
+      padding:2px 8px;font-size:11px;font-weight:600;
+    }
+    .screen-desc { color:#64748b;font-size:12px;margin-bottom:16px; }
+
+    /* ───── Two-column layout ───── */
+    .two-col { display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start; }
+
+    /* ───── Mockup frame ───── */
+    .mockup {
+      border:2px solid #cbd5e1;border-radius:10px;overflow:hidden;
+      background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08);
+    }
+    .mockup-bar {
+      background:#134e2c;color:#fff;padding:8px 14px;
+      font-size:11px;display:flex;align-items:center;gap:6px;
+    }
+    .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+    .dot-r{background:#ef4444;} .dot-y{background:#eab308;} .dot-g{background:#22c55e;}
+    .mockup-body { padding:16px; }
+
+    /* ───── Metric card ───── */
+    .metric-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px; }
+    .metric-card {
+      border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;background:#fff;
+    }
+    .metric-card .label { font-size:10px;color:#64748b;margin-bottom:4px; }
+    .metric-card .value { font-size:22px;font-weight:700; }
+    .mc-blue .value { color:#2563eb; }
+    .mc-green .value { color:#16a34a; }
+    .mc-orange .value { color:#d97706; }
+    .mc-red .value { color:#dc2626; }
+    .mc-purple .value { color:#7c3aed; }
+    .mc-teal .value { color:#0d9488; }
+
+    /* ───── Status badge ───── */
+    .badge {
+      display:inline-flex;align-items:center;gap:4px;
+      border-radius:999px;padding:2px 10px;font-size:10px;font-weight:700;
+    }
+    .b-pending   { background:#fef3c7;color:#92400e; }
+    .b-approved  { background:#dcfce7;color:#166534; }
+    .b-checked   { background:#dbeafe;color:#1e40af; }
+    .b-completed { background:#f3e8ff;color:#6b21a8; }
+    .b-rejected  { background:#fee2e2;color:#991b1b; }
+    .b-cancelled { background:#f1f5f9;color:#475569; }
+    .b-noshow    { background:#fce7f3;color:#9d174d; }
+    .b-avail     { background:#dcfce7;color:#166534; }
+    .b-borrowed  { background:#fef3c7;color:#92400e; }
+
+    /* ───── Data table ───── */
+    .data-table { width:100%;border-collapse:collapse;font-size:11px; }
+    .data-table th {
+      background:#134e2c;color:#fff;text-align:left;
+      padding:6px 8px;font-weight:600;
+    }
+    .data-table td {
+      padding:6px 8px;border-bottom:1px solid #e2e8f0;vertical-align:middle;
+    }
+    .data-table tr:nth-child(even) td { background:#f8fafc; }
+    .data-table tr:hover td { background:#f0fdf4; }
+
+    /* ───── Timeline ───── */
+    .timeline-header { display:flex;gap:2px;margin-bottom:4px; }
+    .th-room { width:80px;font-size:10px;font-weight:700;color:#475569;padding:4px; }
+    .th-slot { flex:1;font-size:10px;color:#64748b;text-align:center;padding:4px; }
+    .timeline-row { display:flex;gap:2px;margin-bottom:3px;align-items:center; }
+    .tr-name { width:80px;font-size:10px;font-weight:600;color:#1e3a5f;padding:3px 4px; }
+    .tr-cell {
+      flex:1;border-radius:4px;height:24px;display:flex;
+      align-items:center;justify-content:center;font-size:10px;font-weight:600;
+    }
+    .tc-inclass  { background:#dbeafe;color:#1e40af; }
+    .tc-adhoc    { background:#dcfce7;color:#166534; }
+    .tc-free     { background:#f1f5f9;color:#94a3b8; }
+    .tc-blocked  { background:#fee2e2;color:#991b1b; }
+
+    /* ───── QR block ───── */
+    .qr-box {
+      width:120px;height:120px;border:2px solid #1e293b;
+      border-radius:8px;margin:8px auto;display:flex;
+      align-items:center;justify-content:center;font-size:56px;
+      background:#fff;
+    }
+    .qr-token {
+      font-family:monospace;font-size:10px;word-break:break-all;
+      background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;
+      padding:6px 8px;color:#475569;margin:6px 0;
+    }
+    .countdown {
+      display:inline-flex;align-items:center;gap:6px;
+      background:#fef3c7;border-radius:999px;
+      padding:3px 12px;font-size:11px;font-weight:700;color:#92400e;
+    }
+
+    /* ───── Calendar grid ───── */
+    .cal-grid { display:grid;grid-template-columns:40px repeat(5,1fr);gap:2px; }
+    .cal-head { text-align:center;font-size:10px;font-weight:700;color:#475569;padding:4px; }
+    .cal-time { font-size:10px;color:#94a3b8;text-align:right;padding:3px 4px; }
+    .cal-slot { min-height:20px;border-radius:3px;position:relative; }
+    .cal-event {
+      border-radius:4px;padding:3px 5px;font-size:10px;
+      font-weight:600;margin:1px;line-height:1.3;
+    }
+    .ce-inclass { background:#dbeafe;color:#1e40af;border-left:3px solid #2563eb; }
+    .ce-adhoc   { background:#dcfce7;color:#166534;border-left:3px solid #16a34a; }
+
+    /* ───── Output spec table ───── */
+    .spec-table { width:100%;border-collapse:collapse;font-size:11.5px; }
+    .spec-table th {
+      background:#134e2c;color:#fff;text-align:left;
+      padding:6px 10px;font-weight:600;
+    }
+    .spec-table td {
+      padding:6px 10px;border-bottom:1px solid #e2e8f0;vertical-align:top;
+    }
+    .spec-table tr:nth-child(even) td { background:#f8fafc; }
+    .spec-table tr:hover td { background:#f0fff4; }
+    .ob { color:#16a34a;font-weight:700;font-size:10px; }
+    .type-badge {
+      display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:600;
+    }
+    .t-table  { background:#dbeafe;color:#1e40af; }
+    .t-card   { background:#dcfce7;color:#166534; }
+    .t-chart  { background:#fef3c7;color:#92400e; }
+    .t-cal    { background:#f3e8ff;color:#6b21a8; }
+    .t-pdf    { background:#fee2e2;color:#991b1b; }
+    .t-qr     { background:#e0f2fe;color:#0c4a6e; }
+    .t-badge  { background:#fce7f3;color:#9d174d; }
+    .t-msg    { background:#fafafa;color:#374151;border:1px solid #e5e7eb; }
+
+    /* ───── Alert / toast ───── */
+    .toast {
+      display:flex;align-items:center;gap:8px;
+      border-radius:8px;padding:8px 12px;font-size:11px;margin-bottom:6px;
+    }
+    .t-success { background:#dcfce7;border:1px solid #86efac;color:#166534; }
+    .t-error   { background:#fee2e2;border:1px solid #fca5a5;color:#991b1b; }
+    .t-info    { background:#dbeafe;border:1px solid #93c5fd;color:#1e40af; }
+    .t-warn    { background:#fef3c7;border:1px solid #fde68a;color:#92400e; }
+
+    /* ───── Pagination ───── */
+    .pagination { display:flex;gap:4px;margin-top:8px;justify-content:flex-end; }
+    .page-btn {
+      width:26px;height:26px;border:1px solid #e2e8f0;border-radius:4px;
+      display:flex;align-items:center;justify-content:center;font-size:11px;
+      color:#475569;background:#fff;cursor:pointer;
+    }
+    .page-btn.active { background:#16a34a;color:#fff;border-color:#16a34a; }
+
+    /* ───── Summary row ───── */
+    .summary-row {
+      display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;
+    }
+    .sum-card {
+      border:1px solid #e2e8f0;border-radius:6px;padding:8px 14px;
+      background:#fff;text-align:center;min-width:70px;
+    }
+    .sum-card .sv { font-size:20px;font-weight:700; }
+    .sum-card .sl { font-size:10px;color:#64748b; }
+
+    @media print {
+      .cover { page-break-after:always; }
+      .screen-page { page-break-inside:avoid; }
+      .section-sep { page-break-before:always; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     COVER
+══════════════════════════════════════ -->
+<div class="cover">
+  <div class="logo-box">📊</div>
+  <h1>ระบบจองห้องปฏิบัติการ<br>คอมพิวเตอร์</h1>
+  <h2>Lab Room Booking & Key Management System</h2>
+  <p class="subtitle">เอกสารออกแบบหน้าจอแสดงผล (Output Design)</p>
+  <div class="badge">OUTPUT DESIGN DOCUMENT</div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     OD-01  STUDENT DASHBOARD
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">1</span> หน้าจอ Dashboard (นักศึกษา)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    OD-01 — Dashboard นักศึกษา
+    <span class="tag" style="background:#dbeafe;color:#1e40af;">Student</span>
+  </div>
+  <div class="screen-desc">แสดงภาพรวมการจองและลิงก์ด่วนสำหรับนักศึกษา</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /student
+        </div>
+        <div class="mockup-body">
+          <div style="font-weight:700;font-size:14px;color:#134e2c;margin-bottom:14px;">🎓 ยินดีต้อนรับ, นภัส ใจดี</div>
+
+          <!-- Metric cards -->
+          <div class="metric-grid">
+            <div class="metric-card mc-blue">
+              <div class="label">คำขอจองทั้งหมด</div>
+              <div class="value">12</div>
+            </div>
+            <div class="metric-card mc-green">
+              <div class="label">ได้รับอนุมัติ</div>
+              <div class="value">8</div>
+            </div>
+            <div class="metric-card mc-orange">
+              <div class="label">รอการอนุมัติ</div>
+              <div class="value">2</div>
+            </div>
+            <div class="metric-card mc-red">
+              <div class="label">ถูกปฏิเสธ / ยกเลิก</div>
+              <div class="value">2</div>
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div style="font-weight:700;font-size:12px;color:#134e2c;margin-bottom:8px;">เมนูด่วน</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center;cursor:pointer;background:#f8fafc;">
+              <div style="font-size:20px;margin-bottom:4px;">📅</div>
+              <div style="font-size:11px;font-weight:600;color:#1e3a5f;">จองห้อง</div>
+            </div>
+            <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center;cursor:pointer;background:#f8fafc;">
+              <div style="font-size:20px;margin-bottom:4px;">📋</div>
+              <div style="font-size:11px;font-weight:600;color:#1e3a5f;">การจองของฉัน</div>
+            </div>
+            <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center;cursor:pointer;background:#f8fafc;">
+              <div style="font-size:20px;margin-bottom:4px;">📷</div>
+              <div style="font-size:11px;font-weight:600;color:#1e3a5f;">QR Token ของฉัน</div>
+            </div>
+            <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center;cursor:pointer;background:#f8fafc;">
+              <div style="font-size:20px;margin-bottom:4px;">📚</div>
+              <div style="font-size:11px;font-weight:600;color:#1e3a5f;">รายวิชาของฉัน</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>รายการที่แสดง</th><th>ประเภท Output</th><th>แหล่งข้อมูล</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>จำนวนคำขอจองทั้งหมด</td>
+            <td><span class="type-badge t-card">Metric Card</span></td>
+            <td>COUNT(*) FROM Reservation WHERE requester = me</td>
+          </tr>
+          <tr>
+            <td>จำนวนที่ได้รับอนุมัติ</td>
+            <td><span class="type-badge t-card">Metric Card</span></td>
+            <td>WHERE status = APPROVED</td>
+          </tr>
+          <tr>
+            <td>จำนวนรอการอนุมัติ</td>
+            <td><span class="type-badge t-card">Metric Card</span></td>
+            <td>WHERE status = PENDING</td>
+          </tr>
+          <tr>
+            <td>จำนวนปฏิเสธ/ยกเลิก</td>
+            <td><span class="type-badge t-card">Metric Card</span></td>
+            <td>WHERE status IN (REJECTED, CANCELLED)</td>
+          </tr>
+          <tr>
+            <td>เมนูด่วน (Quick Actions)</td>
+            <td><span class="type-badge t-card">Action Grid</span></td>
+            <td>Static links</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     OD-02  MY RESERVATIONS TABLE
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">2</span> หน้าจอรายการการจอง (My Reservations)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    OD-02 — ตารางการจองของฉัน
+    <span class="tag" style="background:#dbeafe;color:#1e40af;">Student</span>
+    <span class="tag">Teacher</span>
+    <span class="tag" style="background:#fef3c7;color:#92400e;">Admin</span>
+  </div>
+  <div class="screen-desc">แสดงรายการการจองพร้อม filter และ pagination</div>
+
+  <div class="mockup" style="margin-bottom:16px;">
+    <div class="mockup-bar">
+      <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+      &nbsp; /student/reservations
+    </div>
+    <div class="mockup-body">
+      <!-- Filters -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+        <input type="text" style="border:1px solid #e2e8f0;border-radius:6px;padding:5px 10px;font-size:11px;width:160px;" placeholder="ค้นหาห้อง / วันที่..." />
+        <select style="border:1px solid #e2e8f0;border-radius:6px;padding:5px 10px;font-size:11px;">
+          <option>ทุกสถานะ</option>
+          <option>รออนุมัติ</option><option>อนุมัติแล้ว</option>
+        </select>
+        <select style="border:1px solid #e2e8f0;border-radius:6px;padding:5px 10px;font-size:11px;">
+          <option>ทุกประเภท</option><option>IN_CLASS</option><option>AD_HOC</option>
+        </select>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ห้อง</th>
+            <th>วันที่</th>
+            <th>เวลา</th>
+            <th>ประเภท</th>
+            <th>สถานะ</th>
+            <th>ผู้เข้าร่วม</th>
+            <th>การดำเนินการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>LAB-A</td>
+            <td>21 พ.ค. 68</td>
+            <td>08:00–12:00</td>
+            <td><span style="background:#dbeafe;color:#1e40af;border-radius:4px;padding:1px 6px;font-size:10px;">AD_HOC</span></td>
+            <td><span class="badge b-approved">✔ อนุมัติ</span></td>
+            <td>2 คน</td>
+            <td><a href="#" style="font-size:10px;color:#2563eb;">ดู</a> · <a href="#" style="font-size:10px;color:#ef4444;">ยกเลิก</a></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>LAB-B</td>
+            <td>19 พ.ค. 68</td>
+            <td>12:00–16:00</td>
+            <td><span style="background:#f3e8ff;color:#6b21a8;border-radius:4px;padding:1px 6px;font-size:10px;">IN_CLASS</span></td>
+            <td><span class="badge b-completed">✓ เสร็จสิ้น</span></td>
+            <td>—</td>
+            <td><a href="#" style="font-size:10px;color:#2563eb;">ดู</a></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>LAB-A</td>
+            <td>18 พ.ค. 68</td>
+            <td>16:00–20:00</td>
+            <td><span style="background:#dbeafe;color:#1e40af;border-radius:4px;padding:1px 6px;font-size:10px;">AD_HOC</span></td>
+            <td><span class="badge b-pending">⏳ รออนุมัติ</span></td>
+            <td>1 คน</td>
+            <td><a href="#" style="font-size:10px;color:#2563eb;">ดู</a> · <a href="#" style="font-size:10px;color:#ef4444;">ยกเลิก</a></td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>LAB-C</td>
+            <td>15 พ.ค. 68</td>
+            <td>08:00–12:00</td>
+            <td><span style="background:#dbeafe;color:#1e40af;border-radius:4px;padding:1px 6px;font-size:10px;">AD_HOC</span></td>
+            <td><span class="badge b-noshow">⚠ ไม่มาตามนัด</span></td>
+            <td>—</td>
+            <td><a href="#" style="font-size:10px;color:#2563eb;">ดู</a></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <div class="page-btn">«</div>
+        <div class="page-btn active">1</div>
+        <div class="page-btn">2</div>
+        <div class="page-btn">3</div>
+        <div class="page-btn">»</div>
+      </div>
+    </div>
+  </div>
+
+  <table class="spec-table">
+    <thead>
+      <tr><th>คอลัมน์</th><th>ประเภท Output</th><th>รายละเอียด</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>ห้อง</td><td><span class="type-badge t-table">Text</span></td><td>Room.code และ Room.name</td></tr>
+      <tr><td>วันที่</td><td><span class="type-badge t-table">Text</span></td><td>วันที่จอง (Bangkok timezone)</td></tr>
+      <tr><td>ช่วงเวลา</td><td><span class="type-badge t-table">Text</span></td><td>เวลาเริ่ม–สิ้นสุด</td></tr>
+      <tr><td>ประเภท</td><td><span class="type-badge t-badge">Badge</span></td><td>AD_HOC (น้ำเงิน) / IN_CLASS (ม่วง)</td></tr>
+      <tr><td>สถานะ</td><td><span class="type-badge t-badge">Color Badge</span></td><td>PENDING / APPROVED / CHECKED_IN / COMPLETED / REJECTED / CANCELLED / NO_SHOW</td></tr>
+      <tr><td>ผู้เข้าร่วม</td><td><span class="type-badge t-table">Text</span></td><td>จำนวน ReservationParticipant</td></tr>
+      <tr><td>การดำเนินการ</td><td><span class="type-badge t-table">Action Link</span></td><td>ดูรายละเอียด / ยกเลิก (ถ้าสถานะอนุญาต)</td></tr>
+      <tr><td>Pagination</td><td><span class="type-badge t-table">Paginator</span></td><td>เลขหน้า / จำนวนแถวต่อหน้า</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     OD-03  ROOMS TODAY TIMELINE
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">3</span> หน้าจอสถานะห้องวันนี้ (Rooms Today)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    OD-03 — ตาราง Timeline สถานะห้องวันนี้
+    <span class="tag" style="background:#f1f5f9;color:#475569;">Public</span>
+    <span class="tag">All Roles</span>
+  </div>
+  <div class="screen-desc">แสดงสถานะการใช้งานห้องทุกห้องในรูปแบบ Timeline แต่ละช่วงเวลา</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; / (Home) — Rooms Today
+        </div>
+        <div class="mockup-body">
+          <div style="font-weight:700;font-size:14px;color:#134e2c;margin-bottom:12px;">🏠 สถานะห้องวันนี้ — 20 พ.ค. 2568</div>
+
+          <div class="timeline-header">
+            <div class="th-room">ห้อง</div>
+            <div class="th-slot">08:00–12:00</div>
+            <div class="th-slot">12:00–16:00</div>
+            <div class="th-slot">16:00–20:00</div>
+          </div>
+
+          <div class="timeline-row">
+            <div class="tr-name">LAB-A</div>
+            <div class="tr-cell tc-inclass">📖 IN_CLASS</div>
+            <div class="tr-cell tc-adhoc">📅 AD_HOC</div>
+            <div class="tr-cell tc-free">ว่าง</div>
+          </div>
+          <div class="timeline-row">
+            <div class="tr-name">LAB-B</div>
+            <div class="tr-cell tc-free">ว่าง</div>
+            <div class="tr-cell tc-inclass">📖 IN_CLASS</div>
+            <div class="tr-cell tc-inclass">📖 IN_CLASS</div>
+          </div>
+          <div class="timeline-row">
+            <div class="tr-name">LAB-C</div>
+            <div class="tr-cell tc-adhoc">📅 AD_HOC</div>
+            <div class="tr-cell tc-free">ว่าง</div>
+            <div class="tr-cell tc-blocked">🔒 ปิดซ่อม</div>
+          </div>
+          <div class="timeline-row">
+            <div class="tr-name">LAB-D</div>
+            <div class="tr-cell tc-free">ว่าง</div>
+            <div class="tr-cell tc-free">ว่าง</div>
+            <div class="tr-cell tc-adhoc">📅 AD_HOC</div>
+          </div>
+
+          <!-- Legend -->
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:10px;">
+            <div style="display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;background:#dbeafe;border-radius:3px;display:inline-block;"></span>IN_CLASS (ตาม section)</div>
+            <div style="display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;background:#dcfce7;border-radius:3px;display:inline-block;"></span>AD_HOC (จองเฉพาะกิจ)</div>
+            <div style="display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;background:#f1f5f9;border-radius:3px;display:inline-block;"></span>ว่าง</div>
+            <div style="display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;background:#fee2e2;border-radius:3px;display:inline-block;"></span>ปิด/บล็อก</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>รายการที่แสดง</th><th>ประเภท Output</th><th>รายละเอียด</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>แถวห้อง (Room rows)</td>
+            <td><span class="type-badge t-table">Timeline Grid</span></td>
+            <td>Room.code, Room.name</td>
+          </tr>
+          <tr>
+            <td>ช่อง IN_CLASS</td>
+            <td><span class="type-badge t-badge">Colored Cell</span></td>
+            <td>สีน้ำเงิน — ดึงจาก Section schedule</td>
+          </tr>
+          <tr>
+            <td>ช่อง AD_HOC</td>
+            <td><span class="type-badge t-badge">Colored Cell</span></td>
+            <td>สีเขียว — ดึงจาก Reservation (AD_HOC)</td>
+          </tr>
+          <tr>
+            <td>ช่องว่าง</td>
+            <td><span class="type-badge t-badge">Colored Cell</span></td>
+            <td>สีเทา — ห้องว่างใช้งานได้</td>
+          </tr>
+          <tr>
+            <td>Legend สี</td>
+            <td><span class="type-badge t-card">Legend</span></td>
+            <td>อธิบายรหัสสีแต่ละสถานะ</td>
+          </tr>
+          <tr>
+            <td>Date Picker (top)</td>
+            <td><span class="type-badge t-table">Filter</span></td>
+            <td>เปลี่ยนดูวันที่อื่น</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     OD-04  STUDENT CALENDAR
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">4</span> หน้าจอปฏิทินนักศึกษา (Student Calendar)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    OD-04 — ปฏิทินรายสัปดาห์นักศึกษา
+    <span class="tag" style="background:#dbeafe;color:#1e40af;">Student</span>
+  </div>
+  <div class="screen-desc">แสดงตารางเรียนและการจองในรูปแบบ Weekly Calendar</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /student/calendar
+        </div>
+        <div class="mockup-body">
+          <div style="font-weight:700;font-size:14px;color:#134e2c;margin-bottom:12px;">📆 ปฏิทินของฉัน — สัปดาห์ที่ 19–23 พ.ค. 2568</div>
+
+          <!-- Nav -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <button style="border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:11px;background:#fff;">‹ สัปดาห์ก่อน</button>
+            <span style="font-size:12px;font-weight:700;color:#134e2c;">19–23 พฤษภาคม</span>
+            <button style="border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-size:11px;background:#fff;">สัปดาห์ถัดไป ›</button>
+          </div>
+
+          <div class="cal-grid">
+            <div class="cal-head"></div>
+            <div class="cal-head">จ<br><span style="font-size:9px;color:#16a34a;font-weight:400;">19</span></div>
+            <div class="cal-head">อ<br><span style="font-size:9px;color:#16a34a;font-weight:400;">20</span></div>
+            <div class="cal-head">พ<br><span style="font-size:9px;color:#16a34a;font-weight:400;">21</span></div>
+            <div class="cal-head">พฤ<br><span style="font-size:9px;color:#16a34a;font-weight:400;">22</span></div>
+            <div class="cal-head">ศ<br><span style="font-size:9px;color:#16a34a;font-weight:400;">23</span></div>
+
+            <div class="cal-time">08:00</div>
+            <div class="cal-slot"><div class="cal-event ce-inclass">CS101 LAB-A</div></div>
+            <div class="cal-slot"></div>
+            <div class="cal-slot"><div class="cal-event ce-adhoc">AD_HOC LAB-A</div></div>
+            <div class="cal-slot"></div>
+            <div class="cal-slot"></div>
+
+            <div class="cal-time">12:00</div>
+            <div class="cal-slot"></div>
+            <div class="cal-slot"><div class="cal-event ce-inclass">CS201 LAB-B</div></div>
+            <div class="cal-slot"></div>
+            <div class="cal-slot"><div class="cal-event ce-inclass">CS301 LAB-C</div></div>
+            <div class="cal-slot"></div>
+
+            <div class="cal-time">16:00</div>
+            <div class="cal-slot"></div>
+            <div class="cal-slot"></div>
+            <div class="cal-slot"></div>
+            <div class="cal-slot"></div>
+            <div class="cal-slot"><div class="cal-event ce-adhoc">AD_HOC LAB-A</div></div>
+          </div>
+
+          <!-- Legend -->
+          <div style="display:flex;gap:10px;margin-top:10px;font-size:10px;">
+            <div style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:#dbeafe;border-left:3px solid #2563eb;display:inline-block;"></span>ตาราง IN_CLASS</div>
+            <div style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:#dcfce7;border-left:3px solid #16a34a;display:inline-block;"></span>จอง AD_HOC</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>รายการที่แสดง</th><th>ประเภท Output</th><th>รายละเอียด</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Event IN_CLASS</td>
+            <td><span class="type-badge t-cal">Calendar Event</span></td>
+            <td>สีน้ำเงิน — Section ที่ลงทะเบียน</td>
+          </tr>
+          <tr>
+            <td>Event AD_HOC</td>
+            <td><span class="type-badge t-cal">Calendar Event</span></td>
+            <td>สีเขียว — การจองเฉพาะกิจ</td>
+          </tr>
+          <tr>
+            <td>Event Detail Dialog</td>
+            <td><span class="type-badge t-card">Popup Dialog</span></td>
+            <td>คลิก Event เพื่อดูรายละเอียด</td>
+          </tr>
+          <tr>
+            <td>Navigation</td>
+            <td><span class="type-badge t-table">Prev/Next Week</span></td>
+            <td>เลื่อนดูสัปดาห์ก่อน/ถัดไป</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     OD-05  QR TOKEN
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">5</span> หน้าจอแสดง QR Token (สำหรับยืมกุญแจ)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    OD-05 — QR Code Token สำหรับยืมกุญแจ
+    <span class="tag" style="background:#dbeafe;color:#1e40af;">Student</span>
+    <span class="tag">Teacher</span>
+  </div>
+  <div class="screen-desc">แสดง QR Code ที่ใช้แสดงต่อเจ้าหน้าที่ / Kiosk เพื่อยืม-คืนกุญแจ</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /student/check
+        </div>
+        <div class="mockup-body" style="text-align:center;padding:24px;">
+          <div style="font-weight:700;font-size:14px;color:#134e2c;margin-bottom:4px;">📷 QR Token ของฉัน</div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:16px;">แสดง QR Code นี้ที่เคาน์เตอร์ยืมกุญแจหรือ Kiosk</div>
+
+          <div style="font-weight:700;font-size:13px;margin-bottom:4px;">นภัส ใจดี</div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:12px;">65xxx0001 · นักศึกษา</div>
+
+          <div class="qr-box">⬛</div>
+
+          <div class="qr-token">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ4eHh4IiwiZXhwIjoxNzE2NTI4MTYwfQ.xxx…</div>
+
+          <div style="margin:8px 0;">
+            <span class="countdown">⏱ หมดอายุใน 1:42</span>
+          </div>
+
+          <div style="font-size:11px;color:#94a3b8;margin-top:8px;">Token จะรีเฟรชอัตโนมัติทุก 2 นาที</div>
+
+          <div style="margin-top:16px;border:1px solid #e2e8f0;border-radius:8px;padding:10px;background:#f8fafc;text-align:left;">
+            <div style="font-size:11px;font-weight:700;color:#134e2c;margin-bottom:6px;">📋 การจองที่ active วันนี้</div>
+            <div style="font-size:11px;color:#475569;">🏠 LAB-A · 08:00–12:00 · 21 พ.ค. 68</div>
+            <div style="margin-top:4px;"><span class="badge b-approved" style="font-size:10px;">✔ อนุมัติแล้ว</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>รายการที่แสดง</th><th>ประเภท Output</th><th>รายละเอียด</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ชื่อ-นามสกุล</td>
+            <td><span class="type-badge t-card">Text</span></td>
+            <td>จาก User.firstName + lastName</td>
+          </tr>
+          <tr>
+            <td>รหัสนักศึกษา / อีเมล</td>
+            <td><span class="type-badge t-card">Text</span></td>
+            <td>User.studentId หรือ User.email</td>
+          </tr>
+          <tr>
+            <td>QR Code Image</td>
+            <td><span class="type-badge t-qr">QR Image</span></td>
+            <td>JWT Token encode เป็น QR<br>หมดอายุทุก 2 นาที</td>
+          </tr>
+          <tr>
+            <td>Token String</td>
+            <td><span class="type-badge t-table">Monospace Text</span></td>
+            <td>สำหรับกรณีสแกนไม่ได้ ให้พิมพ์ตรง</td>
+          </tr>
+          <tr>
+            <td>นับถอยหลังหมดอายุ</td>
+            <td><span class="type-badge t-badge">Countdown Timer</span></td>
+            <td>MM:SS countdown, Auto-refresh เมื่อหมดอายุ</td>
+          </tr>
+          <tr>
+            <td>การจอง Active วันนี้</td>
+            <td><span class="type-badge t-card">Info Card</span></td>
+            <td>Reservation ที่ status = APPROVED วันนี้</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     OD-06  LOAN DESK QUEUE
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">6</span> หน้าจอ Queue การยืมกุญแจ (Loan Desk Queue)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    OD-06 — คิวรอยืมกุญแจ / กุญแจที่ยืมอยู่
+    <span class="tag" style="background:#fef3c7;color:#92400e;">Admin</span>
+    <span class="tag">Teacher</span>
+  </div>
+  <div class="screen-desc">แสดงรายการรอ Check-in และรายการกุญแจที่ถูกยืมอยู่</div>
+
+  <div class="mockup" style="margin-bottom:16px;">
+    <div class="mockup-bar">
+      <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+      &nbsp; /admin/check — Queue View
+    </div>
+    <div class="mockup-body">
+      <div style="display:flex;gap:20px;">
+        <!-- Pending check-in -->
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:12px;color:#134e2c;margin-bottom:8px;">📥 รอยืมกุญแจ (3)</div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ผู้จอง</th>
+                <th>ห้อง</th>
+                <th>เวลา</th>
+                <th>สถานะ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>นภัส ใจดี</td>
+                <td>LAB-A</td>
+                <td>08:00–12:00</td>
+                <td><span class="badge b-approved">รออยู่</span></td>
+              </tr>
+              <tr>
+                <td>พีรพัฒน์ มีสุข</td>
+                <td>LAB-B</td>
+                <td>08:00–16:00</td>
+                <td><span class="badge b-approved">รออยู่</span></td>
+              </tr>
+              <tr>
+                <td>สมหญิง ดีใจ</td>
+                <td>LAB-C</td>
+                <td>08:00–12:00</td>
+                <td><span class="badge b-approved">รออยู่</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Active loans -->
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:12px;color:#134e2c;margin-bottom:8px;">🔑 กุญแจที่ยืมอยู่ (2)</div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ผู้ยืม</th>
+                <th>กุญแจ</th>
+                <th>ยืมเมื่อ</th>
+                <th>สถานะ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>อ.สมชาย ใจดี</td>
+                <td>K-A-001</td>
+                <td>08:05</td>
+                <td><span class="badge b-borrowed">🔑 ยืม</span></td>
+              </tr>
+              <tr>
+                <td>อ.สมหญิง มีสุข</td>
+                <td>K-B-001</td>
+                <td>08:10</td>
+                <td><span class="badge b-borrowed">🔑 ยืม</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="spec-table">
+    <thead>
+      <tr><th>รายการที่แสดง</th><th>ประเภท Output</th><th>รายละเอียด</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>ตารางรอยืมกุญแจ</td>
+        <td><span class="type-badge t-table">Data Table</span></td>
+        <td>Reservation ที่ status = APPROVED ที่ยังไม่ Check-in</td>
+      </tr>
+      <tr>
+        <td>ตารางกุญแจที่ยืมอยู่</td>
+        <td><span class="type-badge t-table">Data Table</span></td>
+        <td>Loan ที่ status = CHECKED_IN (ยังไม่คืน)</td>
+      </tr>
+      <tr>
+        <td>จำนวน Queue</td>
+        <td><span class="type-badge t-badge">Badge Count</span></td>
+        <td>แสดง count ใน header ของแต่ละ section</td>
+      </tr>
+      <tr>
+        <td>ผลการค้นหา Token</td>
+        <td><span class="type-badge t-card">Result Panel</span></td>
+        <td>แสดงข้อมูลผู้จองหลัง verify token</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     OD-07  ADMIN REPORTS
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">7</span> หน้าจอรายงาน Admin (Admin Reports)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    OD-07 — รายงานสรุปและตารางรายละเอียดการจอง
+    <span class="tag" style="background:#fef3c7;color:#92400e;">Admin</span>
+  </div>
+  <div class="screen-desc">แสดงผลสรุปและตารางรายการการจองทั้งหมด พร้อม Export PDF</div>
+
+  <div class="mockup" style="margin-bottom:16px;">
+    <div class="mockup-bar">
+      <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+      &nbsp; /admin/reports
+    </div>
+    <div class="mockup-body">
+      <div style="font-weight:700;font-size:14px;color:#134e2c;margin-bottom:12px;">📊 รายงานการจองห้องปฏิบัติการ</div>
+
+      <!-- Summary cards -->
+      <div style="font-weight:700;font-size:12px;color:#134e2c;margin-bottom:8px;">สรุปภาพรวม</div>
+      <div class="summary-row">
+        <div class="sum-card">
+          <div class="sv" style="color:#2563eb;">156</div>
+          <div class="sl">ทั้งหมด</div>
+        </div>
+        <div class="sum-card">
+          <div class="sv" style="color:#16a34a;">98</div>
+          <div class="sl">เสร็จสิ้น</div>
+        </div>
+        <div class="sum-card">
+          <div class="sv" style="color:#2563eb;">18</div>
+          <div class="sl">อนุมัติ</div>
+        </div>
+        <div class="sum-card">
+          <div class="sv" style="color:#d97706;">12</div>
+          <div class="sl">รออนุมัติ</div>
+        </div>
+        <div class="sum-card">
+          <div class="sv" style="color:#dc2626;">9</div>
+          <div class="sl">ไม่มาตามนัด</div>
+        </div>
+        <div class="sum-card">
+          <div class="sv" style="color:#7c3aed;">19</div>
+          <div class="sl">ยกเลิก/ปฏิเสธ</div>
+        </div>
+      </div>
+
+      <!-- Detail table -->
+      <div style="font-weight:700;font-size:12px;color:#134e2c;margin-bottom:8px;">รายการทั้งหมด</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ผู้จอง</th>
+            <th>ห้อง</th>
+            <th>วันที่</th>
+            <th>เวลา</th>
+            <th>ประเภท</th>
+            <th>สถานะ</th>
+            <th>กุญแจ</th>
+            <th>ผู้ยืม</th>
+            <th>เวลาคืน</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>นภัส ใจดี</td>
+            <td>LAB-A</td>
+            <td>20 พ.ค. 68</td>
+            <td>08:00–12:00</td>
+            <td><span style="background:#dbeafe;color:#1e40af;border-radius:4px;padding:1px 5px;font-size:10px;">AD_HOC</span></td>
+            <td><span class="badge b-completed">เสร็จ</span></td>
+            <td>K-A-001</td>
+            <td>นภัส ใจดี</td>
+            <td>11:45</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>CS201 Section 1</td>
+            <td>LAB-B</td>
+            <td>20 พ.ค. 68</td>
+            <td>12:00–16:00</td>
+            <td><span style="background:#f3e8ff;color:#6b21a8;border-radius:4px;padding:1px 5px;font-size:10px;">IN_CLASS</span></td>
+            <td><span class="badge b-checked">ใช้งาน</span></td>
+            <td>K-B-001</td>
+            <td>อ.สมชาย</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>พีรพัฒน์ มีสุข</td>
+            <td>LAB-C</td>
+            <td>19 พ.ค. 68</td>
+            <td>08:00–12:00</td>
+            <td><span style="background:#dbeafe;color:#1e40af;border-radius:4px;padding:1px 5px;font-size:10px;">AD_HOC</span></td>
+            <td><span class="badge b-noshow">ไม่มา</span></td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <div class="page-btn">«</div>
+        <div class="page-btn active">1</div>
+        <div class="page-btn">2</div>
+        <div class="page-btn">...</div>
+        <div class="page-btn">12</div>
+        <div class="page-btn">»</div>
+      </div>
+    </div>
+  </div>
+
+  <table class="spec-table">
+    <thead>
+      <tr><th>รายการที่แสดง</th><th>ประเภท Output</th><th>รายละเอียด</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Summary Card (6 ใบ)</td><td><span class="type-badge t-card">Metric Card</span></td><td>ยอดรวมแต่ละสถานะ</td></tr>
+      <tr><td>ตารางรายละเอียด</td><td><span class="type-badge t-table">Data Table</span></td><td>Paginated, sort by date desc</td></tr>
+      <tr><td>คอลัมน์กุญแจ / ผู้ยืม</td><td><span class="type-badge t-table">Text</span></td><td>ดึงจาก Loan record ที่เชื่อมกับ Reservation</td></tr>
+      <tr><td>Export PDF</td><td><span class="type-badge t-pdf">PDF Download</span></td><td>@react-pdf/renderer สร้าง PDF ทุก record</td></tr>
+      <tr><td>Pagination</td><td><span class="type-badge t-table">Paginator</span></td><td>10/25/50/100 rows per page</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     OD-08  PDF REPORT
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">8</span> รายงาน PDF (PDF Export)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    OD-08 — ไฟล์รายงาน PDF
+    <span class="tag" style="background:#fef3c7;color:#92400e;">Admin</span>
+  </div>
+  <div class="screen-desc">ไฟล์ PDF ที่สร้างจากข้อมูลรายงานผ่าน @react-pdf/renderer</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /api/admin/reports/export/pdf
+        </div>
+        <div class="mockup-body">
+          <!-- Simulated PDF page -->
+          <div style="border:1px solid #cbd5e1;border-radius:4px;padding:16px;background:#fff;box-shadow:2px 2px 8px rgba(0,0,0,.08);">
+            <!-- PDF Header -->
+            <div style="border-bottom:2px solid #134e2c;margin-bottom:10px;padding-bottom:8px;">
+              <div style="font-weight:700;font-size:14px;color:#134e2c;">รายงานการจองห้องปฏิบัติการ</div>
+              <div style="font-size:10px;color:#64748b;margin-top:2px;">ระบบจองห้องปฏิบัติการคอมพิวเตอร์</div>
+              <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:#64748b;">
+                <span>ช่วงวันที่: 1–31 พฤษภาคม 2568</span>
+                <span>พิมพ์เมื่อ: 20 พ.ค. 2568 09:00</span>
+              </div>
+            </div>
+
+            <!-- PDF Summary -->
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+              <div style="border:1px solid #e2e8f0;border-radius:4px;padding:6px 10px;text-align:center;flex:1;font-size:10px;">
+                <div style="font-weight:700;font-size:14px;color:#2563eb;">156</div>
+                <div style="color:#64748b;">ทั้งหมด</div>
+              </div>
+              <div style="border:1px solid #e2e8f0;border-radius:4px;padding:6px 10px;text-align:center;flex:1;font-size:10px;">
+                <div style="font-weight:700;font-size:14px;color:#16a34a;">98</div>
+                <div style="color:#64748b;">เสร็จสิ้น</div>
+              </div>
+              <div style="border:1px solid #e2e8f0;border-radius:4px;padding:6px 10px;text-align:center;flex:1;font-size:10px;">
+                <div style="font-weight:700;font-size:14px;color:#dc2626;">9</div>
+                <div style="color:#64748b;">ไม่มาตามนัด</div>
+              </div>
+            </div>
+
+            <!-- PDF Table -->
+            <table style="width:100%;border-collapse:collapse;font-size:9px;">
+              <thead>
+                <tr style="background:#134e2c;color:#fff;">
+                  <th style="padding:4px 6px;text-align:left;">#</th>
+                  <th style="padding:4px 6px;text-align:left;">ผู้จอง</th>
+                  <th style="padding:4px 6px;text-align:left;">ห้อง</th>
+                  <th style="padding:4px 6px;text-align:left;">วันที่</th>
+                  <th style="padding:4px 6px;text-align:left;">ช่วงเวลา</th>
+                  <th style="padding:4px 6px;text-align:left;">สถานะ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:3px 6px;border-bottom:1px solid #e2e8f0;">1</td>
+                  <td style="padding:3px 6px;border-bottom:1px solid #e2e8f0;">นภัส ใจดี</td>
+                  <td style="padding:3px 6px;border-bottom:1px solid #e2e8f0;">LAB-A</td>
+                  <td style="padding:3px 6px;border-bottom:1px solid #e2e8f0;">20 พ.ค. 68</td>
+                  <td style="padding:3px 6px;border-bottom:1px solid #e2e8f0;">08:00–12:00</td>
+                  <td style="padding:3px 6px;border-bottom:1px solid #e2e8f0;">เสร็จสิ้น</td>
+                </tr>
+                <tr style="background:#f8fafc;">
+                  <td style="padding:3px 6px;border-bottom:1px solid #e2e8f0;">2</td>
+                  <td style="padding:3px 6px;border-bottom:1px solid #e2e8f0;">CS201 Sec.1</td>
+                  <td style="padding:3px 6px;border-bottom:1px solid #e2e8f0;">LAB-B</td>
+                  <td style="padding:3px 6px;border-bottom:1px solid #e2e8f0;">20 พ.ค. 68</td>
+                  <td style="padding:3px 6px;border-bottom:1px solid #e2e8f0;">12:00–16:00</td>
+                  <td style="padding:3px 6px;border-bottom:1px solid #e2e8f0;">ใช้งาน</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- PDF Footer -->
+            <div style="border-top:1px solid #e2e8f0;margin-top:10px;padding-top:6px;display:flex;justify-content:space-between;font-size:9px;color:#94a3b8;">
+              <span>ระบบจองห้องปฏิบัติการ</span>
+              <span>หน้า 1 / 4</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>ส่วนประกอบ PDF</th><th>ประเภท Output</th><th>รายละเอียด</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>หัวรายงาน</td><td><span class="type-badge t-pdf">PDF Header</span></td><td>ชื่อระบบ, ช่วงวันที่, เวลาพิมพ์</td></tr>
+          <tr><td>ตารางสรุป</td><td><span class="type-badge t-pdf">Summary Table</span></td><td>จำนวนการจองแต่ละสถานะ</td></tr>
+          <tr><td>ตารางรายละเอียด</td><td><span class="type-badge t-pdf">Detail Table</span></td><td>ทุก record ตาม filter (ไม่ paginate)</td></tr>
+          <tr><td>Footer / หมายเลขหน้า</td><td><span class="type-badge t-pdf">PDF Footer</span></td><td>Page X / Y</td></tr>
+          <tr><td>รูปแบบไฟล์</td><td><span class="type-badge t-pdf">File Download</span></td><td>.pdf — @react-pdf/renderer</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     OD-09  ADMIN DASHBOARD
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">9</span> หน้าจอ Dashboard แอดมิน
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    OD-09 — Dashboard แอดมิน
+    <span class="tag" style="background:#fef3c7;color:#92400e;">Admin</span>
+  </div>
+  <div class="screen-desc">ภาพรวมระบบทั้งหมด: สถานะห้อง, ผู้ใช้, กุญแจ, การจอง</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /admin
+        </div>
+        <div class="mockup-body">
+          <div style="font-weight:700;font-size:14px;color:#134e2c;margin-bottom:12px;">⚙️ Admin Dashboard</div>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+            <div class="metric-card mc-blue">
+              <div class="label">ห้องทั้งหมด</div>
+              <div class="value">8</div>
+            </div>
+            <div class="metric-card mc-green">
+              <div class="label">กุญแจพร้อมใช้</div>
+              <div class="value">6</div>
+            </div>
+            <div class="metric-card mc-orange">
+              <div class="label">กุญแจถูกยืม</div>
+              <div class="value">2</div>
+            </div>
+            <div class="metric-card mc-purple">
+              <div class="label">ผู้ใช้ทั้งหมด</div>
+              <div class="value">247</div>
+            </div>
+            <div class="metric-card mc-teal">
+              <div class="label">จองวันนี้</div>
+              <div class="value">14</div>
+            </div>
+            <div class="metric-card mc-red">
+              <div class="label">ไม่มาตามนัด</div>
+              <div class="value">3</div>
+            </div>
+          </div>
+
+          <!-- Room status table -->
+          <div style="font-weight:700;font-size:12px;color:#134e2c;margin-bottom:6px;">สถานะห้องปัจจุบัน</div>
+          <table class="data-table">
+            <thead>
+              <tr><th>ห้อง</th><th>กุญแจ</th><th>สถานะ</th><th>ผู้ใช้ปัจจุบัน</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>LAB-A</td>
+                <td>K-A-001</td>
+                <td><span class="badge b-borrowed">🔑 ถูกยืม</span></td>
+                <td>อ.สมชาย ใจดี</td>
+              </tr>
+              <tr>
+                <td>LAB-B</td>
+                <td>K-B-001</td>
+                <td><span class="badge b-avail">✅ ว่าง</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>LAB-C</td>
+                <td>K-C-001</td>
+                <td><span class="badge b-avail">✅ ว่าง</span></td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>รายการที่แสดง</th><th>ประเภท Output</th><th>รายละเอียด</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>จำนวนห้องทั้งหมด</td><td><span class="type-badge t-card">Metric Card</span></td><td>COUNT Room WHERE isActive=true</td></tr>
+          <tr><td>กุญแจพร้อมใช้</td><td><span class="type-badge t-card">Metric Card</span></td><td>COUNT Key WHERE status=AVAILABLE</td></tr>
+          <tr><td>กุญแจถูกยืม</td><td><span class="type-badge t-card">Metric Card</span></td><td>COUNT Key WHERE status=BORROWED</td></tr>
+          <tr><td>ผู้ใช้ทั้งหมด</td><td><span class="type-badge t-card">Metric Card</span></td><td>COUNT User WHERE isActive=true</td></tr>
+          <tr><td>จองวันนี้</td><td><span class="type-badge t-card">Metric Card</span></td><td>COUNT Reservation WHERE date=today</td></tr>
+          <tr><td>ตารางสถานะห้อง</td><td><span class="type-badge t-table">Status Table</span></td><td>Room + Key + ผู้ใช้ปัจจุบัน</td></tr>
+        </tbody>
+      </table>
+
+      <!-- Toast notifications -->
+      <div style="margin-top:14px;">
+        <div style="font-weight:700;font-size:12px;color:#134e2c;margin-bottom:6px;">Toast Notifications (ข้อความแจ้งเตือน)</div>
+        <div class="toast t-success">✅ จองห้องสำเร็จ</div>
+        <div class="toast t-error">❌ ห้องนี้ถูกจองแล้วในช่วงเวลาที่เลือก</div>
+        <div class="toast t-info">ℹ️ Token ถูก verify สำเร็จ</div>
+        <div class="toast t-warn">⚠️ Token ใกล้หมดอายุ</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     OD-10  IMPORT PREVIEW
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">10</span> หน้าจอ Dry-run Preview (ตัวอย่างก่อนนำเข้า)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    OD-10 — ผลการ Dry-run Preview ก่อนนำเข้าข้อมูล
+    <span class="tag" style="background:#fef3c7;color:#92400e;">Admin</span>
+  </div>
+  <div class="screen-desc">แสดงตัวอย่างข้อมูลและข้อผิดพลาดก่อนการ import จริง</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /admin/users — Import Preview
+        </div>
+        <div class="mockup-body">
+          <div style="font-weight:700;font-size:14px;color:#134e2c;margin-bottom:10px;">📂 ผลการตรวจสอบไฟล์ CSV</div>
+
+          <!-- Summary bar -->
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <div style="background:#dcfce7;border:1px solid #86efac;border-radius:6px;padding:6px 12px;font-size:11px;color:#166534;font-weight:700;">✅ สำเร็จ: 45</div>
+            <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;padding:6px 12px;font-size:11px;color:#991b1b;font-weight:700;">❌ ผิดพลาด: 3</div>
+            <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:6px;padding:6px 12px;font-size:11px;color:#92400e;font-weight:700;">⚠ ซ้ำ: 2</div>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr><th>แถว</th><th>รหัสนักศึกษา</th><th>ชื่อ</th><th>สถานะ</th><th>ข้อผิดพลาด</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td><td>65xxx0001</td><td>นภัส ใจดี</td>
+                <td><span class="badge b-approved">✅ OK</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>2</td><td>65xxx0002</td><td>พีรพัฒน์ มีสุข</td>
+                <td><span class="badge b-approved">✅ OK</span></td>
+                <td>—</td>
+              </tr>
+              <tr style="background:#fef2f2;">
+                <td>3</td><td>65xxx0003</td><td>—</td>
+                <td><span class="badge b-rejected">❌ Error</span></td>
+                <td style="color:#991b1b;font-size:10px;">ชื่อว่างเปล่า</td>
+              </tr>
+              <tr style="background:#fffbeb;">
+                <td>4</td><td>65xxx0001</td><td>นภัส ใจดี</td>
+                <td><span class="badge b-pending">⚠ ซ้ำ</span></td>
+                <td style="color:#92400e;font-size:10px;">รหัสนักศึกษาซ้ำ</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button style="flex:1;background:#fff;border:1.5px solid #e2e8f0;border-radius:6px;padding:7px;font-size:11px;font-weight:600;color:#475569;">แก้ไขไฟล์</button>
+            <button style="flex:2;background:#134e2c;color:#fff;border:none;border-radius:6px;padding:7px;font-size:11px;font-weight:600;">⬆ นำเข้า 45 รายการ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>รายการที่แสดง</th><th>ประเภท Output</th><th>รายละเอียด</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>จำนวนรายการสำเร็จ</td><td><span class="type-badge t-card">Count Badge</span></td><td>แถวที่ผ่าน validation</td></tr>
+          <tr><td>จำนวนรายการผิดพลาด</td><td><span class="type-badge t-card">Count Badge</span></td><td>แถวที่ไม่ผ่าน validation</td></tr>
+          <tr><td>จำนวนรายการซ้ำ</td><td><span class="type-badge t-card">Count Badge</span></td><td>แถวที่มี studentId/email ซ้ำ</td></tr>
+          <tr><td>ตาราง Preview</td><td><span class="type-badge t-table">Data Table</span></td><td>ทุกแถวใน CSV + สถานะ + ข้อผิดพลาด</td></tr>
+          <tr><td>ข้อความ Error</td><td><span class="type-badge t-badge">Error Text</span></td><td>ระบุฟิลด์และสาเหตุเป็นภาษาไทย</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

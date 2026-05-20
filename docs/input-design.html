@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Input Design — ระบบจองห้องปฏิบัติการ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f0f4f8;
+      color: #1e293b;
+      font-size: 13px;
+    }
+
+    /* ───── Cover page ───── */
+    .cover {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+      color: #fff;
+      text-align: center;
+      padding: 40px;
+      page-break-after: always;
+    }
+    .cover .logo-box {
+      width: 90px; height: 90px;
+      border: 3px solid rgba(255,255,255,.4);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; margin-bottom: 28px;
+      background: rgba(255,255,255,.1);
+    }
+    .cover h1 { font-size: 32px; font-weight: 700; line-height: 1.3; margin-bottom: 10px; }
+    .cover h2 { font-size: 22px; font-weight: 400; opacity: .85; margin-bottom: 8px; }
+    .cover .subtitle { font-size: 15px; opacity: .7; margin-top: 8px; }
+    .cover .badge {
+      margin-top: 36px;
+      padding: 8px 28px;
+      border: 2px solid rgba(255,255,255,.5);
+      border-radius: 999px;
+      font-size: 14px;
+      letter-spacing: .05em;
+    }
+
+    /* ───── Section separator ───── */
+    .section-sep {
+      background: #1e3a5f;
+      color: #fff;
+      padding: 18px 40px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: .03em;
+      page-break-before: always;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-sep .num {
+      background: #2563eb;
+      border-radius: 8px;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+
+    /* ───── Screen wrapper ───── */
+    .screen-page {
+      padding: 30px 40px;
+      page-break-inside: avoid;
+    }
+    .screen-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin-bottom: 6px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .screen-title .tag {
+      background: #dbeafe;
+      color: #1e40af;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .screen-desc { color: #64748b; font-size: 12px; margin-bottom: 16px; }
+
+    /* ───── Two-column layout ───── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ───── Mockup frame ───── */
+    .mockup {
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    }
+    .mockup-bar {
+      background: #1e3a5f;
+      color: #fff;
+      padding: 8px 14px;
+      font-size: 11px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .dot { width:9px;height:9px;border-radius:50%; display:inline-block; }
+    .dot-r{background:#ef4444;} .dot-y{background:#eab308;} .dot-g{background:#22c55e;}
+    .mockup-body { padding: 16px; }
+
+    /* ───── Form elements ───── */
+    .form-group { margin-bottom: 12px; }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+    .form-input {
+      width: 100%;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: #334155;
+      background: #f8fafc;
+    }
+    .form-input.filled { background: #fff; color: #1e293b; border-color: #94a3b8; }
+    .form-input.focus { border-color: #2563eb; background: #fff; }
+    .form-select {
+      width: 100%;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: #334155;
+      background: #f8fafc;
+      appearance: none;
+    }
+    .form-textarea {
+      width: 100%;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: #334155;
+      background: #f8fafc;
+      resize: none;
+      height: 56px;
+    }
+
+    /* ───── Buttons ───── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+      padding: 8px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-outline { background: #fff; border: 1.5px solid #cbd5e1; color: #475569; }
+    .btn-full { width: 100%; }
+    .btn-sm { padding: 5px 12px; font-size: 11px; }
+    .btn-danger { background: #ef4444; color: #fff; }
+    .btn-success { background: #16a34a; color: #fff; }
+    .btn-row { display: flex; gap: 8px; margin-top: 4px; }
+
+    /* ───── Tab strip ───── */
+    .tab-strip {
+      display: flex;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 14px;
+    }
+    .tab {
+      padding: 7px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+    .tab.active { color: #2563eb; border-color: #2563eb; }
+
+    /* ───── Slot picker ───── */
+    .slot-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+    .slot {
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 11px;
+      color: #475569;
+      cursor: pointer;
+    }
+    .slot.selected { background: #dbeafe; border-color: #2563eb; color: #1e40af; font-weight: 600; }
+    .slot.disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+    /* ───── Toggle radio ───── */
+    .toggle-group { display: flex; gap: 6px; margin-top: 4px; }
+    .toggle-btn {
+      flex: 1;
+      text-align: center;
+      padding: 6px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 11px;
+      color: #475569;
+      cursor: pointer;
+    }
+    .toggle-btn.active { background: #1e3a5f; color: #fff; border-color: #1e3a5f; }
+
+    /* ───── Field spec table ───── */
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+    }
+    .spec-table th {
+      background: #1e3a5f;
+      color: #fff;
+      text-align: left;
+      padding: 6px 10px;
+      font-weight: 600;
+    }
+    .spec-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+    .spec-table tr:nth-child(even) td { background: #f8fafc; }
+    .spec-table tr:hover td { background: #eff6ff; }
+    .req { color: #ef4444; font-weight: 700; font-size: 10px; }
+    .opt { color: #94a3b8; font-size: 10px; }
+    .type-badge {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .t-text  { background:#dbeafe; color:#1e40af; }
+    .t-pass  { background:#fce7f3; color:#9d174d; }
+    .t-sel   { background:#dcfce7; color:#166534; }
+    .t-date  { background:#fef3c7; color:#92400e; }
+    .t-file  { background:#f3e8ff; color:#6b21a8; }
+    .t-btn   { background:#fee2e2; color:#991b1b; }
+    .t-qr    { background:#e0f2fe; color:#0c4a6e; }
+    .t-num   { background:#ecfdf5; color:#065f46; }
+    .t-area  { background:#fafafa; color:#374151; border:1px solid #e5e7eb; }
+
+    /* ───── Mini calendar ───── */
+    .mini-cal { font-size: 11px; }
+    .mini-cal-header { display:flex; justify-content:space-between; margin-bottom:6px; font-weight:700; font-size:12px; }
+    .mini-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center; }
+    .mc-head { font-size:10px; color:#64748b; font-weight:600; padding:3px; }
+    .mc-day { padding:4px 2px; border-radius:4px; cursor:pointer; color:#334155; }
+    .mc-day.today { background:#2563eb; color:#fff; font-weight:700; }
+    .mc-day.selected { background:#dbeafe; color:#1e40af; font-weight:600; }
+    .mc-day.other { color:#94a3b8; }
+
+    /* ───── Alert ───── */
+    .alert { border-radius:6px; padding:8px 12px; font-size:11px; margin-bottom:10px; display:flex; gap:8px; align-items:flex-start; }
+    .alert-warn { background:#fffbeb; border:1px solid #fde68a; color:#92400e; }
+    .alert-info { background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; }
+    .alert-err  { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
+
+    /* ───── Participant chip ───── */
+    .chip-list { display:flex; flex-wrap:wrap; gap:5px; margin-top:4px; }
+    .chip {
+      background:#e0f2fe;
+      color:#0c4a6e;
+      border-radius:999px;
+      padding:3px 10px;
+      font-size:11px;
+      display:flex; align-items:center; gap:5px;
+    }
+    .chip .x { color:#64748b; font-size:12px; cursor:pointer; }
+
+    /* ───── File upload ───── */
+    .file-drop {
+      border: 2px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 18px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .file-drop .icon { font-size:24px; margin-bottom:4px; }
+
+    /* ───── Divider ───── */
+    .divider { border:none; border-top:1px solid #e2e8f0; margin:12px 0; }
+
+    /* ───── Print ───── */
+    @media print {
+      .cover { page-break-after: always; }
+      .screen-page { page-break-inside: avoid; }
+      .section-sep { page-break-before: always; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     COVER
+══════════════════════════════════════ -->
+<div class="cover">
+  <div class="logo-box">🔑</div>
+  <h1>ระบบจองห้องปฏิบัติการ<br>คอมพิวเตอร์</h1>
+  <h2>Lab Room Booking & Key Management System</h2>
+  <p class="subtitle">เอกสารออกแบบหน้าจอรับข้อมูล (Input Design)</p>
+  <div class="badge">INPUT DESIGN DOCUMENT</div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     ID-01  LOGIN
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">1</span> หน้าจอเข้าสู่ระบบ (Login)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    ID-01 — หน้าจอเข้าสู่ระบบ
+    <span class="tag">Public</span>
+  </div>
+  <div class="screen-desc">ผู้ใช้ทุกประเภท (นักศึกษา / อาจารย์ / แอดมิน) เข้าสู่ระบบผ่านหน้านี้</div>
+
+  <div class="two-col">
+    <!-- mockup -->
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; localhost:3000/login
+        </div>
+        <div class="mockup-body" style="max-width:320px; margin:0 auto; padding:24px;">
+          <div style="text-align:center; margin-bottom:20px;">
+            <div style="font-size:28px; margin-bottom:6px;">🔑</div>
+            <div style="font-weight:700; font-size:16px; color:#1e3a5f;">เข้าสู่ระบบ</div>
+            <div style="font-size:11px; color:#64748b; margin-top:4px;">ระบบจองห้องปฏิบัติการ</div>
+          </div>
+
+          <div class="tab-strip">
+            <div class="tab active">นักศึกษา</div>
+            <div class="tab">อาจารย์ / เจ้าหน้าที่</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">รหัสนักศึกษา (11 หลัก)</label>
+            <input class="form-input filled" type="text" value="65xxxxxxxx1" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">รหัสผ่าน</label>
+            <input class="form-input" type="password" placeholder="••••••••" />
+          </div>
+          <div style="text-align:right; margin-bottom:12px;">
+            <a href="#" style="font-size:11px; color:#2563eb;">ลืมรหัสผ่าน?</a>
+          </div>
+          <button class="btn btn-primary btn-full">เข้าสู่ระบบ</button>
+
+          <div class="alert alert-err" style="margin-top:12px;">
+            ⚠️ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- field spec -->
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr>
+            <th>ฟิลด์</th>
+            <th>ประเภท</th>
+            <th>กฎการตรวจสอบ</th>
+            <th>บังคับ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ประเภทผู้ใช้</td>
+            <td><span class="type-badge t-btn">Toggle</span></td>
+            <td>นักศึกษา / อาจารย์&amp;เจ้าหน้าที่</td>
+            <td><span class="req">✔ จำเป็น</span></td>
+          </tr>
+          <tr>
+            <td>รหัสนักศึกษา / อีเมล</td>
+            <td><span class="type-badge t-text">Text</span></td>
+            <td>นักศึกษา: ตัวเลข 11 หลัก<br>Staff: รูปแบบ email</td>
+            <td><span class="req">✔ จำเป็น</span></td>
+          </tr>
+          <tr>
+            <td>รหัสผ่าน</td>
+            <td><span class="type-badge t-pass">Password</span></td>
+            <td>ขั้นต่ำ 8 ตัวอักษร</td>
+            <td><span class="req">✔ จำเป็น</span></td>
+          </tr>
+          <tr>
+            <td>ปุ่มเข้าสู่ระบบ</td>
+            <td><span class="type-badge t-btn">Submit</span></td>
+            <td>Rate-limit 10 ครั้ง/นาที (Redis)</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:14px;">
+        <div style="font-weight:700; font-size:12px; color:#1e3a5f; margin-bottom:6px;">ข้อความแจ้งเตือน</div>
+        <div class="alert alert-err">รหัสผ่านไม่ถูกต้อง</div>
+        <div class="alert alert-warn">บัญชีถูกระงับชั่วคราว (rate limit)</div>
+        <div class="alert alert-info">รหัสผ่านเริ่มต้น: รหัสนักศึกษา / วันเกิด (YYYYMMDD)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     ID-02  BOOKING (STUDENT)
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">2</span> หน้าจอจองห้องปฏิบัติการ (Room Booking)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    ID-02 — แบบฟอร์มจองห้อง (นักศึกษา / อาจารย์)
+    <span class="tag">Student</span><span class="tag" style="background:#f0fdf4;color:#166534;">Teacher</span>
+  </div>
+  <div class="screen-desc">กรอกข้อมูลเพื่อจองห้องปฏิบัติการสำหรับกิจกรรมนอกตาราง (AD_HOC)</div>
+
+  <div class="two-col">
+    <!-- mockup -->
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /student/reserve
+        </div>
+        <div class="mockup-body">
+          <div style="font-weight:700; font-size:14px; color:#1e3a5f; margin-bottom:14px;">📅 จองห้องปฏิบัติการ</div>
+
+          <!-- Room -->
+          <div class="form-group">
+            <label class="form-label">ห้องปฏิบัติการ <span style="color:#ef4444">*</span></label>
+            <select class="form-select">
+              <option>-- เลือกห้อง --</option>
+              <option selected>ห้อง LAB-A (ชั้น 3, 40 เครื่อง)</option>
+              <option>ห้อง LAB-B (ชั้น 3, 30 เครื่อง)</option>
+              <option>ห้อง LAB-C (ชั้น 4, 40 เครื่อง)</option>
+            </select>
+          </div>
+
+          <!-- Date -->
+          <div class="form-group">
+            <label class="form-label">วันที่ <span style="color:#ef4444">*</span></label>
+            <input class="form-input filled" type="text" value="20 พฤษภาคม 2568" />
+            <!-- mini cal preview -->
+            <div style="border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-top:6px; background:#fff;">
+              <div class="mini-cal">
+                <div class="mini-cal-header"><span>&lt;</span><span>พฤษภาคม 2568</span><span>&gt;</span></div>
+                <div class="mini-cal-grid">
+                  <div class="mc-head">อา</div><div class="mc-head">จ</div><div class="mc-head">อ</div>
+                  <div class="mc-head">พ</div><div class="mc-head">พฤ</div><div class="mc-head">ศ</div>
+                  <div class="mc-head">ส</div>
+                  <div class="mc-day other">27</div><div class="mc-day other">28</div>
+                  <div class="mc-day other">29</div><div class="mc-day other">30</div>
+                  <div class="mc-day other">1</div><div class="mc-day">2</div><div class="mc-day">3</div>
+                  <div class="mc-day">4</div><div class="mc-day">5</div><div class="mc-day">6</div>
+                  <div class="mc-day">7</div><div class="mc-day">8</div><div class="mc-day">9</div>
+                  <div class="mc-day">10</div>
+                  <div class="mc-day">11</div><div class="mc-day">12</div><div class="mc-day">13</div>
+                  <div class="mc-day">14</div><div class="mc-day">15</div><div class="mc-day">16</div>
+                  <div class="mc-day">17</div>
+                  <div class="mc-day">18</div><div class="mc-day">19</div>
+                  <div class="mc-day today selected">20</div>
+                  <div class="mc-day">21</div><div class="mc-day">22</div><div class="mc-day">23</div>
+                  <div class="mc-day">24</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Time slots -->
+          <div class="form-group">
+            <label class="form-label">ช่วงเวลา <span style="color:#ef4444">*</span></label>
+            <div class="slot-grid">
+              <div class="slot selected">08:00–12:00</div>
+              <div class="slot selected">12:00–16:00</div>
+              <div class="slot disabled">16:00–20:00 (เต็ม)</div>
+            </div>
+          </div>
+
+          <!-- Approver (student only) -->
+          <div class="form-group">
+            <label class="form-label">อาจารย์ผู้อนุมัติ <span style="color:#ef4444">*</span></label>
+            <select class="form-select">
+              <option>-- เลือกอาจารย์ --</option>
+              <option selected>ผศ.ดร. สมชาย ใจดี</option>
+              <option>อ.สมหญิง ขยันดี</option>
+            </select>
+          </div>
+
+          <!-- Note -->
+          <div class="form-group">
+            <label class="form-label">หมายเหตุ / จุดประสงค์การใช้ห้อง</label>
+            <textarea class="form-textarea" placeholder="ระบุวัตถุประสงค์การใช้ห้อง...">ซ้อมนำเสนอโปรเจคสิ้นภาค</textarea>
+          </div>
+
+          <!-- Participants -->
+          <div class="form-group">
+            <label class="form-label">ผู้เข้าร่วม (สูงสุด 4 คน)</label>
+            <input class="form-input" type="text" placeholder="ค้นหาชื่อหรือรหัสนักศึกษา..." />
+            <div class="chip-list" style="margin-top:6px;">
+              <div class="chip">65xxx0001 นภัส ใจดี <span class="x">×</span></div>
+              <div class="chip">65xxx0002 พีรพัฒน์ มีสุข <span class="x">×</span></div>
+            </div>
+          </div>
+
+          <hr class="divider">
+          <div class="btn-row">
+            <button class="btn btn-outline" style="flex:1">ยกเลิก</button>
+            <button class="btn btn-primary" style="flex:2">✔ ส่งคำขอจอง</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- field spec -->
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>ฟิลด์</th><th>ประเภท</th><th>กฎการตรวจสอบ</th><th>บังคับ</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ห้องปฏิบัติการ</td>
+            <td><span class="type-badge t-sel">Select</span></td>
+            <td>แสดงเฉพาะห้องที่ isActive=true</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>วันที่</td>
+            <td><span class="type-badge t-date">DatePicker</span></td>
+            <td>วันนี้ถึง 30 วันข้างหน้า<br>ปิดเสาร์-อาทิตย์ได้ (config)</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>ช่วงเวลา</td>
+            <td><span class="type-badge t-btn">Slot Toggle</span></td>
+            <td>เลือกได้ 1–2 ช่วงต่อเนื่อง<br>ตรวจสอบ conflict กับ IN_CLASS</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>อาจารย์ผู้อนุมัติ</td>
+            <td><span class="type-badge t-sel">Select</span></td>
+            <td>เฉพาะ role=TEACHER<br>(นักศึกษาเท่านั้น)</td>
+            <td><span class="req">✔ (Student)</span></td>
+          </tr>
+          <tr>
+            <td>หมายเหตุ</td>
+            <td><span class="type-badge t-area">Textarea</span></td>
+            <td>ไม่เกิน 500 ตัวอักษร</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>ผู้เข้าร่วม</td>
+            <td><span class="type-badge t-text">Search+Chip</span></td>
+            <td>สูงสุด 4 คน (ผู้จอง+4=5)<br>ค้นหาจาก /api/users/search</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>ปุ่มส่งคำขอ</td>
+            <td><span class="type-badge t-btn">Submit</span></td>
+            <td>Validate ทุกฟิลด์ก่อน submit</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:14px;">
+        <div style="font-weight:700; font-size:12px; color:#1e3a5f; margin-bottom:6px;">ข้อความแจ้งเตือน</div>
+        <div class="alert alert-err">ห้องนี้มีการจองอยู่แล้วในช่วงเวลาที่เลือก</div>
+        <div class="alert alert-warn">เลือกช่วงเวลาได้สูงสุด 2 ช่วงต่อเนื่องกันเท่านั้น</div>
+        <div class="alert alert-info">คำขอจะถูกส่งให้อาจารย์อนุมัติ (สถานะ: รอการอนุมัติ)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     ID-03  TEACHER APPROVAL
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">3</span> หน้าจออนุมัติคำขอจอง (Teacher Approval)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    ID-03 — หน้าอนุมัติ / ปฏิเสธคำขอจอง
+    <span class="tag" style="background:#f0fdf4;color:#166534;">Teacher</span>
+  </div>
+  <div class="screen-desc">อาจารย์ตรวจสอบรายการคำขอจองที่รอการอนุมัติและดำเนินการอนุมัติหรือปฏิเสธ</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /teacher/requests
+        </div>
+        <div class="mockup-body">
+          <div style="font-weight:700; font-size:14px; color:#1e3a5f; margin-bottom:14px;">📋 คำขอรอการอนุมัติ (3)</div>
+
+          <!-- Request card -->
+          <div style="border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:10px; background:#fffbeb;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span style="font-weight:700; font-size:12px;">นภัส ใจดี (65xxx0001)</span>
+              <span style="background:#fef3c7; color:#92400e; border-radius:4px; padding:2px 8px; font-size:10px; font-weight:700;">⏳ รอการอนุมัติ</span>
+            </div>
+            <div style="font-size:11px; color:#475569; margin-bottom:4px;">🏠 LAB-A &nbsp;|&nbsp; 📅 21 พ.ค. 2568 &nbsp;|&nbsp; 🕗 08:00–12:00</div>
+            <div style="font-size:11px; color:#475569; margin-bottom:8px;">📝 ซ้อมนำเสนอโปรเจค | ผู้เข้าร่วม: 2 คน</div>
+            <div class="btn-row">
+              <button class="btn btn-success btn-sm" style="flex:1">✔ อนุมัติ</button>
+              <button class="btn btn-danger btn-sm" style="flex:1">✘ ปฏิเสธ</button>
+            </div>
+          </div>
+
+          <!-- Reject dialog -->
+          <div style="border:2px solid #fca5a5; border-radius:8px; padding:12px; background:#fef2f2;">
+            <div style="font-weight:700; font-size:12px; color:#991b1b; margin-bottom:8px;">🚫 ระบุเหตุผลการปฏิเสธ</div>
+            <div class="form-group">
+              <label class="form-label">เหตุผล <span style="color:#ef4444">*</span></label>
+              <textarea class="form-textarea" placeholder="ระบุเหตุผลที่ปฏิเสธ...">ห้องมีกิจกรรมพิเศษในวันดังกล่าว</textarea>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-outline btn-sm">ยกเลิก</button>
+              <button class="btn btn-danger btn-sm">ยืนยันการปฏิเสธ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>ฟิลด์ / Action</th><th>ประเภท</th><th>กฎการตรวจสอบ</th><th>บังคับ</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ปุ่มอนุมัติ</td>
+            <td><span class="type-badge t-btn">Button</span></td>
+            <td>เปลี่ยน status → APPROVED</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>ปุ่มปฏิเสธ</td>
+            <td><span class="type-badge t-btn">Button</span></td>
+            <td>เปิด dialog ให้กรอกเหตุผล</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>เหตุผลการปฏิเสธ</td>
+            <td><span class="type-badge t-area">Textarea</span></td>
+            <td>จำเป็นเมื่อกด "ปฏิเสธ"<br>ไม่เกิน 300 ตัวอักษร</td>
+            <td><span class="req">✔ (เมื่อปฏิเสธ)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     ID-04  KEY LOAN DESK
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">4</span> หน้าจอยืม-คืนกุญแจ (Key Loan Desk)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    ID-04 — หน้าจอยืม-คืนกุญแจ (Loan Desk)
+    <span class="tag" style="background:#fef3c7;color:#92400e;">Admin</span>
+    <span class="tag" style="background:#f0fdf4;color:#166534;">Teacher</span>
+  </div>
+  <div class="screen-desc">เจ้าหน้าที่สแกน QR Code หรือกรอก Token เพื่อบันทึกการยืม/คืนกุญแจ</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /admin/check
+        </div>
+        <div class="mockup-body">
+          <div style="font-weight:700; font-size:14px; color:#1e3a5f; margin-bottom:14px;">🔑 ยืม-คืนกุญแจ</div>
+
+          <div class="tab-strip">
+            <div class="tab active">📥 ยืมกุญแจ (Check-in)</div>
+            <div class="tab">📤 คืนกุญแจ (Return)</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">สแกน QR Code หรือกรอก Token <span style="color:#ef4444">*</span></label>
+            <input class="form-input focus" type="text" value="eyJhbGciOiJIUzI1NiIsIn..." placeholder="วางหรือสแกน token..." />
+          </div>
+
+          <div style="text-align:center; margin:10px 0; color:#94a3b8; font-size:11px;">— หรือ สแกน QR Code —</div>
+
+          <div style="border:2px dashed #cbd5e1; border-radius:8px; padding:14px; text-align:center; background:#f8fafc;">
+            <div style="font-size:30px; margin-bottom:4px;">📷</div>
+            <div style="font-size:11px; color:#64748b;">คลิกเพื่อเปิดกล้อง หรืออัปโหลดรูป QR</div>
+          </div>
+
+          <!-- late override (admin only) -->
+          <div style="border:1px solid #fde68a; border-radius:6px; padding:8px 12px; margin-top:10px; background:#fffbeb; display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" id="late" />
+            <label for="late" style="font-size:11px; color:#92400e; font-weight:600;">⚠️ อนุญาตการยืมล่าช้า (Admin เท่านั้น)</label>
+          </div>
+
+          <hr class="divider">
+          <button class="btn btn-primary btn-full">🔍 ตรวจสอบ Token</button>
+
+          <!-- Result panel -->
+          <div style="border:2px solid #86efac; border-radius:8px; padding:12px; margin-top:12px; background:#f0fdf4;">
+            <div style="font-weight:700; font-size:12px; color:#166534; margin-bottom:6px;">✅ พบข้อมูลผู้จอง</div>
+            <div style="font-size:11px; color:#166534; line-height:1.7;">
+              👤 นภัส ใจดี (65xxx0001)<br>
+              🏠 ห้อง LAB-A &nbsp;|&nbsp; กุญแจ K-A-001<br>
+              📅 21 พ.ค. 2568 &nbsp;|&nbsp; 🕗 08:00–12:00
+            </div>
+            <button class="btn btn-success btn-sm" style="margin-top:8px; width:100%;">✔ ยืนยันการยืมกุญแจ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>ฟิลด์ / Action</th><th>ประเภท</th><th>กฎการตรวจสอบ</th><th>บังคับ</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>โหมดยืม/คืน</td>
+            <td><span class="type-badge t-btn">Tab</span></td>
+            <td>Check-in (ยืม) / Return (คืน)</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>QR Token</td>
+            <td><span class="type-badge t-qr">Text/QR Scan</span></td>
+            <td>JWT signed (QR_TOKEN_SECRET)<br>หมดอายุทุก 2 นาที</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>สแกนกล้อง/ไฟล์</td>
+            <td><span class="type-badge t-file">File/Camera</span></td>
+            <td>ใช้ jsqr decode QR image</td>
+            <td><span class="opt">ทางเลือก</span></td>
+          </tr>
+          <tr>
+            <td>อนุญาตล่าช้า</td>
+            <td><span class="type-badge t-btn">Checkbox</span></td>
+            <td>Admin เท่านั้น<br>ยืมได้แม้ผ่านเวลาเริ่ม 30 นาที</td>
+            <td><span class="opt">Admin only</span></td>
+          </tr>
+          <tr>
+            <td>ยืนยันการยืม/คืน</td>
+            <td><span class="type-badge t-btn">Submit</span></td>
+            <td>สร้างหรืออัปเดต Loan record</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:14px;">
+        <div class="alert alert-err">Token หมดอายุหรือไม่ถูกต้อง</div>
+        <div class="alert alert-warn">ผู้ใช้ไม่มีสิทธิ์ใช้ห้องนี้ (ไม่ใช่ผู้จองหรือผู้เข้าร่วม)</div>
+        <div class="alert alert-info">กุญแจถูกคืนเรียบร้อย — สถานะ: AVAILABLE</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     ID-05  KIOSK SELF-CHECK
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">5</span> หน้าจอ Kiosk Self-Check (ยืม-คืนกุญแจด้วยตนเอง)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    ID-05 — Kiosk Self-Check
+    <span class="tag" style="background:#f3e8ff;color:#6b21a8;">Kiosk Device</span>
+  </div>
+  <div class="screen-desc">อุปกรณ์ Kiosk ที่จอดรับ QR Token จากนักศึกษาโดยไม่ต้องล็อกอิน</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /self-check
+        </div>
+        <div class="mockup-body" style="text-align:center; padding:24px;">
+          <div style="font-size:32px; margin-bottom:8px;">🖥️</div>
+          <div style="font-weight:700; font-size:16px; color:#1e3a5f; margin-bottom:4px;">Kiosk ยืม-คืนกุญแจ</div>
+          <div style="font-size:11px; color:#64748b; margin-bottom:20px;">LAB-A — ชั้น 3</div>
+
+          <!-- Step 1: select room -->
+          <div style="border:2px solid #2563eb; border-radius:8px; padding:14px; margin-bottom:12px; background:#eff6ff;">
+            <div style="font-size:11px; font-weight:700; color:#1e40af; margin-bottom:8px;">ขั้นที่ 1 — เลือกห้อง</div>
+            <select class="form-select" style="text-align:center;">
+              <option selected>ห้อง LAB-A</option>
+              <option>ห้อง LAB-B</option>
+            </select>
+          </div>
+
+          <!-- Step 2: mode -->
+          <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:700; color:#1e3a5f; margin-bottom:8px;">ขั้นที่ 2 — เลือกโหมด</div>
+            <div class="toggle-group">
+              <div class="toggle-btn active">📥 ยืมกุญแจ</div>
+              <div class="toggle-btn">📤 คืนกุญแจ</div>
+            </div>
+          </div>
+
+          <!-- Step 3: scan QR -->
+          <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
+            <div style="font-size:11px; font-weight:700; color:#1e3a5f; margin-bottom:8px;">ขั้นที่ 3 — สแกน QR Code</div>
+            <div style="width:120px; height:120px; border:3px solid #2563eb; border-radius:8px; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-size:40px;">📷</div>
+            <div style="font-size:11px; color:#64748b;">วาง QR Code ให้ตรงกล้อง</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>ฟิลด์</th><th>ประเภท</th><th>กฎการตรวจสอบ</th><th>บังคับ</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>เลือกห้อง</td>
+            <td><span class="type-badge t-sel">Select</span></td>
+            <td>แสดงเฉพาะห้องที่ Kiosk จับคู่แล้ว</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>โหมด (ยืม/คืน)</td>
+            <td><span class="type-badge t-btn">Toggle</span></td>
+            <td>ยืม = Check-in / คืน = Return</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>QR Code Scan</td>
+            <td><span class="type-badge t-qr">Camera/QR</span></td>
+            <td>jsqr decode → ส่ง token ไปยัง API<br>Token หมดอายุทุก 2 นาที</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     ID-06  USER MANAGEMENT (ADMIN)
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">6</span> หน้าจอจัดการผู้ใช้งาน (Admin — User Management)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    ID-06 — แบบฟอร์มสร้าง / แก้ไขผู้ใช้งาน
+    <span class="tag" style="background:#fef3c7;color:#92400e;">Admin</span>
+  </div>
+  <div class="screen-desc">แอดมินเพิ่มหรือแก้ไขผู้ใช้ทีละคนหรือนำเข้าจากไฟล์ CSV</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /admin/users — Dialog
+        </div>
+        <div class="mockup-body">
+          <div style="font-weight:700; font-size:14px; color:#1e3a5f; margin-bottom:14px;">👤 เพิ่มผู้ใช้งานใหม่</div>
+
+          <div class="form-group">
+            <label class="form-label">บทบาท <span style="color:#ef4444">*</span></label>
+            <div class="toggle-group">
+              <div class="toggle-btn active">นักศึกษา</div>
+              <div class="toggle-btn">อาจารย์</div>
+              <div class="toggle-btn">แอดมิน</div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label class="form-label">ชื่อ <span style="color:#ef4444">*</span></label>
+              <input class="form-input" type="text" placeholder="ชื่อ" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">นามสกุล <span style="color:#ef4444">*</span></label>
+              <input class="form-input" type="text" placeholder="นามสกุล" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">รหัสนักศึกษา (11 หลัก) <span style="color:#ef4444">*</span></label>
+            <input class="form-input" type="text" placeholder="65xxxxxxxxx" />
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label class="form-label">วันเกิด <span style="color:#ef4444">*</span></label>
+              <input class="form-input" type="date" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">เพศ</label>
+              <select class="form-select">
+                <option>ชาย</option><option>หญิง</option><option>ไม่ระบุ</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">สาขาวิชา</label>
+            <input class="form-input" type="text" placeholder="วิทยาการคอมพิวเตอร์" />
+          </div>
+
+          <hr class="divider">
+          <div style="font-weight:700; font-size:12px; color:#1e3a5f; margin-bottom:10px;">📂 หรือนำเข้าจากไฟล์ CSV</div>
+          <div class="file-drop">
+            <div class="icon">📄</div>
+            ลากไฟล์ CSV มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์
+          </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="btn btn-outline btn-sm">🔍 Dry-run Preview</button>
+            <button class="btn btn-primary btn-sm">⬆ นำเข้าข้อมูล</button>
+          </div>
+
+          <hr class="divider">
+          <div class="btn-row">
+            <button class="btn btn-outline" style="flex:1">ยกเลิก</button>
+            <button class="btn btn-primary" style="flex:2">💾 บันทึก</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>ฟิลด์</th><th>ประเภท</th><th>กฎการตรวจสอบ</th><th>บังคับ</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>บทบาท</td>
+            <td><span class="type-badge t-btn">Toggle</span></td>
+            <td>STUDENT / TEACHER / ADMIN</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>ชื่อ</td>
+            <td><span class="type-badge t-text">Text</span></td>
+            <td>1–100 ตัวอักษร</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>นามสกุล</td>
+            <td><span class="type-badge t-text">Text</span></td>
+            <td>1–100 ตัวอักษร</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>รหัสนักศึกษา</td>
+            <td><span class="type-badge t-text">Text</span></td>
+            <td>ตัวเลข 11 หลัก (STUDENT เท่านั้น)</td>
+            <td><span class="req">✔ (STUDENT)</span></td>
+          </tr>
+          <tr>
+            <td>อีเมล</td>
+            <td><span class="type-badge t-text">Email</span></td>
+            <td>รูปแบบ email (TEACHER/ADMIN)</td>
+            <td><span class="req">✔ (Staff)</span></td>
+          </tr>
+          <tr>
+            <td>วันเกิด</td>
+            <td><span class="type-badge t-date">Date</span></td>
+            <td>ใช้เป็น default password</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>เพศ</td>
+            <td><span class="type-badge t-sel">Select</span></td>
+            <td>MALE / FEMALE / OTHER</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>สาขาวิชา</td>
+            <td><span class="type-badge t-text">Text</span></td>
+            <td>—</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>ไฟล์ CSV (นำเข้า)</td>
+            <td><span class="type-badge t-file">File</span></td>
+            <td>.csv เท่านั้น, header row ต้องตรงรูปแบบ</td>
+            <td><span class="opt">ทางเลือก</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     ID-07  SETTINGS (PROFILE / PASSWORD)
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">7</span> หน้าจอตั้งค่าโปรไฟล์ / เปลี่ยนรหัสผ่าน (Settings)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    ID-07 — หน้าตั้งค่าโปรไฟล์และเปลี่ยนรหัสผ่าน
+    <span class="tag">All Roles</span>
+  </div>
+  <div class="screen-desc">ผู้ใช้ทุกคนแก้ไขข้อมูลส่วนตัวและเปลี่ยนรหัสผ่านได้</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /settings
+        </div>
+        <div class="mockup-body">
+          <div style="font-weight:700; font-size:14px; color:#1e3a5f; margin-bottom:14px;">⚙️ ตั้งค่าบัญชี</div>
+
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:12px; border:1px solid #e2e8f0; border-radius:8px;">
+            <div style="width:48px;height:48px;background:#dbeafe;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;">👤</div>
+            <div>
+              <div style="font-weight:700; font-size:13px;">นภัส ใจดี</div>
+              <div style="font-size:11px; color:#64748b;">65xxx0001 · นักศึกษา</div>
+            </div>
+          </div>
+
+          <div style="font-weight:700; font-size:12px; color:#1e3a5f; margin-bottom:10px;">ข้อมูลส่วนตัว</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label class="form-label">ชื่อ</label>
+              <input class="form-input filled" value="นภัส" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">นามสกุล</label>
+              <input class="form-input filled" value="ใจดี" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">วันเกิด</label>
+            <input class="form-input filled" value="01/01/2548" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">สาขาวิชา</label>
+            <input class="form-input filled" value="วิทยาการคอมพิวเตอร์" />
+          </div>
+
+          <button class="btn btn-primary btn-sm" style="margin-bottom:16px;">💾 บันทึกข้อมูล</button>
+
+          <hr class="divider">
+          <div style="font-weight:700; font-size:12px; color:#1e3a5f; margin-bottom:10px;">🔒 เปลี่ยนรหัสผ่าน</div>
+          <div class="form-group">
+            <label class="form-label">รหัสผ่านปัจจุบัน</label>
+            <input class="form-input" type="password" placeholder="••••••••" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">รหัสผ่านใหม่</label>
+            <input class="form-input" type="password" placeholder="อย่างน้อย 8 ตัวอักษร" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">ยืนยันรหัสผ่านใหม่</label>
+            <input class="form-input" type="password" placeholder="••••••••" />
+          </div>
+          <button class="btn btn-primary btn-sm">🔑 เปลี่ยนรหัสผ่าน</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>ฟิลด์</th><th>ประเภท</th><th>กฎการตรวจสอบ</th><th>บังคับ</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ชื่อ</td>
+            <td><span class="type-badge t-text">Text</span></td>
+            <td>1–100 ตัวอักษร</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>นามสกุล</td>
+            <td><span class="type-badge t-text">Text</span></td>
+            <td>1–100 ตัวอักษร</td>
+            <td><span class="req">✔</span></td>
+          </tr>
+          <tr>
+            <td>วันเกิด</td>
+            <td><span class="type-badge t-date">Date</span></td>
+            <td>รูปแบบ DD/MM/YYYY</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>สาขาวิชา</td>
+            <td><span class="type-badge t-text">Text</span></td>
+            <td>—</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>รหัสผ่านปัจจุบัน</td>
+            <td><span class="type-badge t-pass">Password</span></td>
+            <td>ตรวจสอบกับ bcrypt hash ใน DB</td>
+            <td><span class="req">✔ (เมื่อเปลี่ยน)</span></td>
+          </tr>
+          <tr>
+            <td>รหัสผ่านใหม่</td>
+            <td><span class="type-badge t-pass">Password</span></td>
+            <td>ขั้นต่ำ 8 ตัวอักษร</td>
+            <td><span class="req">✔ (เมื่อเปลี่ยน)</span></td>
+          </tr>
+          <tr>
+            <td>ยืนยันรหัสผ่านใหม่</td>
+            <td><span class="type-badge t-pass">Password</span></td>
+            <td>ต้องตรงกับรหัสผ่านใหม่</td>
+            <td><span class="req">✔ (เมื่อเปลี่ยน)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     ID-08  REPORT FILTER
+══════════════════════════════════════ -->
+<div class="section-sep">
+  <span class="num">8</span> หน้าจอกรองรายงาน (Report Filter)
+</div>
+
+<div class="screen-page">
+  <div class="screen-title">
+    ID-08 — แบบฟอร์มกรองรายงานการจอง
+    <span class="tag" style="background:#fef3c7;color:#92400e;">Admin</span>
+  </div>
+  <div class="screen-desc">แอดมินกรองข้อมูลรายงานและส่งออกเป็น PDF</div>
+
+  <div class="two-col">
+    <div>
+      <div class="mockup">
+        <div class="mockup-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          &nbsp; /admin/reports
+        </div>
+        <div class="mockup-body">
+          <div style="font-weight:700; font-size:14px; color:#1e3a5f; margin-bottom:14px;">📊 รายงานการจองห้อง</div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label class="form-label">วันที่เริ่มต้น</label>
+              <input class="form-input filled" type="date" value="2025-05-01" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">วันที่สิ้นสุด</label>
+              <input class="form-input filled" type="date" value="2025-05-31" />
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label class="form-label">ประเภทการจอง</label>
+              <select class="form-select">
+                <option>ทั้งหมด</option>
+                <option>IN_CLASS</option>
+                <option>AD_HOC</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">สถานะ</label>
+              <select class="form-select">
+                <option>ทั้งหมด</option>
+                <option>APPROVED</option>
+                <option>COMPLETED</option>
+                <option>NO_SHOW</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ห้อง</label>
+            <select class="form-select">
+              <option>ทุกห้อง</option>
+              <option>LAB-A</option><option>LAB-B</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ผู้จอง (ค้นหาชื่อ / รหัส)</label>
+            <input class="form-input" type="text" placeholder="ค้นหา..." />
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label class="form-label">จำนวนแถวต่อหน้า</label>
+              <select class="form-select">
+                <option>10</option><option>25</option><option selected>50</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-outline" style="flex:1">🔄 รีเซ็ต</button>
+            <button class="btn btn-primary" style="flex:2">🔍 ค้นหา</button>
+            <button class="btn btn-outline" style="flex:1.5">📄 Export PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>ฟิลด์</th><th>ประเภท</th><th>กฎการตรวจสอบ</th><th>บังคับ</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>วันที่เริ่มต้น</td>
+            <td><span class="type-badge t-date">Date</span></td>
+            <td>≤ วันที่สิ้นสุด</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>วันที่สิ้นสุด</td>
+            <td><span class="type-badge t-date">Date</span></td>
+            <td>≥ วันที่เริ่มต้น</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>ประเภทการจอง</td>
+            <td><span class="type-badge t-sel">Select</span></td>
+            <td>ALL / IN_CLASS / AD_HOC</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>สถานะ</td>
+            <td><span class="type-badge t-sel">Select</span></td>
+            <td>ALL / PENDING / APPROVED /<br>CHECKED_IN / COMPLETED /<br>REJECTED / CANCELLED / NO_SHOW</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>ห้อง</td>
+            <td><span class="type-badge t-sel">Select</span></td>
+            <td>รายการห้องทั้งหมดในระบบ</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>ผู้จอง</td>
+            <td><span class="type-badge t-text">Text</span></td>
+            <td>ค้นหาแบบ partial match</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>จำนวนแถวต่อหน้า</td>
+            <td><span class="type-badge t-sel">Select</span></td>
+            <td>10 / 25 / 50 / 100</td>
+            <td><span class="opt">ไม่บังคับ</span></td>
+          </tr>
+          <tr>
+            <td>Export PDF</td>
+            <td><span class="type-badge t-btn">Button</span></td>
+            <td>ส่งออกทุก record ตามกรอง (ไม่ pagination)</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
