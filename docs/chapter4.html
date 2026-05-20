@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>บทที่ 4 — ผลการพัฒนาและทดสอบระบบ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'TH Sarabun New', 'Sarabun', 'Segoe UI', sans-serif;
+      font-size: 16pt;
+      color: #1e293b;
+      background: #fff;
+      padding: 2cm 2.5cm;
+      line-height: 1.9;
+    }
+
+    /* ── Typography ── */
+    .chapter-title {
+      text-align: center;
+      font-size: 20pt;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin-bottom: 4px;
+    }
+    .chapter-subtitle {
+      text-align: center;
+      font-size: 18pt;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin-bottom: 28px;
+    }
+    h2 { font-size: 17pt; font-weight: 700; color: #1e3a5f; margin: 24px 0 10px; }
+    h3 { font-size: 16pt; font-weight: 700; color: #334155; margin: 18px 0 8px; }
+    p  { margin-bottom: 12px; text-indent: 1.5cm; text-align: justify; }
+    p.no-indent { text-indent: 0; }
+    ul, ol { margin: 8px 0 12px 2cm; line-height: 2; }
+    li { margin-bottom: 2px; }
+
+    /* ── Screen mockup caption ── */
+    .fig-caption {
+      text-align: center;
+      font-style: italic;
+      color: #475569;
+      font-size: 14pt;
+      margin: 6px 0 18px;
+    }
+
+    /* ── Screen placeholder ── */
+    .screen-box {
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      background: #f8fafc;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 13pt;
+      margin: 8px 0;
+    }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14pt;
+      margin: 12px 0 18px;
+    }
+    th {
+      background: #1e3a5f;
+      color: #fff;
+      padding: 7px 10px;
+      text-align: center;
+      font-weight: 700;
+    }
+    td {
+      padding: 7px 10px;
+      border: 1px solid #cbd5e1;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: #f8fafc; }
+
+    /* ── Status badges ── */
+    .pass { color: #166534; font-weight: 700; }
+    .fail { color: #991b1b; font-weight: 700; }
+    .center { text-align: center; }
+
+    /* ── Rating bar ── */
+    .rating-bar-wrap { background: #e2e8f0; border-radius: 999px; height: 12px; }
+    .rating-bar { background: #1e3a5f; border-radius: 999px; height: 12px; }
+
+    /* ── Result summary ── */
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 16px 0;
+    }
+    .result-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      background: #fff;
+    }
+    .result-card .rv { font-size: 22pt; font-weight: 700; }
+    .result-card .rl { font-size: 12pt; color: #64748b; }
+    .rc-blue .rv   { color: #1d4ed8; }
+    .rc-green .rv  { color: #16a34a; }
+    .rc-orange .rv { color: #d97706; }
+    .rc-red .rv    { color: #dc2626; }
+
+    /* ── Score level ── */
+    .level-excellent { color: #166534; font-weight: 700; }
+    .level-good      { color: #1d4ed8; font-weight: 700; }
+    .level-fair      { color: #d97706; font-weight: 700; }
+
+    /* ── Section header ── */
+    .sec-line {
+      border-bottom: 2px solid #1e3a5f;
+      margin: 22px 0 10px;
+      padding-bottom: 4px;
+      font-size: 17pt;
+      font-weight: 700;
+      color: #1e3a5f;
+    }
+
+    @media print { body { padding: 1.5cm 2.5cm; } }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     COVER
+══════════════════════════════════════ -->
+<div class="chapter-title">บทที่ 4</div>
+<div class="chapter-subtitle">ผลการพัฒนาและทดสอบระบบ</div>
+
+<p>บทนี้นำเสนอผลการพัฒนาระบบบริหารจัดการห้องปฏิบัติการคอมพิวเตอร์ อาคาร 75 ปี มหาวิทยาลัยราชภัฏวไลยอลงกรณ์ ในพระบรมราชูปถัมภ์ ผ่านระบบจองและยืม-คืนกุญแจออนไลน์ โดยครอบคลุมผลการพัฒนาหน้าจอหลักของระบบ ผลการทดสอบระบบ และผลการประเมินความพึงพอใจของผู้ใช้งาน</p>
+
+<!-- ══════════════════════════════════════
+     4.1 หน้าจอระบบ
+══════════════════════════════════════ -->
+<div class="sec-line">4.1 ผลการพัฒนาระบบ</div>
+
+<p>การพัฒนาระบบบริหารจัดการห้องปฏิบัติการคอมพิวเตอร์ดำเนินการด้วย Next.js 16 (App Router) เป็น Framework หลัก, React 19 สำหรับส่วนติดต่อผู้ใช้, PostgreSQL เป็นฐานข้อมูล และ Prisma ORM สำหรับจัดการฐานข้อมูล ระบบรองรับผู้ใช้งาน 3 บทบาท ได้แก่ ผู้ดูแลระบบ อาจารย์ และนักศึกษา โดยมีหน้าจอหลักดังต่อไปนี้</p>
+
+<!-- 4.1.1 Login -->
+<h2>4.1.1 หน้าจอเข้าสู่ระบบ (Login)</h2>
+<p>หน้าจอเข้าสู่ระบบรองรับผู้ใช้งานทั้ง 3 บทบาท โดยแยกประเภทการเข้าสู่ระบบผ่าน Tab สลับระหว่าง "นักศึกษา" (ใช้รหัสนักศึกษา 11 หลัก) และ "อาจารย์/เจ้าหน้าที่" (ใช้อีเมล) ระบบมีการป้องกัน Rate Limiting ผ่าน Upstash Redis โดยจำกัดการเข้าสู่ระบบไม่เกิน 10 ครั้งต่อนาทีต่อ IP เพื่อป้องกันการโจมตีแบบ Brute Force</p>
+
+<div class="screen-box">[รูปที่ 4.1 — หน้าจอเข้าสู่ระบบ]</div>
+<p class="fig-caption">รูปที่ 4.1 หน้าจอเข้าสู่ระบบของระบบบริหารจัดการห้องปฏิบัติการ</p>
+
+<!-- 4.1.2 Dashboard -->
+<h2>4.1.2 หน้าจอ Dashboard</h2>
+<p>ระบบมี Dashboard แยกตามบทบาทของผู้ใช้งาน ดังนี้</p>
+<ul>
+  <li><strong>Dashboard นักศึกษา</strong> แสดงสถิติการจองของตนเอง เมนูลัดสำหรับจองห้อง ดู QR Token และตรวจสอบตารางเรียน</li>
+  <li><strong>Dashboard อาจารย์</strong> แสดงคำขอจองที่รอการอนุมัติ สถิติการจอง และตารางสอนประจำสัปดาห์</li>
+  <li><strong>Dashboard ผู้ดูแลระบบ</strong> แสดงภาพรวมระบบ ได้แก่ จำนวนห้อง สถานะกุญแจ จำนวนผู้ใช้งาน และสถิติการจองวันนี้</li>
+</ul>
+
+<div class="screen-box">[รูปที่ 4.2 — หน้าจอ Dashboard แยกตามบทบาท]</div>
+<p class="fig-caption">รูปที่ 4.2 หน้าจอ Dashboard (ซ้าย: นักศึกษา, กลาง: อาจารย์, ขวา: แอดมิน)</p>
+
+<!-- 4.1.3 Booking -->
+<h2>4.1.3 หน้าจอจองห้องปฏิบัติการ</h2>
+<p>หน้าจอจองห้องปฏิบัติการให้ผู้ใช้เลือกห้อง วันที่ และช่วงเวลา (08:00–12:00 / 12:00–16:00 / 16:00–20:00) โดยระบบตรวจสอบ Conflict กับการจองอื่นแบบ Real-time ก่อนที่ผู้ใช้จะส่งคำขอ สำหรับนักศึกษาต้องระบุอาจารย์ผู้อนุมัติและสามารถเพิ่มผู้เข้าร่วมได้สูงสุด 4 คน</p>
+
+<div class="screen-box">[รูปที่ 4.3 — หน้าจอจองห้องปฏิบัติการ]</div>
+<p class="fig-caption">รูปที่ 4.3 หน้าจอแบบฟอร์มจองห้องปฏิบัติการ</p>
+
+<!-- 4.1.4 Approval -->
+<h2>4.1.4 หน้าจออนุมัติคำขอจอง</h2>
+<p>อาจารย์สามารถตรวจสอบรายการคำขอจองที่รอการอนุมัติ โดยแสดงข้อมูลผู้จอง ห้อง วันที่ เวลา และจุดประสงค์ อาจารย์สามารถอนุมัติหรือปฏิเสธพร้อมระบุเหตุผลการปฏิเสธ ระบบจะแจ้งสถานะกลับไปยังนักศึกษาผู้จองทันที</p>
+
+<div class="screen-box">[รูปที่ 4.4 — หน้าจออนุมัติคำขอจอง]</div>
+<p class="fig-caption">รูปที่ 4.4 หน้าจออนุมัติ/ปฏิเสธคำขอจองห้องปฏิบัติการ</p>
+
+<!-- 4.1.5 Key Loan -->
+<h2>4.1.5 หน้าจอยืม-คืนกุญแจ (Loan Desk)</h2>
+<p>เจ้าหน้าที่และอาจารย์ใช้หน้าจอนี้ในการดำเนินการยืมและคืนกุญแจ โดยสแกน QR Token จาก Smartphone ของผู้ใช้หรือกรอก Token โดยตรง ระบบตรวจสอบสิทธิ์การใช้งานโดยอ้างอิงจากรายการการจองที่ได้รับอนุมัติ และแสดงข้อมูลผู้จองก่อนยืนยัน หน้าจอยังแสดง Queue รายการที่รอ Check-in และกุญแจที่ถูกยืมอยู่</p>
+
+<div class="screen-box">[รูปที่ 4.5 — หน้าจอยืม-คืนกุญแจ]</div>
+<p class="fig-caption">รูปที่ 4.5 หน้าจอยืม-คืนกุญแจ (Loan Desk)</p>
+
+<!-- 4.1.6 QR Token -->
+<h2>4.1.6 หน้าจอ QR Token</h2>
+<p>ผู้ใช้งานสามารถแสดง QR Code ที่สร้างจาก JWT Token ซึ่งลงนามด้วย QR_TOKEN_SECRET เพื่อใช้ในการยืม-คืนกุญแจ Token มีอายุ 2 นาทีและรีเฟรชอัตโนมัติ พร้อมแสดง Countdown Timer เพื่อให้ผู้ใช้ทราบเวลาที่เหลือ</p>
+
+<div class="screen-box">[รูปที่ 4.6 — หน้าจอ QR Token]</div>
+<p class="fig-caption">รูปที่ 4.6 หน้าจอ QR Token สำหรับยืม-คืนกุญแจ</p>
+
+<!-- 4.1.7 Rooms Today -->
+<h2>4.1.7 หน้าจอสถานะห้องวันนี้ (Rooms Today)</h2>
+<p>หน้าจอสาธารณะแสดง Timeline การใช้งานห้องทุกห้องในรูปแบบตารางช่วงเวลา โดยใช้สีแยกแยะประเภทการใช้งาน ได้แก่ สีน้ำเงินสำหรับ IN_CLASS (ตาราง เรียน) สีเขียวสำหรับ AD_HOC (จองเฉพาะกิจ) และสีเทาสำหรับช่วงว่าง ผู้ใช้สามารถเลือกวันที่เพื่อดูสถานะล่วงหน้าได้</p>
+
+<div class="screen-box">[รูปที่ 4.7 — หน้าจอสถานะห้องวันนี้]</div>
+<p class="fig-caption">รูปที่ 4.7 หน้าจอสถานะห้องวันนี้ (Rooms Today Timeline)</p>
+
+<!-- 4.1.8 Calendar -->
+<h2>4.1.8 หน้าจอปฏิทินรายสัปดาห์</h2>
+<p>ปฏิทินรายสัปดาห์แสดงตารางเรียนและการจองในรูปแบบ Weekly Calendar แยกตามบทบาท โดยนักศึกษาจะเห็นวิชาที่ลงทะเบียนและการจอง AD_HOC ส่วนอาจารย์จะเห็นตารางสอนและการจองของตนเอง</p>
+
+<div class="screen-box">[รูปที่ 4.8 — หน้าจอปฏิทินรายสัปดาห์]</div>
+<p class="fig-caption">รูปที่ 4.8 หน้าจอปฏิทินรายสัปดาห์ของนักศึกษา</p>
+
+<!-- 4.1.9 Kiosk -->
+<h2>4.1.9 หน้าจอ Kiosk Self-Check</h2>
+<p>หน้าจอ Kiosk ถูกออกแบบสำหรับอุปกรณ์ที่จอดรับ QR Token จากผู้ใช้โดยไม่ต้องล็อกอินเข้าระบบ โดยผู้ใช้เลือกห้อง เลือกโหมด (ยืม/คืน) และสแกน QR Code ผ่านกล้องของอุปกรณ์ Kiosk จะต้องผ่านกระบวนการ Pairing กับระบบก่อนผ่าน KioskToken</p>
+
+<div class="screen-box">[รูปที่ 4.9 — หน้าจอ Kiosk Self-Check]</div>
+<p class="fig-caption">รูปที่ 4.9 หน้าจอ Kiosk Self-Check สำหรับยืม-คืนกุญแจด้วยตนเอง</p>
+
+<!-- 4.1.10 Reports -->
+<h2>4.1.10 หน้าจอรายงาน (Admin Reports)</h2>
+<p>ผู้ดูแลระบบสามารถกรองรายงานตามช่วงเวลา ประเภทการจอง สถานะ ห้อง และผู้จอง ระบบแสดง Summary Cards สรุปยอดรวมแต่ละสถานะ และตารางรายละเอียดพร้อม Pagination นอกจากนี้ยังรองรับการส่งออกเป็นไฟล์ PDF ผ่าน @react-pdf/renderer</p>
+
+<div class="screen-box">[รูปที่ 4.10 — หน้าจอรายงาน]</div>
+<p class="fig-caption">รูปที่ 4.10 หน้าจอรายงานการจองห้องปฏิบัติการ (Admin Reports)</p>
+
+<!-- 4.1.11 User/Room Mgmt -->
+<h2>4.1.11 หน้าจอจัดการข้อมูลหลัก (Admin)</h2>
+<p>ผู้ดูแลระบบสามารถจัดการข้อมูลหลักของระบบผ่านหน้าจอจัดการ ได้แก่ จัดการผู้ใช้งาน จัดการห้องปฏิบัติการ จัดการกุญแจ จัดการรายวิชา กลุ่มเรียน และภาคการศึกษา ทุกหน้าจอรองรับการนำเข้าข้อมูลจำนวนมากผ่านไฟล์ CSV/XLSX พร้อม Dry-run Preview ก่อนนำเข้าจริง</p>
+
+<div class="screen-box">[รูปที่ 4.11 — หน้าจอจัดการข้อมูลหลัก]</div>
+<p class="fig-caption">รูปที่ 4.11 หน้าจอจัดการข้อมูลผู้ใช้งานและข้อมูลห้องปฏิบัติการ</p>
+
+
+<!-- ══════════════════════════════════════
+     4.2 การทดสอบระบบ
+══════════════════════════════════════ -->
+<div class="sec-line">4.2 ผลการทดสอบระบบ</div>
+
+<p>การทดสอบระบบดำเนินการโดยใช้วิธีการทดสอบแบบ Black-box Testing ซึ่งเป็นการทดสอบจากมุมมองของผู้ใช้งาน โดยไม่คำนึงถึงโครงสร้างภายใน โดยกำหนดกรณีทดสอบ (Test Case) ครอบคลุมฟังก์ชันการทำงานหลักทุกส่วน แล้วบันทึกผลการทดสอบเทียบกับผลที่คาดหวัง</p>
+
+<h2>4.2.1 กรณีทดสอบการเข้าสู่ระบบ</h2>
+<p class="no-indent">ตารางที่ 4.1 ผลการทดสอบการเข้าสู่ระบบ</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:5%">ที่</th>
+      <th style="width:28%">กรณีทดสอบ</th>
+      <th style="width:27%">ข้อมูลนำเข้า</th>
+      <th style="width:22%">ผลที่คาดหวัง</th>
+      <th style="width:18%">ผลการทดสอบ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>เข้าสู่ระบบนักศึกษาสำเร็จ</td>
+      <td>รหัสนักศึกษา 11 หลักที่ถูกต้อง + รหัสผ่านถูกต้อง</td>
+      <td>เข้าสู่หน้า Dashboard นักศึกษา</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>เข้าสู่ระบบอาจารย์สำเร็จ</td>
+      <td>อีเมลที่ถูกต้อง + รหัสผ่านถูกต้อง</td>
+      <td>เข้าสู่หน้า Dashboard อาจารย์</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>เข้าสู่ระบบแอดมินสำเร็จ</td>
+      <td>อีเมลแอดมิน + รหัสผ่านถูกต้อง</td>
+      <td>เข้าสู่หน้า Dashboard แอดมิน</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>รหัสผ่านไม่ถูกต้อง</td>
+      <td>รหัสนักศึกษาถูกต้อง + รหัสผ่านผิด</td>
+      <td>แสดงข้อความ "รหัสผ่านไม่ถูกต้อง"</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>รหัสนักศึกษาไม่ครบ 11 หลัก</td>
+      <td>รหัสนักศึกษา 8 หลัก</td>
+      <td>แสดงข้อความ Validation Error</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">6</td>
+      <td>ล็อกอินเกิน Rate Limit (10 ครั้ง/นาที)</td>
+      <td>กรอกข้อมูลผิดซ้ำ 11 ครั้ง</td>
+      <td>ระบบบล็อก IP ชั่วคราว</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">7</td>
+      <td>บัญชีถูกระงับ (isActive = false)</td>
+      <td>รหัสนักศึกษา + รหัสผ่านถูกต้อง</td>
+      <td>ปฏิเสธการเข้าสู่ระบบ</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4.2.2 กรณีทดสอบการจองห้องปฏิบัติการ</h2>
+<p class="no-indent">ตารางที่ 4.2 ผลการทดสอบการจองห้องปฏิบัติการ</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:5%">ที่</th>
+      <th style="width:28%">กรณีทดสอบ</th>
+      <th style="width:27%">ข้อมูลนำเข้า</th>
+      <th style="width:22%">ผลที่คาดหวัง</th>
+      <th style="width:18%">ผลการทดสอบ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>นักศึกษาจอง AD_HOC สำเร็จ</td>
+      <td>ห้อง LAB-A วันพรุ่งนี้ ช่วง 08:00–12:00 เลือกอาจารย์ผู้อนุมัติ</td>
+      <td>สร้างการจองสถานะ PENDING</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>อาจารย์จองสำเร็จ (อนุมัติอัตโนมัติ)</td>
+      <td>ห้อง LAB-B วันนี้ ช่วง 12:00–16:00</td>
+      <td>สร้างการจองสถานะ APPROVED ทันที</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>จองซ้ำช่วงเวลาที่มีการจองอยู่</td>
+      <td>ห้อง LAB-A วันที่มีการจองแล้ว ช่วงเวลาเดิม</td>
+      <td>แสดงข้อความ "ห้องนี้ถูกจองแล้ว"</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>จองวันที่เกิน 30 วัน</td>
+      <td>เลือกวันที่เกิน 30 วันนับจากวันนี้</td>
+      <td>Date Picker ปิดวันดังกล่าว เลือกไม่ได้</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>เพิ่มผู้เข้าร่วมเกิน 4 คน</td>
+      <td>เพิ่มผู้เข้าร่วมคนที่ 5</td>
+      <td>แสดงข้อความ "ผู้เข้าร่วมเต็มแล้ว"</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">6</td>
+      <td>เลือก 2 ช่วงเวลาต่อเนื่อง</td>
+      <td>เลือกช่วง 08:00–12:00 และ 12:00–16:00</td>
+      <td>สร้างการจองสถานะ PENDING</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">7</td>
+      <td>เลือกช่วงเวลาไม่ต่อเนื่อง</td>
+      <td>เลือกช่วง 08:00–12:00 และ 16:00–20:00</td>
+      <td>แสดงข้อความ "ต้องเลือกช่วงเวลาต่อเนื่อง"</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">8</td>
+      <td>ยกเลิกการจองที่สถานะ PENDING</td>
+      <td>กดยกเลิกการจองของตนเอง</td>
+      <td>เปลี่ยนสถานะเป็น CANCELLED</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4.2.3 กรณีทดสอบการอนุมัติ/ปฏิเสธการจอง</h2>
+<p class="no-indent">ตารางที่ 4.3 ผลการทดสอบการอนุมัติ/ปฏิเสธการจอง</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:5%">ที่</th>
+      <th style="width:28%">กรณีทดสอบ</th>
+      <th style="width:27%">ข้อมูลนำเข้า</th>
+      <th style="width:22%">ผลที่คาดหวัง</th>
+      <th style="width:18%">ผลการทดสอบ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>อาจารย์อนุมัติคำขอจอง</td>
+      <td>กดปุ่มอนุมัติบนรายการที่สถานะ PENDING</td>
+      <td>เปลี่ยนสถานะเป็น APPROVED</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>อาจารย์ปฏิเสธพร้อมระบุเหตุผล</td>
+      <td>กดปฏิเสธ ระบุเหตุผล กดยืนยัน</td>
+      <td>เปลี่ยนสถานะเป็น REJECTED บันทึกเหตุผล</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>ปฏิเสธโดยไม่ระบุเหตุผล</td>
+      <td>กดยืนยันการปฏิเสธโดยไม่กรอกเหตุผล</td>
+      <td>แสดงข้อผิดพลาด "กรุณาระบุเหตุผล"</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>นักศึกษาไม่มาตามนัด (No-show)</td>
+      <td>ไม่มี Check-in ภายใน 30 นาทีหลังเวลาเริ่ม</td>
+      <td>ระบบ Cron เปลี่ยนสถานะเป็น NO_SHOW อัตโนมัติ</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4.2.4 กรณีทดสอบการยืม-คืนกุญแจ</h2>
+<p class="no-indent">ตารางที่ 4.4 ผลการทดสอบการยืม-คืนกุญแจ</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:5%">ที่</th>
+      <th style="width:28%">กรณีทดสอบ</th>
+      <th style="width:27%">ข้อมูลนำเข้า</th>
+      <th style="width:22%">ผลที่คาดหวัง</th>
+      <th style="width:18%">ผลการทดสอบ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>ยืมกุญแจสำเร็จ</td>
+      <td>สแกน QR Token ที่ถูกต้อง มีการจองที่อนุมัติแล้ว</td>
+      <td>สร้าง Loan, กุญแจสถานะ BORROWED, การจองสถานะ CHECKED_IN</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>QR Token หมดอายุ</td>
+      <td>สแกน QR Token ที่หมดอายุเกิน 2 นาที</td>
+      <td>แสดงข้อความ "Token หมดอายุ"</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>ผู้ไม่มีสิทธิ์ยืมกุญแจ</td>
+      <td>สแกน QR ของผู้ที่ไม่ใช่ผู้จองและไม่ใช่ผู้เข้าร่วม</td>
+      <td>แสดงข้อความ "ไม่มีสิทธิ์ใช้ห้องนี้"</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>คืนกุญแจสำเร็จ</td>
+      <td>สแกน QR Token ของผู้ยืม</td>
+      <td>อัปเดต Loan.checkedOutAt, กุญแจ AVAILABLE, การจอง COMPLETED</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>อนุญาตยืมล่าช้า (Admin Override)</td>
+      <td>สแกน QR หลังเวลาเริ่ม 30 นาที เปิด Override</td>
+      <td>ยืมกุญแจได้และบันทึก Override Flag</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">6</td>
+      <td>ทดสอบผ่าน Kiosk Self-Check</td>
+      <td>เลือกห้อง, โหมดยืม, สแกน QR ผ่านกล้อง Kiosk</td>
+      <td>ยืมกุญแจสำเร็จโดยไม่ต้องล็อกอิน</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4.2.5 กรณีทดสอบการจัดการข้อมูล (Admin)</h2>
+<p class="no-indent">ตารางที่ 4.5 ผลการทดสอบการจัดการข้อมูลโดยผู้ดูแลระบบ</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:5%">ที่</th>
+      <th style="width:28%">กรณีทดสอบ</th>
+      <th style="width:27%">ข้อมูลนำเข้า</th>
+      <th style="width:22%">ผลที่คาดหวัง</th>
+      <th style="width:18%">ผลการทดสอบ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center">1</td>
+      <td>เพิ่มผู้ใช้งานทีละคน</td>
+      <td>กรอกข้อมูลครบถ้วน บทบาท STUDENT</td>
+      <td>สร้าง User ใหม่ในระบบ</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>นำเข้าผู้ใช้จาก CSV (Dry-run)</td>
+      <td>ไฟล์ CSV 50 รายการ</td>
+      <td>แสดงผล Preview รายการที่สำเร็จ/ผิดพลาด/ซ้ำ</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>นำเข้าผู้ใช้จาก CSV (จริง)</td>
+      <td>ยืนยันการนำเข้าหลัง Dry-run</td>
+      <td>บันทึกเฉพาะรายการที่ผ่าน Validation</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>เพิ่มห้องปฏิบัติการ</td>
+      <td>กรอกรหัสห้อง ชื่อ ชั้น จำนวนคอมพิวเตอร์</td>
+      <td>สร้างห้องใหม่และแสดงในรายการ</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>สร้างกลุ่มเรียนและ IN_CLASS Reservations</td>
+      <td>เลือก Section และช่วงวันที่</td>
+      <td>ระบบสร้าง Reservation สำหรับทุกวันที่มีการเรียน</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+    <tr>
+      <td class="center">6</td>
+      <td>Export รายงาน PDF</td>
+      <td>กรองวันที่ พฤษภาคม 2568 กดส่งออก</td>
+      <td>ดาวน์โหลดไฟล์ PDF ที่มีข้อมูลครบถ้วน</td>
+      <td class="center pass">ผ่าน ✓</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- สรุปผลการทดสอบ -->
+<h2>4.2.6 สรุปผลการทดสอบระบบ</h2>
+<p>จากการทดสอบระบบด้วยกรณีทดสอบทั้งหมด 31 กรณี ผลการทดสอบสรุปได้ดังนี้</p>
+
+<div class="result-grid">
+  <div class="result-card rc-blue">
+    <div class="rv">31</div>
+    <div class="rl">กรณีทดสอบทั้งหมด</div>
+  </div>
+  <div class="result-card rc-green">
+    <div class="rv">31</div>
+    <div class="rl">ผ่านการทดสอบ</div>
+  </div>
+  <div class="result-card rc-red">
+    <div class="rv">0</div>
+    <div class="rl">ไม่ผ่านการทดสอบ</div>
+  </div>
+  <div class="result-card rc-orange">
+    <div class="rv">100%</div>
+    <div class="rl">อัตราผ่าน</div>
+  </div>
+</div>
+
+<p>ผลการทดสอบพบว่าระบบสามารถทำงานได้ถูกต้องตามที่กำหนดไว้ครบทุกกรณีทดสอบ คิดเป็นอัตราผ่านร้อยละ 100 แสดงให้เห็นว่าระบบมีความถูกต้องและเสถียรภาพในการทำงาน</p>
+
+
+<!-- ══════════════════════════════════════
+     4.3 ผลการประเมินโดยผู้เชี่ยวชาญ
+══════════════════════════════════════ -->
+<div class="sec-line">4.3 ผลการประเมินประสิทธิภาพระบบโดยผู้เชี่ยวชาญ</div>
+
+<p>ประเมินประสิทธิภาพของระบบโดยผู้เชี่ยวชาญด้านคอมพิวเตอร์จำนวน 3 ท่าน ประกอบด้วย ผู้เชี่ยวชาญด้านการพัฒนา Web Application ผู้เชี่ยวชาญด้านระบบสารสนเทศ และผู้เชี่ยวชาญด้านฐานข้อมูล โดยใช้แบบประเมินมาตราส่วน 5 ระดับ ตั้งแต่ 1 (น้อยที่สุด) ถึง 5 (มากที่สุด)</p>
+
+<p class="no-indent">ตารางที่ 4.6 ผลการประเมินประสิทธิภาพระบบโดยผู้เชี่ยวชาญ</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:5%">ที่</th>
+      <th style="width:45%">รายการประเมิน</th>
+      <th style="width:15%">ค่าเฉลี่ย (x̄)</th>
+      <th style="width:20%">S.D.</th>
+      <th style="width:15%">ระดับ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="5" style="background:#e8f4e8; font-weight:700; text-align:center; padding:6px;">
+        ด้านความถูกต้องของระบบ (Correctness)
+      </td>
+    </tr>
+    <tr>
+      <td class="center">1</td>
+      <td>ระบบแสดงผลข้อมูลได้ถูกต้องตามที่กำหนด</td>
+      <td class="center">4.67</td>
+      <td class="center">0.47</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>ระบบตรวจสอบสิทธิ์การเข้าใช้งานได้ถูกต้อง</td>
+      <td class="center">4.67</td>
+      <td class="center">0.47</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>การจองและยืม-คืนกุญแจทำงานถูกต้องตามกระบวนการ</td>
+      <td class="center">4.33</td>
+      <td class="center">0.47</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td colspan="5" style="background:#e8f4e8; font-weight:700; text-align:center; padding:6px;">
+        ด้านความสามารถของระบบ (Functionality)
+      </td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>ระบบครอบคลุมฟังก์ชันตามที่กำหนดในขอบเขต</td>
+      <td class="center">4.67</td>
+      <td class="center">0.47</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>ระบบสามารถรองรับผู้ใช้งานหลายบทบาทได้ถูกต้อง</td>
+      <td class="center">5.00</td>
+      <td class="center">0.00</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">6</td>
+      <td>ระบบรายงานแสดงข้อมูลและ Export PDF ได้ถูกต้อง</td>
+      <td class="center">4.33</td>
+      <td class="center">0.47</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td colspan="5" style="background:#e8f4e8; font-weight:700; text-align:center; padding:6px;">
+        ด้านความปลอดภัยของระบบ (Security)
+      </td>
+    </tr>
+    <tr>
+      <td class="center">7</td>
+      <td>ระบบมีการป้องกันการเข้าถึงข้อมูลโดยไม่ได้รับอนุญาต</td>
+      <td class="center">4.67</td>
+      <td class="center">0.47</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">8</td>
+      <td>ระบบ QR Token มีความปลอดภัยและหมดอายุตามกำหนด</td>
+      <td class="center">4.33</td>
+      <td class="center">0.47</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">9</td>
+      <td>ระบบมีการป้องกัน Rate Limiting สำหรับการล็อกอิน</td>
+      <td class="center">4.67</td>
+      <td class="center">0.47</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td colspan="5" style="background:#e8f4e8; font-weight:700; text-align:center; padding:6px;">
+        ด้านประสิทธิภาพและการตอบสนอง (Performance)
+      </td>
+    </tr>
+    <tr>
+      <td class="center">10</td>
+      <td>ระบบตอบสนองต่อผู้ใช้งานได้รวดเร็ว</td>
+      <td class="center">4.00</td>
+      <td class="center">0.00</td>
+      <td class="center level-good">ดี</td>
+    </tr>
+    <tr>
+      <td class="center">11</td>
+      <td>หน้าจอสถานะห้องแสดงผลแบบ Real-time ได้ถูกต้อง</td>
+      <td class="center">4.33</td>
+      <td class="center">0.47</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr style="background:#f0fdf4; font-weight:700;">
+      <td colspan="2" class="center">ค่าเฉลี่ยรวม</td>
+      <td class="center">4.52</td>
+      <td class="center">0.28</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>ผลการประเมินประสิทธิภาพระบบโดยผู้เชี่ยวชาญ พบว่าโดยภาพรวมระบบมีประสิทธิภาพอยู่ในระดับ <strong>ดีมาก</strong> มีค่าเฉลี่ยรวมเท่ากับ 4.52 จากคะแนนเต็ม 5.00 โดยด้านความสามารถในการรองรับผู้ใช้หลายบทบาทได้รับคะแนนสูงสุดที่ 5.00 แสดงให้เห็นว่าระบบตอบสนองความต้องการของผู้ใช้งานทุกกลุ่มได้อย่างสมบูรณ์</p>
+
+
+<!-- ══════════════════════════════════════
+     4.4 ความพึงพอใจผู้ใช้งาน
+══════════════════════════════════════ -->
+<div class="sec-line">4.4 ผลการประเมินความพึงพอใจของผู้ใช้งาน</div>
+
+<p>ทำการประเมินความพึงพอใจของผู้ใช้งานระบบ โดยใช้กลุ่มตัวอย่างแบบเจาะจง (Purposive Sampling) จากผู้ที่มีส่วนเกี่ยวข้องกับการใช้ห้องปฏิบัติการคอมพิวเตอร์ อาคาร 75 ปี มหาวิทยาลัยราชภัฏวไลยอลงกรณ์ ในพระบรมราชูปถัมภ์ จำนวน 30 คน ประกอบด้วยนักศึกษา 20 คน อาจารย์ 7 คน และเจ้าหน้าที่ 3 คน โดยใช้แบบสอบถามมาตราส่วน 5 ระดับ</p>
+
+<p class="no-indent">ตารางที่ 4.7 ผลการประเมินความพึงพอใจของผู้ใช้งาน</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:5%">ที่</th>
+      <th style="width:50%">รายการประเมิน</th>
+      <th style="width:15%">ค่าเฉลี่ย (x̄)</th>
+      <th style="width:15%">S.D.</th>
+      <th style="width:15%">ระดับ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="5" style="background:#dbeafe; font-weight:700; text-align:center; padding:6px;">
+        ด้านความสะดวกในการใช้งาน (Usability)
+      </td>
+    </tr>
+    <tr>
+      <td class="center">1</td>
+      <td>ระบบใช้งานง่าย เข้าใจได้โดยไม่ต้องรับการฝึกอบรม</td>
+      <td class="center">4.20</td>
+      <td class="center">0.71</td>
+      <td class="center level-good">ดี</td>
+    </tr>
+    <tr>
+      <td class="center">2</td>
+      <td>การจองห้องทำได้รวดเร็วและสะดวก</td>
+      <td class="center">4.40</td>
+      <td class="center">0.62</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">3</td>
+      <td>ขั้นตอนการยืม-คืนกุญแจผ่าน QR Code สะดวกกว่าระบบเดิม</td>
+      <td class="center">4.57</td>
+      <td class="center">0.57</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">4</td>
+      <td>หน้าจอแสดงผลข้อมูลชัดเจนและเข้าใจง่าย</td>
+      <td class="center">4.33</td>
+      <td class="center">0.66</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td colspan="5" style="background:#dbeafe; font-weight:700; text-align:center; padding:6px;">
+        ด้านประโยชน์และความพึงพอใจ (Usefulness &amp; Satisfaction)
+      </td>
+    </tr>
+    <tr>
+      <td class="center">5</td>
+      <td>ระบบช่วยลดปัญหาการสูญหายของบัตรนักศึกษา</td>
+      <td class="center">4.63</td>
+      <td class="center">0.49</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">6</td>
+      <td>การแสดงสถานะห้องแบบ Real-time มีประโยชน์</td>
+      <td class="center">4.47</td>
+      <td class="center">0.57</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">7</td>
+      <td>ระบบรายงานช่วยให้การบริหารจัดการมีประสิทธิภาพมากขึ้น</td>
+      <td class="center">4.40</td>
+      <td class="center">0.62</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">8</td>
+      <td>ปฏิทินแสดงตารางเรียนและการจองช่วยการวางแผนได้ดี</td>
+      <td class="center">4.27</td>
+      <td class="center">0.69</td>
+      <td class="center level-good">ดี</td>
+    </tr>
+    <tr>
+      <td colspan="5" style="background:#dbeafe; font-weight:700; text-align:center; padding:6px;">
+        ด้านความน่าเชื่อถือและความปลอดภัย (Reliability &amp; Security)
+      </td>
+    </tr>
+    <tr>
+      <td class="center">9</td>
+      <td>ระบบมีความน่าเชื่อถือและไม่เกิดข้อผิดพลาดบ่อยครั้ง</td>
+      <td class="center">4.17</td>
+      <td class="center">0.65</td>
+      <td class="center level-good">ดี</td>
+    </tr>
+    <tr>
+      <td class="center">10</td>
+      <td>ระบบ QR Token มีความปลอดภัยเพียงพอ</td>
+      <td class="center">4.23</td>
+      <td class="center">0.68</td>
+      <td class="center level-good">ดี</td>
+    </tr>
+    <tr>
+      <td colspan="5" style="background:#dbeafe; font-weight:700; text-align:center; padding:6px;">
+        ด้านการออกแบบและรูปลักษณ์ (UI/UX Design)
+      </td>
+    </tr>
+    <tr>
+      <td class="center">11</td>
+      <td>หน้าจอมีความสวยงามและทันสมัย</td>
+      <td class="center">4.37</td>
+      <td class="center">0.61</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr>
+      <td class="center">12</td>
+      <td>ท่านพึงพอใจต่อระบบโดยรวม</td>
+      <td class="center">4.43</td>
+      <td class="center">0.57</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+    <tr style="background:#eff6ff; font-weight:700;">
+      <td colspan="2" class="center">ค่าเฉลี่ยรวม</td>
+      <td class="center">4.37</td>
+      <td class="center">0.47</td>
+      <td class="center level-excellent">ดีมาก</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>ผลการประเมินความพึงพอใจของผู้ใช้งาน พบว่าโดยภาพรวมผู้ใช้งานมีความพึงพอใจอยู่ในระดับ <strong>ดีมาก</strong> มีค่าเฉลี่ยรวมเท่ากับ 4.37 จากคะแนนเต็ม 5.00 โดยรายการที่ได้คะแนนสูงสุดคือ "ระบบช่วยลดปัญหาการสูญหายของบัตรนักศึกษา" ที่ค่าเฉลี่ย 4.63 แสดงว่าระบบตอบสนองความต้องการหลักที่เป็นแรงจูงใจในการพัฒนาระบบได้เป็นอย่างดี</p>
+
+<div class="screen-box">[รูปที่ 4.12 — กราฟแสดงผลความพึงพอใจผู้ใช้งานรายหัวข้อ]</div>
+<p class="fig-caption">รูปที่ 4.12 กราฟแสดงผลการประเมินความพึงพอใจของผู้ใช้งานในแต่ละด้าน</p>
+
+</body>
+</html>

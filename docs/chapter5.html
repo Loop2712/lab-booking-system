@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>บทที่ 5 — สรุปผลและข้อเสนอแนะ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'TH Sarabun New', 'Sarabun', 'Segoe UI', sans-serif;
+      font-size: 16pt;
+      color: #1e293b;
+      background: #fff;
+      padding: 2cm 2.5cm;
+      line-height: 1.9;
+    }
+    .chapter-title {
+      text-align: center;
+      font-size: 20pt;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin-bottom: 4px;
+    }
+    .chapter-subtitle {
+      text-align: center;
+      font-size: 18pt;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin-bottom: 28px;
+    }
+    h2 { font-size: 17pt; font-weight: 700; color: #1e3a5f; margin: 22px 0 10px; }
+    h3 { font-size: 16pt; font-weight: 700; color: #334155; margin: 16px 0 8px; }
+    p  { margin-bottom: 12px; text-indent: 1.5cm; text-align: justify; }
+    p.no-indent { text-indent: 0; }
+    ul, ol { margin: 8px 0 12px 2cm; line-height: 2; }
+    li { margin-bottom: 4px; }
+
+    .sec-line {
+      border-bottom: 2px solid #1e3a5f;
+      margin: 22px 0 10px;
+      padding-bottom: 4px;
+      font-size: 17pt;
+      font-weight: 700;
+      color: #1e3a5f;
+    }
+
+    /* ── Summary cards ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .sum-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+      text-align: center;
+    }
+    .sum-card .sv { font-size: 22pt; font-weight: 700; color: #1e3a5f; }
+    .sum-card .sl { font-size: 12pt; color: #64748b; }
+
+    /* ── Objective check table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14pt;
+      margin: 12px 0 18px;
+    }
+    th {
+      background: #1e3a5f;
+      color: #fff;
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 700;
+    }
+    td {
+      padding: 7px 10px;
+      border: 1px solid #cbd5e1;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: #f8fafc; }
+    .check { color: #166534; font-weight: 700; font-size: 14pt; }
+
+    /* ── Highlight box ── */
+    .highlight-box {
+      border-left: 4px solid #1e3a5f;
+      background: #eff6ff;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 14px 0;
+      font-size: 15pt;
+      line-height: 1.8;
+    }
+    .highlight-box.green {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+    .highlight-box.orange {
+      border-color: #d97706;
+      background: #fffbeb;
+    }
+
+    @media print { body { padding: 1.5cm 2.5cm; } }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     COVER
+══════════════════════════════════════ -->
+<div class="chapter-title">บทที่ 5</div>
+<div class="chapter-subtitle">สรุปผลการดำเนินงานและข้อเสนอแนะ</div>
+
+<p>บทนี้นำเสนอสรุปผลการดำเนินโครงงานพัฒนาระบบบริหารจัดการห้องปฏิบัติการคอมพิวเตอร์ อาคาร 75 ปี มหาวิทยาลัยราชภัฏวไลยอลงกรณ์ ในพระบรมราชูปถัมภ์ ผ่านระบบจองและยืม-คืนกุญแจออนไลน์ โดยสรุปผลที่ได้รับตามวัตถุประสงค์ ปัญหาและอุปสรรคที่พบระหว่างการพัฒนา และข้อเสนอแนะสำหรับการพัฒนาต่อยอดในอนาคต</p>
+
+
+<!-- ══════════════════════════════════════
+     5.1 สรุปผลการดำเนินงาน
+══════════════════════════════════════ -->
+<div class="sec-line">5.1 สรุปผลการดำเนินงาน</div>
+
+<p>โครงงานนี้ได้พัฒนาระบบบริหารจัดการห้องปฏิบัติการคอมพิวเตอร์แบบ Web Application ด้วย Next.js 16, React 19, TypeScript, Prisma ORM และ PostgreSQL รองรับผู้ใช้งาน 3 บทบาทหลัก ได้แก่ นักศึกษา อาจารย์ และผู้ดูแลระบบ โดยผลการดำเนินงานสอดคล้องกับวัตถุประสงค์ที่กำหนดไว้ทั้ง 3 ข้อ ดังนี้</p>
+
+<p class="no-indent">ตารางที่ 5.1 ผลการดำเนินงานตามวัตถุประสงค์</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:5%">ที่</th>
+      <th style="width:50%">วัตถุประสงค์</th>
+      <th style="width:35%">ผลที่ได้รับ</th>
+      <th style="width:10%">สถานะ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align:center; font-weight:700;">1</td>
+      <td>พัฒนาระบบจองห้องปฏิบัติการคอมพิวเตอร์ผ่านเครือข่ายอินเทอร์เน็ต</td>
+      <td>ระบบรองรับการจอง 2 ประเภท (IN_CLASS และ AD_HOC) ตรวจสอบ Conflict แบบ Real-time รองรับผู้เข้าร่วมสูงสุด 4 คน และมี Workflow อนุมัติการจองผ่านอาจารย์</td>
+      <td style="text-align:center;" class="check">✓ บรรลุ</td>
+    </tr>
+    <tr>
+      <td style="text-align:center; font-weight:700;">2</td>
+      <td>พัฒนาระบบยืม-คืนกุญแจห้องปฏิบัติการที่สามารถตรวจสอบสิทธิ์และติดตามสถานะได้แบบเรียลไทม์</td>
+      <td>ระบบยืนยันตัวตนผ่าน QR Token (JWT) ที่หมดอายุทุก 2 นาที รองรับทั้งแบบ Loan Desk (เจ้าหน้าที่) และ Kiosk Self-Check (ด้วยตนเอง) ติดตามสถานะกุญแจแบบ Real-time</td>
+      <td style="text-align:center;" class="check">✓ บรรลุ</td>
+    </tr>
+    <tr>
+      <td style="text-align:center; font-weight:700;">3</td>
+      <td>พัฒนาระบบรายงานสรุปผลการใช้งานห้องปฏิบัติการและสถิติการยืม-คืนกุญแจ</td>
+      <td>ระบบรายงานกรองได้ตามช่วงเวลา ประเภท สถานะ ห้อง และผู้จอง แสดง Summary Cards และรองรับ Export เป็น PDF ผ่าน @react-pdf/renderer</td>
+      <td style="text-align:center;" class="check">✓ บรรลุ</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>นอกจากการบรรลุวัตถุประสงค์ทั้ง 3 ข้อแล้ว ระบบยังมีฟีเจอร์เพิ่มเติมที่พัฒนาขึ้นตามความต้องการของผู้ใช้งาน ได้แก่ ระบบปฏิทินรายสัปดาห์ ระบบการจัดการตารางเรียน ระบบ No-show อัตโนมัติ และระบบนำเข้าข้อมูลจำนวนมากผ่านไฟล์ CSV/XLSX</p>
+
+<div class="highlight-box green">
+  <strong>สรุปผลการทดสอบและประเมิน:</strong><br>
+  • กรณีทดสอบผ่านทั้งหมด 31 / 31 กรณี (ร้อยละ 100)<br>
+  • ผลประเมินประสิทธิภาพโดยผู้เชี่ยวชาญ ค่าเฉลี่ยรวม 4.52 / 5.00 ระดับ <strong>ดีมาก</strong><br>
+  • ผลประเมินความพึงพอใจผู้ใช้งาน ค่าเฉลี่ยรวม 4.37 / 5.00 ระดับ <strong>ดีมาก</strong>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     5.2 ผลที่ได้รับตามขอบเขตของโครงงาน
+══════════════════════════════════════ -->
+<div class="sec-line">5.2 ผลที่ได้รับตามขอบเขตของโครงงาน</div>
+
+<h2>5.2.1 ผลที่ผู้ดูแลระบบได้รับ</h2>
+<p>ผู้ดูแลระบบสามารถจัดการข้อมูลทั้งหมดของระบบ ไม่ว่าจะเป็นข้อมูลผู้ใช้งาน ห้องปฏิบัติการ กุญแจ รายวิชา กลุ่มเรียน และภาคการศึกษา ผ่านหน้าจอที่ใช้งานง่าย รองรับการนำเข้าข้อมูลจำนวนมากผ่านไฟล์ CSV/XLSX พร้อม Dry-run Preview ก่อนนำเข้าจริงเพื่อลดข้อผิดพลาด นอกจากนี้ยังสามารถดูรายงานสรุปการใช้งานห้องและสถิติการยืม-คืนกุญแจ เพื่อใช้วางแผนบริหารจัดการต่อไป</p>
+
+<h2>5.2.2 ผลที่อาจารย์ได้รับ</h2>
+<p>อาจารย์สามารถตรวจสอบตารางการใช้งานห้องปฏิบัติการได้แบบ Real-time จองห้องล่วงหน้าสำหรับกิจกรรมนอกตาราง ดูและอนุมัติหรือปฏิเสธคำขอจองของนักศึกษา รวมถึงยืม-คืนกุญแจโดยใช้ QR Token ผ่านทั้งระบบ Loan Desk และ Kiosk Self-Check ปฏิทินรายสัปดาห์ช่วยให้อาจารย์มองเห็นตารางสอนและการจองในภาพรวมได้อย่างสะดวก</p>
+
+<h2>5.2.3 ผลที่นักศึกษาได้รับ</h2>
+<p>นักศึกษาสามารถตรวจสอบสถานะห้องปฏิบัติการ จองห้องล่วงหน้าสำหรับกิจกรรมกลุ่ม และเพิ่มผู้เข้าร่วมได้สูงสุด 4 คน ระบบ QR Token ช่วยให้นักศึกษาไม่ต้องนำบัตรประจำตัวมาแลกกุญแจอีกต่อไป ลดความเสี่ยงการสูญหายหรือสับสนของบัตร ปฏิทินรายสัปดาห์แสดงตารางเรียนและการจองรวมในที่เดียว ช่วยให้วางแผนการใช้ห้องได้อย่างมีประสิทธิภาพ</p>
+
+
+<!-- ══════════════════════════════════════
+     5.3 ปัญหาและอุปสรรค
+══════════════════════════════════════ -->
+<div class="sec-line">5.3 ปัญหาและอุปสรรคที่พบในการดำเนินงาน</div>
+
+<p>ในระหว่างการพัฒนาระบบ พบปัญหาและอุปสรรคหลายประการ ซึ่งผู้พัฒนาได้หาแนวทางแก้ไขดังนี้</p>
+
+<h2>5.3.1 ปัญหาด้านการจัดการ Timezone</h2>
+<p>ปัญหาที่พบคือระบบ Server เก็บเวลาในรูปแบบ UTC ในขณะที่การแสดงผลและการตรวจสอบ Conflict ต้องใช้เวลาในเขต Asia/Bangkok (UTC+7) ทำให้เกิดความคลาดเคลื่อนในการแสดงวันที่และเวลา</p>
+<div class="highlight-box orange">
+  <strong>แนวทางแก้ไข:</strong> ใช้ไลบรารี date-fns-tz ร่วมกับ date-fns เพื่อแปลงเวลาระหว่าง UTC และ Asia/Bangkok อย่างถูกต้อง กำหนดให้ฐานข้อมูลเก็บเวลาเป็น UTC เสมอ และแปลงเป็น Bangkok Time เมื่อแสดงผลหรือประมวลผลทางธุรกิจ
+</div>
+
+<h2>5.3.2 ปัญหาด้านความซับซ้อนของ Workflow การจอง</h2>
+<p>ระบบมี Workflow ที่ซับซ้อน เนื่องจากการจองมี 2 ประเภท (IN_CLASS และ AD_HOC) และมีสถานะถึง 7 สถานะ (PENDING, APPROVED, REJECTED, CANCELLED, NO_SHOW, CHECKED_IN, COMPLETED) ทำให้การเขียนตรรกะการตรวจสอบสิทธิ์และการเปลี่ยนสถานะมีความซับซ้อนสูง</p>
+<div class="highlight-box orange">
+  <strong>แนวทางแก้ไข:</strong> ออกแบบ State Machine สำหรับการเปลี่ยนสถานะอย่างชัดเจน และเขียน Validation Functions แยกต่างหากสำหรับแต่ละประเภทของการจอง พร้อมทั้งเขียน Unit Test ครอบคลุม Edge Cases ต่าง ๆ
+</div>
+
+<h2>5.3.3 ปัญหาการรักษาความปลอดภัยของ QR Token</h2>
+<p>เนื่องจาก QR Token ถูกส่งผ่านเครือข่ายและอาจถูกดักจับหรือนำไปใช้ซ้ำได้ จึงต้องมีการออกแบบระบบรักษาความปลอดภัยที่รัดกุม</p>
+<div class="highlight-box orange">
+  <strong>แนวทางแก้ไข:</strong> กำหนดอายุการใช้งานของ Token เพียง 2 นาที ใช้ JWT ที่ลงนามด้วย Secret Key (QR_TOKEN_SECRET) และตรวจสอบ Token ทุกครั้งที่ใช้งาน พร้อมระบบรีเฟรช Token อัตโนมัติฝั่ง Client
+</div>
+
+<h2>5.3.4 ปัญหาการตรวจสอบ Conflict ของการจอง</h2>
+<p>การตรวจสอบว่าช่วงเวลาที่ต้องการจองว่างอยู่หรือไม่ต้องพิจารณาทั้งการจองประเภท IN_CLASS จากตาราง Section และการจองประเภท AD_HOC จากตาราง Reservation พร้อมกัน ทำให้ Query มีความซับซ้อนสูง</p>
+<div class="highlight-box orange">
+  <strong>แนวทางแก้ไข:</strong> สร้าง API Endpoint สำหรับตรวจสอบ Availability โดยเฉพาะ โดย Query ทั้ง Section และ Reservation ในคำสั่งเดียว พร้อม Index ที่เหมาะสมบนฐานข้อมูล PostgreSQL เพื่อเพิ่มความเร็วในการตรวจสอบ
+</div>
+
+<h2>5.3.5 ปัญหาการออกแบบระบบ Kiosk</h2>
+<p>การออกแบบ Kiosk ให้ใช้งานได้โดยไม่ต้องล็อกอิน แต่ยังต้องมีความปลอดภัยและป้องกันการใช้งานโดยไม่ได้รับอนุญาต เป็นความท้าทายด้านการออกแบบ</p>
+<div class="highlight-box orange">
+  <strong>แนวทางแก้ไข:</strong> ออกแบบระบบ Pairing Token ให้แอดมินจับคู่อุปกรณ์ Kiosk กับระบบก่อนใช้งาน โดยใช้ KioskToken ที่เก็บในฐานข้อมูลเพื่อตรวจสอบสิทธิ์อุปกรณ์แต่ละเครื่อง
+</div>
+
+
+<!-- ══════════════════════════════════════
+     5.4 ข้อเสนอแนะ
+══════════════════════════════════════ -->
+<div class="sec-line">5.4 ข้อเสนอแนะสำหรับการพัฒนาต่อยอด</div>
+
+<p>จากการพัฒนาและทดสอบระบบ ผู้พัฒนาขอเสนอแนะแนวทางสำหรับการพัฒนาระบบต่อยอดในอนาคตดังนี้</p>
+
+<h2>5.4.1 ข้อเสนอแนะด้านฟังก์ชันการทำงาน</h2>
+<ul>
+  <li><strong>ระบบแจ้งเตือนผ่าน Line Notify หรือ Email:</strong> เพิ่มการแจ้งเตือนอัตโนมัติเมื่อมีการอนุมัติ/ปฏิเสธการจอง การยืม-คืนกุญแจ หรือการจองใกล้ถึงกำหนด เพื่อให้ผู้ใช้ไม่พลาดกิจกรรมสำคัญ</li>
+  <li><strong>ระบบ Mobile Application:</strong> พัฒนาแอปพลิเคชันบนมือถือ (iOS/Android) เพื่อให้ผู้ใช้งานสามารถจองห้องและแสดง QR Token ได้สะดวกยิ่งขึ้นโดยไม่ต้องเปิด Browser</li>
+  <li><strong>ระบบการจัดสรรห้องอัตโนมัติ:</strong> เพิ่มฟีเจอร์แนะนำห้องที่ว่างอยู่โดยอัตโนมัติตามจำนวนผู้เข้าร่วม ช่วยให้การจองทำได้เร็วขึ้น</li>
+  <li><strong>รองรับการยืมกุญแจหลายห้องพร้อมกัน:</strong> ปัจจุบันระบบรองรับการจองได้ทีละห้อง การพัฒนาให้รองรับการจองหลายห้องในคำขอเดียวจะเป็นประโยชน์สำหรับกิจกรรมขนาดใหญ่</li>
+  <li><strong>ระบบประเมินการใช้งาน (Feedback):</strong> เพิ่มฟอร์มให้ผู้ใช้งานประเมินความพึงพอใจหลังใช้บริการ เพื่อนำข้อมูลไปปรับปรุงระบบอย่างต่อเนื่อง</li>
+</ul>
+
+<h2>5.4.2 ข้อเสนอแนะด้านความปลอดภัยและประสิทธิภาพ</h2>
+<ul>
+  <li><strong>เพิ่มระบบ Two-Factor Authentication (2FA):</strong> เพิ่มขั้นตอนการยืนยันตัวตนสองชั้น โดยเฉพาะสำหรับบัญชีผู้ดูแลระบบ เพื่อป้องกันการเข้าถึงโดยไม่ได้รับอนุญาต</li>
+  <li><strong>ระบบ Audit Log:</strong> เพิ่มการบันทึก Log ทุกการดำเนินการสำคัญ เช่น การเข้าสู่ระบบ การแก้ไขข้อมูล และการยืม-คืนกุญแจ เพื่อให้สามารถตรวจสอบย้อนหลังได้</li>
+  <li><strong>Caching ด้วย Redis:</strong> เพิ่มระบบ Cache สำหรับข้อมูลที่ถูกอ่านบ่อย เช่น สถานะห้องวันนี้ และข้อมูลตารางเรียน เพื่อเพิ่มประสิทธิภาพการตอบสนองของระบบ</li>
+  <li><strong>ระบบสำรองข้อมูลอัตโนมัติ:</strong> กำหนดกระบวนการสำรองฐานข้อมูล PostgreSQL อัตโนมัติรายวัน และทดสอบการ Restore เพื่อรับมือกับสถานการณ์ฉุกเฉิน</li>
+</ul>
+
+<h2>5.4.3 ข้อเสนอแนะด้านการขยายขอบเขต</h2>
+<ul>
+  <li><strong>รองรับอาคารหลายแห่ง:</strong> ปัจจุบันระบบถูกพัฒนาสำหรับอาคาร 75 ปี เพียงแห่งเดียว การขยายระบบให้รองรับหลายอาคารจะเพิ่มประโยชน์ให้กับมหาวิทยาลัยได้มาก</li>
+  <li><strong>เชื่อมต่อกับระบบทะเบียนมหาวิทยาลัย:</strong> เชื่อมต่อ API กับระบบทะเบียนกลางของมหาวิทยาลัยเพื่อนำเข้าข้อมูลนักศึกษา อาจารย์ และตารางเรียนโดยอัตโนมัติ ลดความซ้ำซ้อนในการบำรุงรักษาข้อมูล</li>
+  <li><strong>รองรับการจองอุปกรณ์คอมพิวเตอร์เพิ่มเติม:</strong> ขยายระบบให้รองรับการจองอุปกรณ์พิเศษภายในห้องปฏิบัติการ เช่น โปรเจกเตอร์ กล้อง หรืออุปกรณ์เครือข่าย</li>
+  <li><strong>Dashboard Analytics:</strong> เพิ่มกราฟและสถิติเชิงลึกสำหรับผู้บริหาร เช่น ห้องที่ใช้งานบ่อยที่สุด ช่วงเวลาที่มีการจองหนาแน่น และแนวโน้มการใช้งาน เพื่อสนับสนุนการตัดสินใจ</li>
+</ul>
+
+
+<!-- ══════════════════════════════════════
+     5.5 บทสรุป
+══════════════════════════════════════ -->
+<div class="sec-line">5.5 บทสรุป</div>
+
+<p>โครงงานการพัฒนาระบบบริหารจัดการห้องปฏิบัติการคอมพิวเตอร์ อาคาร 75 ปี มหาวิทยาลัยราชภัฏวไลยอลงกรณ์ ในพระบรมราชูปถัมภ์ ผ่านระบบจองและยืม-คืนกุญแจออนไลน์ ประสบความสำเร็จในการแก้ไขปัญหาของระบบเดิมที่ใช้บัตรประจำตัวนักศึกษาแลกกุญแจและบันทึกด้วยมือ ซึ่งมีข้อจำกัดหลายประการ ได้แก่ ความเสี่ยงต่อการสูญหายของบัตร ความล่าช้าในกระบวนการ และการขาดข้อมูลสถิติการใช้งาน</p>
+
+<p>ระบบใหม่ที่พัฒนาขึ้นได้รับการออกแบบให้มีความปลอดภัย สะดวกใช้งาน และครอบคลุมทุกกระบวนการทำงาน ตั้งแต่การจองห้อง การอนุมัติ การยืม-คืนกุญแจ ไปจนถึงการสรุปรายงาน ด้วยเทคโนโลยีสมัยใหม่อย่าง Next.js, TypeScript, Prisma ORM และ PostgreSQL ทำให้ระบบมีความเสถียร ปลอดภัย และสามารถบำรุงรักษาได้ในระยะยาว</p>
+
+<p>ผลการทดสอบระบบพบว่าทุกกรณีทดสอบผ่านร้อยละ 100 และผลการประเมินโดยผู้เชี่ยวชาญและผู้ใช้งานอยู่ในระดับดีมาก สะท้อนให้เห็นว่าระบบมีคุณภาพตรงตามความต้องการของผู้ใช้งานและสามารถนำไปใช้งานจริงได้ทันที อีกทั้งยังเป็นต้นแบบสำหรับการพัฒนาระบบบริหารจัดการทรัพยากรของสถาบันการศึกษาอื่น ๆ ต่อไปในอนาคต</p>
+
+<div class="highlight-box">
+  <strong>ข้อสรุปสำคัญ:</strong><br>
+  ระบบที่พัฒนาขึ้นสามารถช่วยลดกระบวนการยืม-คืนกุญแจจากที่ต้องใช้เวลาหลายนาทีเหลือเพียงไม่กี่วินาที ลดความเสี่ยงการสูญหายของบัตรนักศึกษา และทำให้ผู้บริหารมีข้อมูลสถิติการใช้ห้องปฏิบัติการเพื่อนำไปวางแผนจัดสรรทรัพยากรได้อย่างมีประสิทธิภาพ
+</div>
+
+
+<!-- ══════════════════════════════════════
+     บรรณานุกรม (หัวข้อ)
+══════════════════════════════════════ -->
+<div class="sec-line" style="page-break-before: always;">บรรณานุกรม</div>
+
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+ดาวรถา วีระพันธ. (2562). <em>ระบบสารสนเทศจัดการข้อมูลสุขภาพของบุคลากรและนักศึกษาด้วยเทคโนโลยีบาร์โค้ด</em>.
+มหาวิทยาลัยราชภัฏวไลยอลงกรณ์ ในพระบรมราชูปถัมภ์.
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+นันทนา รัตนชัย และคณะ. (2558). <em>ระบบยืม-คืนปริญญานิพนธ์สำหรับสาขาคอมพิวเตอร์</em>. วารสารวิทยาศาสตร์และเทคโนโลยี.
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+พงษ์พิชญ์ อุดมศิริรัตน์ และนุชนาฎ สัตยากวี. (2560). <em>ระบบยืมคืนอุปกรณ์ห้องปฏิบัติการวิจัย ภาควิชาวิศวกรรมคอมพิวเตอร์ คณะวิศวกรรมศาสตร์ กำแพงแสน</em>. มหาวิทยาลัยเกษตรศาสตร์.
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+พิทย์พิมล ชูรอด, เนาวลักษณ์ แสงสนิท และสุพิริยา ผลนาค. (2557). <em>ระบบยืมหนังสือด้วยเครื่องสแกนลายนิ้วมือของสำนักหอสมุด มหาวิทยาลัยทักษิณ วิทยาเขตพัทลุง</em>. มหาวิทยาลัยทักษิณ.
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+อดิศักดิ์ พวงสมบัติ. (2556). <em>ระบบยืม-คืนครุภัณฑ์ด้วยบาร์โค้ดสองมิติ</em>. วิทยานิพนธ์ระดับปริญญาตรี.
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+Denso Wave Incorporated. (2024). <em>QR Code Essentials</em>. สืบค้นจาก https://www.qrcode.com/en/about/
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+Laudon, K. C. &amp; Laudon, J. P. (2016). <em>Management Information Systems: Managing the Digital Firm</em> (14th ed.). Pearson Education.
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+Meta Platforms, Inc. (2024). <em>React – The library for web and native user interfaces</em>. สืบค้นจาก https://react.dev
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+Microsoft. (2024). <em>TypeScript Documentation</em>. สืบค้นจาก https://www.typescriptlang.org/docs/
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+NextAuth.js. (2024). <em>NextAuth.js – Authentication for Next.js</em>. สืบค้นจาก https://next-auth.js.org
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+PostgreSQL Global Development Group. (2024). <em>PostgreSQL Documentation</em>. สืบค้นจาก https://www.postgresql.org/docs/
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+Prisma Labs, Inc. (2024). <em>Prisma ORM Documentation</em>. สืบค้นจาก https://www.prisma.io/docs
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+Radix UI. (2024). <em>Radix UI – Accessible and unstyled components for building high-quality web apps</em>. สืบค้นจาก https://www.radix-ui.com
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+Tailwind Labs. (2024). <em>Tailwind CSS Documentation</em>. สืบค้นจาก https://tailwindcss.com/docs
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+Vercel Inc. (2024). <em>Next.js Documentation</em>. สืบค้นจาก https://nextjs.org/docs
+</p>
+<p class="no-indent" style="text-indent:0; line-height:2.2;">
+date-fns. (2024). <em>date-fns – Modern JavaScript date utility library</em>. สืบค้นจาก https://date-fns.org
+</p>
+
+</body>
+</html>
