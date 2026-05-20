@@ -840,114 +840,117 @@
 
 <p>ผลการประเมินความพึงพอใจของผู้ใช้งานพบว่าโดยภาพรวมผู้ใช้งานมีความพึงพอใจอยู่ในระดับ ดีมาก มีค่าเฉลี่ยรวมเท่ากับ 4.37 จากคะแนนเต็ม 5.00 โดยผู้ตอบแบบสอบถามส่วนใหญ่เลือกระดับ มากที่สุด ร้อยละ 46.94 และระดับ มาก ร้อยละ 45.00 รวมกันคิดเป็นร้อยละ 91.94 รายการที่ได้คะแนนสูงสุดคือ "ระบบช่วยลดปัญหาการสูญหายของบัตรนักศึกษา" มีค่าเฉลี่ย 4.63 แสดงให้เห็นว่าระบบตอบสนองปัญหาหลักที่เป็นแรงจูงใจในการพัฒนาได้เป็นอย่างดี ส่วนรายการที่ได้คะแนนต่ำสุดคือ "ระบบมีความน่าเชื่อถือและไม่เกิดข้อผิดพลาดบ่อยครั้ง" มีค่าเฉลี่ย 4.17 ซึ่งยังอยู่ในระดับ ดี และควรนำไปปรับปรุงต่อไป</p>
 
-<!-- ══ กราฟแสดงผลความพึงพอใจ ══ -->
+<!-- ══ กราฟแสดงผลความพึงพอใจ (แท่งตั้ง) ══ -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-<div style="margin-top:1em; border:1px solid #ccc; padding:10pt;">
-  <canvas id="chartSatisfaction" style="max-height:420px;"></canvas>
+<!-- กราฟ 1: ค่าเฉลี่ยแต่ละข้อ -->
+<div style="margin-top:1em; border:1px solid #ccc; padding:12pt 10pt 8pt;">
+  <canvas id="chartMean" height="300"></canvas>
 </div>
 <div class="fig-caption">รูปที่ 4.1  กราฟแท่งแสดงค่าเฉลี่ยความพึงพอใจของผู้ใช้งานในแต่ละรายการ (n = 30)</div>
 
+<!-- กราฟ 2: สัดส่วน stacked -->
+<div style="margin-top:1.2em; border:1px solid #ccc; padding:12pt 10pt 8pt;">
+  <canvas id="chartStack" height="300"></canvas>
+</div>
+<div class="fig-caption">รูปที่ 4.2  กราฟแท่งแสดงสัดส่วนระดับความพึงพอใจในแต่ละรายการ (n = 30)</div>
+
 <script>
 (function(){
+  /* ─── ป้ายกำกับแกน X (สั้นลงเพื่อแสดงแนวตั้ง) ─── */
   const labels = [
-    '1. ระบบใช้งานง่าย',
-    '2. การจองห้องสะดวก',
-    '3. ยืม-คืนกุญแจผ่าน QR',
-    '4. ลดการสูญหายบัตร',
-    '5. แสดงสถานะห้อง Real-time',
-    '6. ระบบรายงาน',
-    '7. ปฏิทินรายสัปดาห์',
-    '8. ความสวยงามหน้าจอ',
-    '9. การจัดวางหน้าจอ',
-    '10. ขนาดตัวอักษร',
-    '11. ความน่าเชื่อถือ',
-    '12. พึงพอใจโดยรวม'
+    ['1.ระบบ','ใช้งานง่าย'],
+    ['2.การจอง','ห้องสะดวก'],
+    ['3.ยืม-คืน','กุญแจ QR'],
+    ['4.ลดการ','สูญหายบัตร'],
+    ['5.สถานะห้อง','Real-time'],
+    ['6.ระบบ','รายงาน'],
+    ['7.ปฏิทิน','รายสัปดาห์'],
+    ['8.ความ','สวยงาม'],
+    ['9.การจัด','วางหน้าจอ'],
+    ['10.ขนาด','ตัวอักษร'],
+    ['11.ความ','น่าเชื่อถือ'],
+    ['12.พึงพอใจ','โดยรวม']
   ];
-  const means  = [4.20, 4.40, 4.57, 4.63, 4.47, 4.40, 4.27, 4.37, 4.33, 4.30, 4.17, 4.43];
-  const colors = means.map(v =>
-    v >= 4.50 ? 'rgba(30,58,95,0.85)'    /* ดีมาก — เข้ม */
-              : v >= 4.20 ? 'rgba(55,110,176,0.80)' /* ดีมาก — กลาง */
-              : 'rgba(107,157,210,0.75)'  /* ดี */
+
+  const means = [4.20, 4.40, 4.57, 4.63, 4.47, 4.40, 4.27, 4.37, 4.33, 4.30, 4.17, 4.43];
+
+  /* สีตามระดับ */
+  const barColors = means.map(v =>
+    v >= 4.50 ? '#1e3a5f'   /* ≥4.50 เข้มมาก */
+    : v >= 4.30 ? '#2563eb' /* ≥4.30 น้ำเงิน */
+    : '#60a5fa'             /* ≥4.00 ฟ้า */
   );
-  const ctx = document.getElementById('chartSatisfaction').getContext('2d');
-  new Chart(ctx, {
+
+  /* Plugin: แสดงตัวเลขเหนือแท่ง */
+  const valueLabelPlugin = {
+    id: 'valueLabels',
+    afterDatasetsDraw(chart) {
+      const { ctx, data } = chart;
+      chart.getDatasetMeta(0).data.forEach((bar, i) => {
+        const val = data.datasets[0].data[i].toFixed(2);
+        ctx.save();
+        ctx.font = "bold 13px 'TH Sarabun New', sans-serif";
+        ctx.fillStyle = '#000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(val, bar.x, bar.y - 2);
+        ctx.restore();
+      });
+    }
+  };
+
+  const fontOpt = { family: "'TH Sarabun New', sans-serif", size: 12 };
+
+  /* ══ กราฟ 1: ค่าเฉลี่ย ══ */
+  new Chart(document.getElementById('chartMean').getContext('2d'), {
     type: 'bar',
     data: {
       labels,
       datasets: [{
         label: 'ค่าเฉลี่ย (x̄)',
         data: means,
-        backgroundColor: colors,
-        borderColor: colors.map(c => c.replace('0.85','1').replace('0.80','1').replace('0.75','1')),
+        backgroundColor: barColors,
+        borderColor: barColors,
         borderWidth: 1,
-        borderRadius: 3
+        borderRadius: 4,
+        barPercentage: 0.65
       }]
     },
     options: {
-      indexAxis: 'y',
       responsive: true,
       plugins: {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: ctx => ` ค่าเฉลี่ย = ${ctx.parsed.x.toFixed(2)}`
+            title: (items) => {
+              const raw = labels[items[0].dataIndex];
+              return Array.isArray(raw) ? raw.join('') : raw;
+            },
+            label: (ctx) => ` ค่าเฉลี่ย = ${ctx.parsed.y.toFixed(2)}`
           }
-        },
-        datalabels: { display: false }
+        }
       },
       scales: {
         x: {
-          min: 3.50,
-          max: 5.00,
-          ticks: {
-            font: { family: "'TH Sarabun New', sans-serif", size: 12 },
-            stepSize: 0.25
-          },
-          title: {
-            display: true,
-            text: 'ค่าเฉลี่ย (x̄)',
-            font: { family: "'TH Sarabun New', sans-serif", size: 13 }
-          },
-          grid: { color: 'rgba(0,0,0,0.08)' }
+          ticks: { font: fontOpt, maxRotation: 0, autoSkip: false },
+          grid: { display: false }
         },
         y: {
-          ticks: {
-            font: { family: "'TH Sarabun New', sans-serif", size: 12 },
-            autoSkip: false
+          min: 3.50, max: 5.10,
+          ticks: { font: fontOpt, stepSize: 0.25 },
+          title: {
+            display: true, text: 'ค่าเฉลี่ย (x̄)',
+            font: { family: "'TH Sarabun New', sans-serif", size: 13 }
           },
-          grid: { display: false }
+          grid: { color: 'rgba(0,0,0,0.07)' }
         }
       }
     },
-    plugins: [{
-      id: 'valueLabels',
-      afterDatasetsDraw(chart) {
-        const { ctx, data } = chart;
-        chart.getDatasetMeta(0).data.forEach((bar, i) => {
-          const v = data.datasets[0].data[i].toFixed(2);
-          ctx.save();
-          ctx.font = "bold 12px 'TH Sarabun New', sans-serif";
-          ctx.fillStyle = '#000';
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(v, bar.x + 4, bar.y);
-          ctx.restore();
-        });
-      }
-    }]
+    plugins: [valueLabelPlugin]
   });
 
-  /* กราฟที่ 2 — Stacked bar แสดงสัดส่วนระดับความพึงพอใจ */
-  const canvas2 = document.createElement('canvas');
-  canvas2.style.maxHeight = '420px';
-  document.getElementById('chartSatisfaction').parentElement.insertAdjacentElement('afterend', canvas2);
-
-  const cap2 = document.createElement('div');
-  cap2.className = 'fig-caption';
-  cap2.textContent = 'รูปที่ 4.2  กราฟแท่งสัดส่วนระดับความพึงพอใจในแต่ละรายการ (n = 30)';
-  canvas2.insertAdjacentElement('afterend', cap2);
-
+  /* ══ กราฟ 2: Stacked สัดส่วน ══ */
   const pct = [
     [40.00, 46.67,  6.67,  6.67, 0],
     [46.67, 46.67,  6.67,  0.00, 0],
@@ -963,50 +966,58 @@
     [50.00, 43.33,  6.67,  0.00, 0]
   ];
 
-  const levelColors = ['#1e3a5f','#2563eb','#60a5fa','#f59e0b','#ef4444'];
+  const levelColors = ['#1e3a5f','#3b82f6','#93c5fd','#fbbf24','#ef4444'];
   const levelLabels = ['มากที่สุด (5)','มาก (4)','ปานกลาง (3)','น้อย (2)','น้อยที่สุด (1)'];
 
-  new Chart(canvas2.getContext('2d'), {
+  new Chart(document.getElementById('chartStack').getContext('2d'), {
     type: 'bar',
     data: {
       labels,
-      datasets: levelLabels.map((lbl,i) => ({
+      datasets: levelLabels.map((lbl, i) => ({
         label: lbl,
         data: pct.map(r => r[i]),
         backgroundColor: levelColors[i],
-        stack: 'stack'
+        borderColor: '#fff',
+        borderWidth: 0.5,
+        stack: 'stack',
+        barPercentage: 0.65
       }))
     },
     options: {
-      indexAxis: 'y',
       responsive: true,
       plugins: {
         legend: {
           position: 'bottom',
-          labels: { font: { family: "'TH Sarabun New', sans-serif", size: 12 }, boxWidth: 14 }
+          labels: { font: fontOpt, boxWidth: 14, padding: 12 }
         },
         tooltip: {
           callbacks: {
-            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.x.toFixed(2)}%`
+            title: (items) => {
+              const raw = labels[items[0].dataIndex];
+              return Array.isArray(raw) ? raw.join('') : raw;
+            },
+            label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`
           }
         }
       },
       scales: {
         x: {
-          stacked: true, min: 0, max: 100,
+          stacked: true,
+          ticks: { font: fontOpt, maxRotation: 0, autoSkip: false },
+          grid: { display: false }
+        },
+        y: {
+          stacked: true,
+          min: 0, max: 100,
+          ticks: {
+            font: fontOpt,
+            callback: (v) => v + '%'
+          },
           title: {
             display: true, text: 'ร้อยละ (%)',
             font: { family: "'TH Sarabun New', sans-serif", size: 13 }
           },
-          ticks: { font: { family: "'TH Sarabun New', sans-serif", size: 12 } }
-        },
-        y: {
-          stacked: true,
-          ticks: {
-            autoSkip: false,
-            font: { family: "'TH Sarabun New', sans-serif", size: 12 }
-          },
-          grid: { display: false }
+          grid: { color: 'rgba(0,0,0,0.07)' }
         }
       }
     }
